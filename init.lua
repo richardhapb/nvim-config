@@ -55,6 +55,7 @@ require('packer').startup(function(use)
   use {'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}}
   use 'theHamsta/nvim-dap-virtual-text'
   use 'mfussenegger/nvim-dap'
+  use 'nvim-neotest/nvim-nio'
 end)
 
 require'nvim-treesitter.configs'.setup {
@@ -181,8 +182,7 @@ vim.cmd([[
   let g:prettier#autoformat_config_present = 1
 ]])
 
---- Autocompletado
-
+-- DEBUG --
 -- Configuración para nvim-cmp
 local cmp = require'cmp'
 
@@ -214,3 +214,49 @@ require "lsp_signature".setup({
   floating_window = true,  -- Muestra una ventana flotante con los argumentos
 })
 
+local dap = require("dap")
+
+dap.adapters.python = {
+  type = "executable",
+  command = ".venv/bin/python",
+  args = { "-m", "debugpy.adapter" }
+}
+
+dap.configurations.python = {
+  {
+    type = "python",
+    request = "launch",
+    name = "Launch file",
+    program = function()
+        return vim.fn.input('Path to file: ', vim.fn.expand('%'), 'file')
+    end,
+    pythonPath = function()
+      return ".venv/bin/python"
+    end
+  }
+}
+
+local dap, dapui = require("dap"), require("dapui")
+
+dapui.setup() -- configura la UI
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
+
+vim.api.nvim_set_keymap("n", "<F5>", "<Cmd>lua require'dap'.continue()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<F10>", "<Cmd>lua require'dap'.step_over()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<F11>", "<Cmd>lua require'dap'.step_into()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<F12>", "<Cmd>lua require'dap'.step_out()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>b", "<Cmd>lua require'dap'.toggle_breakpoint()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>B", "<Cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>dr", "<Cmd>lua require'dap'.repl.open()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>dl", "<Cmd>lua require'dap'.run_last()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>do", "<Cmd>lua require('dapui').open()<CR>", { noremap = true, silent = true})
+vim.api.nvim_set_keymap("n", "<leader>dc", "<Cmd>lua require('dapui').close()<CR>", { noremap = true, silent = true})
+vim.api.nvim_set_keymap("n", "<leader>B", "<Cmd>lua require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>", { noremap = true, silent = true })
