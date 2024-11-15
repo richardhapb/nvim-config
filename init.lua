@@ -11,6 +11,13 @@ vim.opt.tabstop = 4
 vim.cmd('syntax on')
 vim.opt.termguicolors = true
 
+-- Asegura la transparencia en Neovim
+vim.cmd("highlight Normal guibg=NONE ctermbg=NONE")
+vim.cmd("highlight NonText guibg=NONE ctermbg=NONE")
+vim.cmd("highlight LineNr guibg=NONE")        -- Línea de número transparente
+vim.cmd("highlight SignColumn guibg=NONE")    -- Columna de signos transparente
+vim.cmd("highlight EndOfBuffer guibg=NONE")   -- Fondo al final del buffer
+vim.opt.termguicolors = true
 
 vim.g.mapleader = ' '
 
@@ -19,7 +26,17 @@ vim.g.mapleader = ' '
 require('packer').startup(function(use)
   -- Packer se maneja a sí mismo
   use 'wbthomason/packer.nvim'
-
+  use {
+        'folke/tokyonight.nvim',
+        config = function()
+            require("tokyonight").setup({
+                style = "night",              -- Puedes elegir: storm, night, day
+                transparent = true,           -- Activa la transparencia
+                terminal_colors = true,       -- Ajusta los colores del terminal
+            })
+            vim.cmd("colorscheme tokyonight")  -- Activa el tema
+        end
+    }
   -- Plugins de calidad de vida
   use 'nvim-lua/plenary.nvim'
   use 'nvim-telescope/telescope.nvim'
