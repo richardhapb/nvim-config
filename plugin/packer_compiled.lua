@@ -130,7 +130,7 @@ _G.packer_plugins = {
     url = "https://github.com/williamboman/mason.nvim"
   },
   ["molten-nvim"] = {
-    config = { "\27LJ\2\nè\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\17wezterm.nvim\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0" },
+    config = { "\27LJ\2\nä\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\fwezterm\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0" },
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/molten-nvim",
     url = "https://github.com/benlubas/molten-nvim"
@@ -206,6 +206,7 @@ _G.packer_plugins = {
     url = "https://github.com/nvim-lua/plenary.nvim"
   },
   ["quarto-nvim"] = {
+    config = { "\27LJ\2\nﬁ\2\0\0\6\0\16\0\0196\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\f\0005\3\4\0005\4\3\0=\4\5\0035\4\6\0005\5\a\0=\5\b\4=\4\t\0035\4\n\0=\4\v\3=\3\r\0025\3\14\0=\3\15\2B\0\2\1K\0\1\0\15codeRunner\1\0\2\fenabled\2\19default_method\vmolten\16lspFeatures\1\0\2\16lspFeatures\0\15codeRunner\0\15completion\1\0\1\fenabled\2\16diagnostics\rtriggers\1\2\0\0\17BufWritePost\1\0\2\fenabled\2\rtriggers\0\14languages\1\0\4\vchunks\ball\16diagnostics\0\15completion\0\14languages\0\1\4\0\0\6r\vpython\trust\nsetup\vquarto\frequire\0" },
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/quarto-nvim",
     url = "https://github.com/quarto-dev/quarto-nvim"
@@ -219,6 +220,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/vim-prettier",
     url = "https://github.com/prettier/vim-prettier"
+  },
+  ["vim-slime"] = {
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/vim-slime",
+    url = "https://github.com/jpalardy/vim-slime"
   },
   ["vim-vsnip"] = {
     loaded = true,
@@ -238,9 +244,13 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
+-- Config for: quarto-nvim
+time([[Config for quarto-nvim]], true)
+try_loadstring("\27LJ\2\nﬁ\2\0\0\6\0\16\0\0196\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\f\0005\3\4\0005\4\3\0=\4\5\0035\4\6\0005\5\a\0=\5\b\4=\4\t\0035\4\n\0=\4\v\3=\3\r\0025\3\14\0=\3\15\2B\0\2\1K\0\1\0\15codeRunner\1\0\2\fenabled\2\19default_method\vmolten\16lspFeatures\1\0\2\16lspFeatures\0\15codeRunner\0\15completion\1\0\1\fenabled\2\16diagnostics\rtriggers\1\2\0\0\17BufWritePost\1\0\2\fenabled\2\rtriggers\0\14languages\1\0\4\vchunks\ball\16diagnostics\0\15completion\0\14languages\0\1\4\0\0\6r\vpython\trust\nsetup\vquarto\frequire\0", "config", "quarto-nvim")
+time([[Config for quarto-nvim]], false)
 -- Config for: molten-nvim
 time([[Config for molten-nvim]], true)
-try_loadstring("\27LJ\2\nè\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\17wezterm.nvim\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0", "config", "molten-nvim")
+try_loadstring("\27LJ\2\nä\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\fwezterm\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0", "config", "molten-nvim")
 time([[Config for molten-nvim]], false)
 
 _G._packer.inside_compile = false

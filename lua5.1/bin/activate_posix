@@ -1,0 +1,22 @@
+s=$(command -V deactivate_lua 2>&1)
+if [ $? -eq 0 ]; then
+    if [ "${s##*function*}" = '' ]; then
+        deactivate_lua
+    fi;
+fi;
+
+deactivate_lua () {
+    if [ -x '/Users/richard/.config/nvim/lua5.1/bin/lua' ]; then
+        PATH=`'/Users/richard/.config/nvim/lua5.1/bin/lua' '/Users/richard/.config/nvim/lua5.1/bin/get_deactivated_path.lua'`
+        export PATH
+
+        hash -r 2>/dev/null
+    fi
+
+    unset -f deactivate_lua
+}
+
+PATH='/Users/richard/.config/nvim/lua5.1/bin':"$PATH"
+export PATH
+
+hash -r 2>/dev/null
