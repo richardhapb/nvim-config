@@ -56,6 +56,62 @@ require('packer').startup(function(use)
   use 'theHamsta/nvim-dap-virtual-text'
   use 'mfussenegger/nvim-dap'
   use 'nvim-neotest/nvim-nio'
+
+  -- Jupyter
+  use 'jpalardy/vim-slime'
+  use "willothy/wezterm.nvim"
+  use {
+    "benlubas/molten-nvim",
+    run = ":UpdateRemotePlugins",  -- Equivalente a `build = ":UpdateRemotePlugins"`
+    config = function()
+        -- Configuración personalizada para molten-nvim
+        vim.g.molten_output_win_max_height = 12
+        -- I find auto open annoying, keep in mind setting this option will require setting
+        -- a keybind for `:noautocmd MoltenEnterOutput` to open the output again
+        vim.g.molten_auto_open_output = false
+
+        -- this guide will be using image.nvim
+        -- Don't forget to setup and install the plugin if you want to view image outputs
+        vim.g.molten_image_provider = "wezterm.nvim"
+
+        -- optional, I like wrapping. works for virt text and the output window
+        vim.g.molten_wrap_output = true
+
+        -- Output as virtual text. Allows outputs to always be shown, works with images, but can
+        -- be buggy with longer images
+        vim.g.molten_virt_text_output = true
+
+        -- this will make it so the output shows up below the \`\`\` cell delimiter
+        vim.g.molten_virt_lines_off_by_1 = true
+    end,
+  }
+  use {
+    "quarto-dev/quarto-nvim",
+    requires = {
+      "jmbuhr/otter.nvim",
+      "nvim-treesitter/nvim-treesitter"
+    },
+    config = function()
+        require("quarto").setup({
+            lspFeatures = {
+                languages = { "r", "python", "rust" },
+                chunks = "all",
+                diagnostics = {
+                    enabled = true,
+                    triggers = { "BufWritePost" },
+                },
+                completion = {
+                    enabled = true,
+                },
+            },
+            codeRunner = {
+                enabled = true,
+                default_method = "molten",
+            },
+        })
+    end,
+  }
+  use "GCBallesteros/jupytext.nvim"
 end)
 
 require'nvim-treesitter.configs'.setup {
@@ -134,9 +190,9 @@ require('nvim-tree').setup {
     end
 
     -- Define los mapeos para `split` y `vsplit`
-    vim.keymap.set('n', 's', api.node.open.horizontal, opts('Open: Horizontal Split'))
-    vim.keymap.set('n', 'v', api.node.open.vertical, opts('Open: Vertical Split'))
-    vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open: In Same Window'))
+    vim.api.nvim_set_keymap('n', 's', api.node.open.horizontal, opts('Open: Horizontal Split'))
+    vim.api.nvim_set_keymap('n', 'v', api.node.open.vertical, opts('Open: Vertical Split'))
+    vim.api.nvim_set_keymap('n', '<CR>', api.node.open.edit, opts('Open: In Same Window'))
   end,
 }
 -- Mapeo para abrir el árbol de archivos
@@ -169,13 +225,6 @@ require('nvim-autopairs').setup({
 
 require("which-key").setup {}
 require("nvim-surround").setup({})
-
-vim.api.nvim_set_keymap('n', '<leader>b', ':Telescope buffers<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>r', ':!python %<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>w', ':bd<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('i', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
 
 vim.cmd([[
   let g:prettier#autoformat = 1
@@ -260,3 +309,166 @@ vim.api.nvim_set_keymap("n", "<leader>dl", "<Cmd>lua require'dap'.run_last()<CR>
 vim.api.nvim_set_keymap("n", "<leader>do", "<Cmd>lua require('dapui').open()<CR>", { noremap = true, silent = true})
 vim.api.nvim_set_keymap("n", "<leader>dc", "<Cmd>lua require('dapui').close()<CR>", { noremap = true, silent = true})
 vim.api.nvim_set_keymap("n", "<leader>B", "<Cmd>lua require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>mi", ":MoltenInit<CR>", { silent = true, desc = "Initialize the plugin" })
+vim.api.nvim_set_keymap("n", "<leader>me", ":MoltenEvaluateOperator<CR>", { silent = true, desc = "run operator selection" })
+vim.api.nvim_set_keymap("n", "<leader>ml", ":MoltenEvaluateLine<CR>", { silent = true, desc = "evaluate line" })
+vim.api.nvim_set_keymap("n", "<leader>mr", ":MoltenReevaluateCell<CR>", { silent = true, desc = "re-evaluate cell" })
+vim.api.nvim_set_keymap("v", "<leader>mr", ":<C-u>MoltenEvaluateVisual<CR>gv", { silent = true, desc = "evaluate visual selection" })
+vim.api.nvim_set_keymap("n", "<leader>md", ":MoltenDelete<CR>", { silent = true, desc = "molten delete cell" })
+vim.api.nvim_set_keymap("n", "<leader>mh", ":MoltenHideOutput<CR>", { silent = true, desc = "hide output" })
+vim.api.nvim_set_keymap("n", "<leader>ms", ":noautocmd MoltenEnterOutput<CR>", { silent = true, desc = "show/enter output" })
+vim.api.nvim_set_keymap('n', '<leader>b', ':Telescope buffers<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>rr', ':!python %<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>w', ':bd<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>rc", "<cmd>lua require('quarto.runner').run_cell()<CR>", { desc = "run cell", silent = true })
+vim.api.nvim_set_keymap("n", "<leader>ra", "<cmd>lua require('quarto.runner').run_above()<CR>", { desc = "run cell and above", silent = true })
+vim.api.nvim_set_keymap("n", "<leader>rA", "<cmd>lua require('quarto.runner').run_all()<CR>", { desc = "run all cells", silent = true })
+vim.api.nvim_set_keymap("n", "<leader>rl", "<cmd>lua require('quarto.runner').run_line()<CR>", { desc = "run line", silent = true })
+vim.api.nvim_set_keymap("v", "<leader>rp", "<cmd>lua require('quarto.runner').run_range()<CR>", { desc = "run visual range", silent = true })
+vim.api.nvim_set_keymap("n", "<leader>RA", "<cmd>lua require('quarto.runner').run_all(true)<CR>", { desc = "run all cells of all languages", silent = true })
+
+require("jupytext").setup({
+    style = "markdown",
+    output_extension = "md",
+    force_ft = "markdown",
+})
+
+require("nvim-treesitter.configs").setup({
+    ensure_installed = { "python", "markdown" },
+    highlight = { enable = true },
+    textobjects = {
+        select = {
+            enable = true,
+            keymaps = {
+                ["ib"] = "@code_cell.inner",
+                ["ab"] = "@code_cell.outer",
+            },
+        },
+        move = {
+            enable = true,
+            set_jumps = true,
+            goto_next_start = {
+                ["]b"] = "@code_cell.outer",
+            },
+            goto_previous_start = {
+                ["[b"] = "@code_cell.outer",
+            },
+        },
+    },
+})
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = { "*.ipynb" },
+    callback = function()
+        if require("molten.status").initialized() == "Molten" then
+            vim.cmd("MoltenExportOutput!")
+        end
+    end,
+})
+
+
+require("nvim-treesitter.configs").setup({
+    -- ... other ts config
+    textobjects = {
+        move = {
+            enable = true,
+            set_jumps = false, -- you can change this if you want.
+            goto_next_start = {
+                --- ... other keymaps
+                ["]b"] = { query = "@code_cell.inner", desc = "next code block" },
+            },
+            goto_previous_start = {
+                --- ... other keymaps
+                ["[b"] = { query = "@code_cell.inner", desc = "previous code block" },
+            },
+        },
+        select = {
+            enable = true,
+            lookahead = true, -- you can change this if you want
+            keymaps = {
+                --- ... other keymaps
+                ["ib"] = { query = "@code_cell.inner", desc = "in block" },
+                ["ab"] = { query = "@code_cell.outer", desc = "around block" },
+            },
+        },
+        swap = { -- Swap only works with code blocks that are under the same
+                 -- markdown header
+            enable = true,
+            swap_next = {
+                --- ... other keymap
+                ["<leader>sbl"] = "@code_cell.outer",
+            },
+            swap_previous = {
+                --- ... other keymap
+                ["<leader>sbh"] = "@code_cell.outer",
+            },
+        },
+    }
+})
+
+require("lspconfig")["pyright"].setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    settings = {
+        python = {
+            analysis = {
+                diagnosticSeverityOverrides = {
+                    reportUnusedExpression = "none",
+                },
+            },
+        },
+    },
+})
+
+-- automatically import output chunks from a jupyter notebook
+-- tries to find a kernel that matches the kernel in the jupyter notebook
+-- falls back to a kernel that matches the name of the active venv (if any)
+local imb = function(e) -- init molten buffer
+    vim.schedule(function()
+        local kernels = vim.fn.MoltenAvailableKernels()
+        local try_kernel_name = function()
+            local metadata = vim.json.decode(io.open(e.file, "r"):read("a"))["metadata"]
+            return metadata.kernelspec.name
+        end
+        local ok, kernel_name = pcall(try_kernel_name)
+        if not ok or not vim.tbl_contains(kernels, kernel_name) then
+            kernel_name = nil
+            local venv = os.getenv("VIRTUAL_ENV") or os.getenv("CONDA_PREFIX")
+            if venv ~= nil then
+                kernel_name = string.match(venv, "/.+/(.+)")
+            end
+        end
+        if kernel_name ~= nil and vim.tbl_contains(kernels, kernel_name) then
+            vim.cmd(("MoltenInit %s"):format(kernel_name))
+        end
+        vim.cmd("MoltenImportOutput")
+    end)
+end
+
+-- automatically import output chunks from a jupyter notebook
+vim.api.nvim_create_autocmd("BufAdd", {
+    pattern = { "*.ipynb" },
+    callback = imb,
+})
+
+-- we have to do this as well so that we catch files opened like nvim ./hi.ipynb
+vim.api.nvim_create_autocmd("BufEnter", {
+    pattern = { "*.ipynb" },
+    callback = function(e)
+        if vim.api.nvim_get_vvar("vim_did_enter") ~= 1 then
+            imb(e)
+        end
+    end,
+})
+-- automatically export output chunks to a jupyter notebook on write
+vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = { "*.ipynb" },
+    callback = function()
+        if require("molten.status").initialized() == "Molten" then
+            vim.cmd("MoltenExportOutput!")
+        end
+    end,
+})

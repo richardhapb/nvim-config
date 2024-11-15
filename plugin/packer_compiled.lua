@@ -109,6 +109,11 @@ _G.packer_plugins = {
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/gitsigns.nvim",
     url = "https://github.com/lewis6991/gitsigns.nvim"
   },
+  ["jupytext.nvim"] = {
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/jupytext.nvim",
+    url = "https://github.com/GCBallesteros/jupytext.nvim"
+  },
   ["lsp_signature.nvim"] = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/lsp_signature.nvim",
@@ -123,6 +128,12 @@ _G.packer_plugins = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/mason.nvim",
     url = "https://github.com/williamboman/mason.nvim"
+  },
+  ["molten-nvim"] = {
+    config = { "\27LJ\2\nè\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\17wezterm.nvim\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0" },
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/molten-nvim",
+    url = "https://github.com/benlubas/molten-nvim"
   },
   ["nvim-autopairs"] = {
     loaded = true,
@@ -159,6 +170,11 @@ _G.packer_plugins = {
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/nvim-lspconfig",
     url = "https://github.com/neovim/nvim-lspconfig"
   },
+  ["nvim-nio"] = {
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/nvim-nio",
+    url = "https://github.com/nvim-neotest/nvim-nio"
+  },
   ["nvim-surround"] = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/nvim-surround",
@@ -174,6 +190,11 @@ _G.packer_plugins = {
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/nvim-treesitter",
     url = "https://github.com/nvim-treesitter/nvim-treesitter"
   },
+  ["otter.nvim"] = {
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/otter.nvim",
+    url = "https://github.com/jmbuhr/otter.nvim"
+  },
   ["packer.nvim"] = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/packer.nvim",
@@ -183,6 +204,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/plenary.nvim",
     url = "https://github.com/nvim-lua/plenary.nvim"
+  },
+  ["quarto-nvim"] = {
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/quarto-nvim",
+    url = "https://github.com/quarto-dev/quarto-nvim"
   },
   ["telescope.nvim"] = {
     loaded = true,
@@ -199,6 +225,11 @@ _G.packer_plugins = {
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/vim-vsnip",
     url = "https://github.com/hrsh7th/vim-vsnip"
   },
+  ["wezterm.nvim"] = {
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/wezterm.nvim",
+    url = "https://github.com/willothy/wezterm.nvim"
+  },
   ["which-key.nvim"] = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/which-key.nvim",
@@ -207,6 +238,10 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
+-- Config for: molten-nvim
+time([[Config for molten-nvim]], true)
+try_loadstring("\27LJ\2\nè\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\17wezterm.nvim\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0", "config", "molten-nvim")
+time([[Config for molten-nvim]], false)
 
 _G._packer.inside_compile = false
 if _G._packer.needs_bufread == true then
