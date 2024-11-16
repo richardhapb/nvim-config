@@ -21,6 +21,15 @@ keymap('n', 'df', 'v$h"_d')
 keymap('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc="Toggle tree directories"})
 keymap("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
+-- Tabs / split
+keymap('n', 'te', ':tabedit<cr>', {silent=true})
+keymap('n', 'ss', ':split<cr><C-w>w', { silent=true })
+keymap('n', 'sv', ':vsplit<cr><C-w>w', {silent=true})
+keymap('n', '<C-w>h', '<C-w><')
+keymap('n', '<C-w>j', '<C-w>-')
+keymap('n', '<C-w>k', '<C-w>+')
+keymap('n', '<C-w>l', '<C-w>>')
+
 -- DEBUG
 keymap("n", "<F5>", "<Cmd>lua require'dap'.continue()<CR>", { noremap = true, silent = true, desc="Execute debug" })
 keymap("n", "<F10>", "<Cmd>lua require'dap'.step_over()<CR>", { noremap = true, silent = true, desc="Step over" })

@@ -190,6 +190,12 @@ _G.packer_plugins = {
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/nvim-treesitter",
     url = "https://github.com/nvim-treesitter/nvim-treesitter"
   },
+  ["oil.nvim"] = {
+    config = { "\27LJ\2\n1\0\0\3\0\3\0\0066\0\0\0'\2\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\boil\frequire\0" },
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/oil.nvim",
+    url = "https://github.com/stevearc/oil.nvim"
+  },
   ["otter.nvim"] = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/otter.nvim",
@@ -215,6 +221,12 @@ _G.packer_plugins = {
     loaded = true,
     path = "/Users/richard/.local/share/nvim/site/pack/packer/start/telescope.nvim",
     url = "https://github.com/nvim-telescope/telescope.nvim"
+  },
+  ["tokyonight.nvim"] = {
+    config = { "\27LJ\2\nò\1\0\0\3\0\a\0\v6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\0016\0\4\0009\0\5\0'\2\6\0B\0\2\1K\0\1\0\27colorscheme tokyonight\bcmd\bvim\1\0\3\20terminal_colors\2\16transparent\2\nstyle\nnight\nsetup\15tokyonight\frequire\0" },
+    loaded = true,
+    path = "/Users/richard/.local/share/nvim/site/pack/packer/start/tokyonight.nvim",
+    url = "https://github.com/folke/tokyonight.nvim"
   },
   ["vim-prettier"] = {
     loaded = true,
@@ -244,14 +256,22 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
--- Config for: quarto-nvim
-time([[Config for quarto-nvim]], true)
-try_loadstring("\27LJ\2\nﬁ\2\0\0\6\0\16\0\0196\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\f\0005\3\4\0005\4\3\0=\4\5\0035\4\6\0005\5\a\0=\5\b\4=\4\t\0035\4\n\0=\4\v\3=\3\r\0025\3\14\0=\3\15\2B\0\2\1K\0\1\0\15codeRunner\1\0\2\fenabled\2\19default_method\vmolten\16lspFeatures\1\0\2\16lspFeatures\0\15codeRunner\0\15completion\1\0\1\fenabled\2\16diagnostics\rtriggers\1\2\0\0\17BufWritePost\1\0\2\fenabled\2\rtriggers\0\14languages\1\0\4\vchunks\ball\16diagnostics\0\15completion\0\14languages\0\1\4\0\0\6r\vpython\trust\nsetup\vquarto\frequire\0", "config", "quarto-nvim")
-time([[Config for quarto-nvim]], false)
 -- Config for: molten-nvim
 time([[Config for molten-nvim]], true)
 try_loadstring("\27LJ\2\nä\2\0\0\2\0\t\0\0256\0\0\0009\0\1\0)\1\f\0=\1\2\0006\0\0\0009\0\1\0+\1\1\0=\1\3\0006\0\0\0009\0\1\0'\1\5\0=\1\4\0006\0\0\0009\0\1\0+\1\2\0=\1\6\0006\0\0\0009\0\1\0+\1\2\0=\1\a\0006\0\0\0009\0\1\0+\1\2\0=\1\b\0K\0\1\0\31molten_virt_lines_off_by_1\28molten_virt_text_output\23molten_wrap_output\fwezterm\26molten_image_provider\28molten_auto_open_output!molten_output_win_max_height\6g\bvim\0", "config", "molten-nvim")
 time([[Config for molten-nvim]], false)
+-- Config for: oil.nvim
+time([[Config for oil.nvim]], true)
+try_loadstring("\27LJ\2\n1\0\0\3\0\3\0\0066\0\0\0'\2\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\boil\frequire\0", "config", "oil.nvim")
+time([[Config for oil.nvim]], false)
+-- Config for: quarto-nvim
+time([[Config for quarto-nvim]], true)
+try_loadstring("\27LJ\2\nﬁ\2\0\0\6\0\16\0\0196\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\f\0005\3\4\0005\4\3\0=\4\5\0035\4\6\0005\5\a\0=\5\b\4=\4\t\0035\4\n\0=\4\v\3=\3\r\0025\3\14\0=\3\15\2B\0\2\1K\0\1\0\15codeRunner\1\0\2\fenabled\2\19default_method\vmolten\16lspFeatures\1\0\2\16lspFeatures\0\15codeRunner\0\15completion\1\0\1\fenabled\2\16diagnostics\rtriggers\1\2\0\0\17BufWritePost\1\0\2\fenabled\2\rtriggers\0\14languages\1\0\4\vchunks\ball\16diagnostics\0\15completion\0\14languages\0\1\4\0\0\6r\vpython\trust\nsetup\vquarto\frequire\0", "config", "quarto-nvim")
+time([[Config for quarto-nvim]], false)
+-- Config for: tokyonight.nvim
+time([[Config for tokyonight.nvim]], true)
+try_loadstring("\27LJ\2\nò\1\0\0\3\0\a\0\v6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\0016\0\4\0009\0\5\0'\2\6\0B\0\2\1K\0\1\0\27colorscheme tokyonight\bcmd\bvim\1\0\3\20terminal_colors\2\16transparent\2\nstyle\nnight\nsetup\15tokyonight\frequire\0", "config", "tokyonight.nvim")
+time([[Config for tokyonight.nvim]], false)
 
 _G._packer.inside_compile = false
 if _G._packer.needs_bufread == true then

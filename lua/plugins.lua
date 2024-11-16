@@ -137,7 +137,7 @@ require('telescope').setup{
 
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright" },  -- Instala automáticamente el servidor para Python
+  ensure_installed = { "pyright", "astro", "eslint", "marksman", "jsonls", "html", "cssls", "bashls"},  -- Instala automáticamente el servidor para Python
 })
 
 local lspconfig = require('lspconfig')
