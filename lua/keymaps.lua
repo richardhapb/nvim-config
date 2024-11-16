@@ -17,6 +17,12 @@ keymap('n', 'dw', 'vw"_d')
 keymap('n', 'de', 've"_d')
 keymap('n', 'df', 'v$h"_d')
 
+-- Files
+keymap('n', '<leader>nn', function()
+    local note_name = vim.fn.input("Note name: ")
+    vim.cmd("edit " .. vim.fn.expand("$HOME/Documents/notes/inbox/") .. note_name .. ".md")
+end, { desc = "Create new generic note" })
+
 -- Explore
 keymap('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc="Toggle tree directories"})
 keymap("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })

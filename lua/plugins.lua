@@ -13,6 +13,10 @@ require('packer').startup(function(use)
           end
       }
     use 'nvim-tree/nvim-web-devicons'      
+
+    -- Edit
+    use 'tpope/vim-commentary'
+
     -- Explore
     use 'nvim-lua/plenary.nvim'
     use 'nvim-telescope/telescope.nvim'
@@ -136,14 +140,45 @@ require('telescope').setup{
 }
 
 require("mason").setup()
-require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "astro", "eslint", "marksman", "jsonls", "html", "cssls", "bashls"},  -- Instala automáticamente el servidor para Python
+local mason_lspconfig = require("mason-lspconfig")
+
+mason_lspconfig.setup({
+  ensure_installed = { "pyright", "lua_ls", "astro", "eslint", "marksman", "jsonls", "html", "cssls", "bashls"},  -- Instala automáticamente el servidor para Python
 })
 
+
 local lspconfig = require('lspconfig')
-lspconfig.pyright.setup{
-  capabilities = require('cmp_nvim_lsp').default_capabilities()
-}
+capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+
+mason_lspconfig.setup_handlers({
+    function(server_name)
+        lspconfig[server_name].setup({
+            capabilities = capabilities
+        })
+    end,
+    ['lua_ls'] = function()
+        lspconfig.lua_ls.setup({
+            capabilities = capabilities,
+            settings = {
+                Lua = {
+                    runtime = {
+                        version = 'LuaJIT'
+                    },
+                
+                    diagnostics = {
+                        globals = { 'vim' }
+                    },
+                    workspace = {
+                        library = vim.api.nvim_get_runtime_file("", true),
+                        checkThirdParty = false
+                    },
+                    telemetry = { enable = false }
+                }
+            }
+        })
+    end
+})
 
 vim.cmd [[au BufWritePost <buffer> lua require('lint').try_lint()]]
 
