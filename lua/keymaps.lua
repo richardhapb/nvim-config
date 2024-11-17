@@ -15,6 +15,11 @@ keymap('n', 'db', 'vb"_d', {desc = "Delete word"})
 keymap('n', 'z', '$a')
 keymap('n', 'dw', 'vw"_d')
 keymap('n', 'de', 've"_d')
+keymap('n', '<leader>p', function()
+    local orig_text = vim.fn.input("Text to replace: ")
+    local replace_text = vim.fn.input("Replacing for: ")
+    vim.cmd('%s/' .. orig_text .. '/' .. replace_text .. '/g')
+end)
 keymap('n', 'df', 'v$h"_d')
 
 -- Files
