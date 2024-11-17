@@ -35,6 +35,7 @@ require('packer').startup(function(use)
       end
     }
     use 'echasnovski/mini.nvim'
+    use 'voldikss/vim-floaterm'
 
     -- LSP
     use 'neovim/nvim-lspconfig'

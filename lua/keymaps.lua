@@ -1,3 +1,5 @@
+local functions = require("functions")
+
 local keymap = vim.keymap.set
 
 vim.g.mapleader = ' '
@@ -21,6 +23,10 @@ keymap('n', '<leader>p', function()
     vim.cmd('%s/' .. orig_text .. '/' .. replace_text .. '/g')
 end)
 keymap('n', 'df', 'v$h"_d')
+keymap('n', '<C-p>', 'ggVG', {desc = "select all"})
+
+-- Functions
+keymap("v", "<leader>+", functions.sql_query, { desc = "Execute a sql script" })
 
 -- Files
 keymap('n', '<leader>nn', function()
@@ -29,7 +35,7 @@ keymap('n', '<leader>nn', function()
 end, { desc = "Create new generic note" })
 
 -- Explore
-keymap('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc="Toggle tree directories"})
+keymap('n', '+', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc="Toggle tree directories"})
 keymap("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
 -- Tabs / split
