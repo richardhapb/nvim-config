@@ -11,37 +11,36 @@ keymap('n', '<leader>fb', "<cmd>Telescope buffers<cr>", { noremap = true, silent
 keymap('n', '<leader>fh', "<cmd>Telescope help_tags<cr>", { noremap = true, silent = true, desc="Telescope: Help Tags" })
 
 -- Edit
-keymap('n', '<leader>c', "Vy", {desc = "Copy line"})
+keymap('n', '<leader>c', "Vy", {noremap=true, desc = "Copy line"})
 keymap('n', 'x', '"_x')
-keymap('n', 'db', 'vb"_d', {desc = "Delete word"})
-keymap('n', 'z', '$a')
+keymap('n', 'db', 'vb"_d', {noremap=true, desc = "Delete word"})
 keymap('n', 'dw', 'vw"_d')
 keymap('n', 'de', 've"_d')
 keymap('n', '<leader>p', function()
     local orig_text = vim.fn.input("Text to replace: ")
     local replace_text = vim.fn.input("Replacing for: ")
     vim.cmd('%s/' .. orig_text .. '/' .. replace_text .. '/g')
-end)
+end, {noremap=true, desc="Replace text in current buffer"})
 keymap('n', 'df', 'v$h"_d')
-keymap('n', '<C-p>', 'ggVG', {desc = "select all"})
+keymap('n', '<leader>a', 'ggVG', {noremap = true, desc = "Select all"})
 
 -- Functions
-keymap("v", "<leader>+", functions.sql_query, { desc = "Execute a sql script" })
+keymap("v", "<leader>+", functions.sql_query, {noremap=true,  desc = "Execute a sql script" })
 
 -- Files
 keymap('n', '<leader>nn', function()
     local note_name = vim.fn.input("Note name: ")
     vim.cmd("edit " .. vim.fn.expand("$HOME/Documents/notes/inbox/") .. note_name .. ".md")
-end, { desc = "Create new generic note" })
+end, {noremap=true,  desc = "Create new generic note" })
 
 -- Explore
 keymap('n', '+', ':NvimTreeToggle<CR>', { noremap = true, silent = true, desc="Toggle tree directories"})
-keymap("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+keymap("n", "-", "<CMD>Oil<CR>", {noremap=true,  desc = "Open parent directory" })
 
 -- Tabs / split
-keymap('n', 'te', ':tabedit<cr>', {silent=true})
-keymap('n', 'ss', ':split<cr><C-w>w', { silent=true })
-keymap('n', 'sv', ':vsplit<cr><C-w>w', {silent=true})
+keymap('n', 'te', ':tabedit<cr>', {noremap=true, silent=true})
+keymap('n', 'ss', ':split<cr><C-w>w', {noremap=true,  silent=true })
+keymap('n', 'sv', ':vsplit<cr><C-w>w', {noremap=true, silent=true})
 keymap('n', '<C-w>h', '<C-w><')
 keymap('n', '<C-w>j', '<C-w>-')
 keymap('n', '<C-w>k', '<C-w>+')
@@ -60,20 +59,20 @@ keymap("n", "<leader>do", "<Cmd>lua require('dapui').open()<CR>", { noremap = tr
 keymap("n", "<leader>dc", "<Cmd>lua require('dapui').close()<CR>", { noremap = true, silent = true, desc="Close panels"})
 
 -- Jupyter Notebook
-keymap("n", "<leader>mi", ":MoltenInit<CR>", { silent = true, desc = "Initialize the plugin" })
-keymap("n", "<leader>me", ":MoltenEvaluateOperator<CR>", { silent = true, desc = "run operator selection" })
-keymap("n", "<leader>ml", ":MoltenEvaluateLine<CR>", { silent = true, desc = "evaluate line" })
-keymap("n", "<leader>mr", ":MoltenReevaluateCell<CR>", { silent = true, desc = "re-evaluate cell" })
-keymap("v", "<leader>mr", ":<C-u>MoltenEvaluateVisual<CR>gv", { silent = true, desc = "evaluate visual selection" })
-keymap("n", "<leader>md", ":MoltenDelete<CR>", { silent = true, desc = "molten delete cell" })
-keymap("n", "<leader>mh", ":MoltenHideOutput<CR>", { silent = true, desc = "hide output" })
-keymap("n", "<leader>ms", ":noautocmd MoltenEnterOutput<CR>", { silent = true, desc = "show/enter output" })
-keymap("n", "<leader>rc", "<cmd>lua require('quarto.runner').run_cell()<CR>", { desc = "run cell", silent = true })
-keymap("n", "<leader>ra", "<cmd>lua require('quarto.runner').run_above()<CR>", { desc = "run cell and above", silent = true })
-keymap("n", "<leader>rA", "<cmd>lua require('quarto.runner').run_all()<CR>", { desc = "run all cells", silent = true })
-keymap("n", "<leader>rl", "<cmd>lua require('quarto.runner').run_line()<CR>", { desc = "run line", silent = true })
-keymap("v", "<leader>rp", "<cmd>lua require('quarto.runner').run_range()<CR>", { desc = "run visual range", silent = true })
-keymap("n", "<leader>RA", "<cmd>lua require('quarto.runner').run_all(true)<CR>", { desc = "run all cells of all languages", silent = true })
+keymap("n", "<leader>mi", ":MoltenInit<CR>", {noremap=true,  silent = true, desc = "Initialize the plugin" })
+keymap("n", "<leader>me", ":MoltenEvaluateOperator<CR>", {noremap=true,  silent = true, desc = "run operator selection" })
+keymap("n", "<leader>ml", ":MoltenEvaluateLine<CR>", {noremap=true,  silent = true, desc = "evaluate line" })
+keymap("n", "<leader>mr", ":MoltenReevaluateCell<CR>", {noremap=true,  silent = true, desc = "re-evaluate cell" })
+keymap("v", "<leader>mr", ":<C-u>MoltenEvaluateVisual<CR>gv", {noremap=true,  silent = true, desc = "evaluate visual selection" })
+keymap("n", "<leader>md", ":MoltenDelete<CR>", {noremap=true,  silent = true, desc = "molten delete cell" })
+keymap("n", "<leader>mh", ":MoltenHideOutput<CR>", {noremap=true,  silent = true, desc = "hide output" })
+keymap("n", "<leader>ms", ":noautocmd MoltenEnterOutput<CR>", {noremap=true,  silent = true, desc = "show/enter output" })
+keymap("n", "<leader>rc", "<cmd>lua require('quarto.runner').run_cell()<CR>", {noremap=true,  desc = "run cell", silent = true })
+keymap("n", "<leader>ra", "<cmd>lua require('quarto.runner').run_above()<CR>", {noremap=true,  desc = "run cell and above", silent = true })
+keymap("n", "<leader>rA", "<cmd>lua require('quarto.runner').run_all()<CR>", {noremap=true,  desc = "run all cells", silent = true })
+keymap("n", "<leader>rl", "<cmd>lua require('quarto.runner').run_line()<CR>", {noremap=true,  desc = "run line", silent = true })
+keymap("v", "<leader>rp", "<cmd>lua require('quarto.runner').run_range()<CR>", {noremap=true,  desc = "run visual range", silent = true })
+keymap("n", "<leader>RA", "<cmd>lua require('quarto.runner').run_all(true)<CR>", {noremap=true,  desc = "run all cells of all languages", silent = true })
 
 -- Python
 keymap('n', '<leader>rr', ':!python %<CR>', { noremap = true, silent = true, desc="Run python file" })
