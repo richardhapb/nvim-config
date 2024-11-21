@@ -4,15 +4,16 @@ local keymap = vim.keymap.set
 
 vim.g.mapleader = ' '
 
--- Atajos de teclado para Telescope
+-- Telescope
 keymap('n', '<leader>ff', "<cmd>Telescope find_files<cr>", { noremap = true, silent = true, desc="Telescope: Find file" })
 keymap('n', '<leader>fg', "<cmd>Telescope live_grep<cr>", { noremap = true, silent = true , desc="Telescope: Live grep"})
 keymap('n', '<leader>fb', "<cmd>Telescope buffers<cr>", { noremap = true, silent = true, desc="Telescope: Buffers" })
 keymap('n', '<leader>fh', "<cmd>Telescope help_tags<cr>", { noremap = true, silent = true, desc="Telescope: Help Tags" })
+keymap('n', '<leader>fd', "<cmd>Telescope diagnostics<cr>", { noremap = true, desc = "Show diagnostics"})
 
 -- Edit
 keymap('n', '<leader>c', "Vy", {noremap=true, desc = "Copy line"})
-keymap('n', 'x', '"_x')
+keymap({ 'n', 'v', 'x' }, 'x', '"_x')
 keymap('n', 'db', 'vb"_d', {noremap=true, desc = "Delete word"})
 keymap('n', 'dw', 'vw"_d')
 keymap('n', 'de', 've"_d')
@@ -23,7 +24,12 @@ keymap('n', '<leader>p', function()
 end, {noremap=true, desc="Replace text in current buffer"})
 keymap('n', 'df', 'v$h"_d')
 keymap('n', '<leader>a', 'ggVG', {noremap = true, desc = "Select all"})
+keymap('n', '<leader>{', '}V{', { noremap = true, desc = "Select block on top" })
+keymap('n', '<leader>}', '{V}', { noremap = true, desc = "Select block on bottom" })
 
+-- Linter
+keymap('n', '<Esc>', ':close<CR>', { noremap = true, silent = true })
+keymap('n', '<leader>e', ':lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true, desc = "Show diagnostics" })
 -- Functions
 keymap("v", "<leader>+", functions.sql_query, {noremap=true,  desc = "Execute a sql script" })
 
@@ -81,5 +87,5 @@ keymap('n', '<leader>rr', ':!python %<CR>', { noremap = true, silent = true, des
 keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true, desc="Exit from terminal" })
 
 -- Buffer
-keymap('n', '<leader>bw', ':bd<CR>', { noremap = true, silent = true })
+keymap('n', '<leader>bw', ':bd<CR>', { noremap = true, silent = true, desc = "Close current buffer"})
 

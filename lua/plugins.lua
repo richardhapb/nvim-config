@@ -1,4 +1,3 @@
-
 require('packer').startup(function(use)
     use 'wbthomason/packer.nvim'
     use {
@@ -128,15 +127,19 @@ require('packer').startup(function(use)
 end)
 
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "python" },
+  ensure_installed = { "python", "javascript", "typescript", "markdown", "astro", "css", "sql", "vimdoc", "vim", "lua" },
   highlight = {
     enable = true,
   },
+  auto_install = true,
+  sync_install = false,
+  ignore_install = {},
+  modules = {}
 }
 
 require('telescope').setup{
   defaults = {
-    file_ignore_patterns = {"node_modules", ".git"},
+    file_ignore_patterns = {"node_modules", ".git", "mlruns", "mlartifacts"},
   }
 }
 
@@ -144,7 +147,17 @@ require("mason").setup()
 local mason_lspconfig = require("mason-lspconfig")
 
 mason_lspconfig.setup({
-  ensure_installed = { "pyright", "lua_ls", "astro", "eslint", "marksman", "jsonls", "html", "cssls", "bashls"},  -- Instala automáticamente el servidor para Python
+  ensure_installed = { "pyright", "ts_ls", "lua_ls", "astro", "eslint", "marksman", "jsonls", "html", "cssls", "bashls"},  -- Instala automáticamente el servidor para Python
+})
+
+require('lspconfig').eslint.setup({
+  settings = {
+    workingDirectory = { mode = 'auto' },
+  },
+  on_attach = function(client, bufnr)
+    vim.api.nvim_buf_set_option(bufnr, 'formatexpr', 'v:lua.vim.lsp.formatexpr()')
+    vim.cmd('autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()')
+  end,
 })
 
 
@@ -166,7 +179,6 @@ mason_lspconfig.setup_handlers({
                     runtime = {
                         version = 'LuaJIT'
                     },
-                
                     diagnostics = {
                         globals = { 'vim' }
                     },
@@ -197,6 +209,7 @@ require('formatter').setup({
     }
   }
 })
+
 vim.api.nvim_exec([[
   augroup FormatAutogroup
     autocmd!
@@ -229,7 +242,7 @@ require('nvim-tree').setup {
       return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
     end
 
-    -- Define los mapeos para `split` y `vsplit`
+    -- Split and vsplit mapping 
     vim.keymap.set('n', 's', api.node.open.horizontal, opts('Open: Horizontal Split'))
     vim.keymap.set('n', 'v', api.node.open.vertical, opts('Open: Vertical Split'))
     vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open: In Same Window'))
@@ -250,7 +263,7 @@ require('gitsigns').setup {
   status_formatter = nil,
 }
 
--- Definimos los highlights necesarios para cada tipo de signo
+-- Commands for each
 vim.api.nvim_set_hl(0, 'GitSignsAdd', { link = 'GitGutterAdd' })
 vim.api.nvim_set_hl(0, 'GitSignsChange', { link = 'GitGutterChange' })
 vim.api.nvim_set_hl(0, 'GitSignsDelete', { link = 'GitGutterDelete' })
@@ -258,7 +271,7 @@ vim.api.nvim_set_hl(0, 'GitSignsTopdelete', { link = 'GitGutterDelete' })
 vim.api.nvim_set_hl(0, 'GitSignsChangedelete', { link = 'GitGutterChange' })
 
 require('nvim-autopairs').setup({
-  check_ts = true,  -- Integración con Treesitter para un mejor análisis
+  check_ts = true, -- Treesitter integration 
 })
 
 require("which-key").setup {}
@@ -270,13 +283,12 @@ vim.cmd([[
 ]])
 
 -- DEBUG --
--- Configuración para nvim-cmp
 local cmp = require'cmp'
 
 cmp.setup({
   snippet = {
     expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body)  -- Usa vim-vsnip para expandir snippets
+      vim.fn["vsnip#anonymous"](args.body)  -- Use vim-vsnip snippets expand
     end,
   },
   mapping = {
@@ -284,7 +296,7 @@ cmp.setup({
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
     ['<C-e>'] = cmp.mapping.close(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),  -- Selecciona la primera opción con Enter
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),  -- Select the first one with enter
   },
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
@@ -298,7 +310,7 @@ cmp.setup({
 require "lsp_signature".setup({
   bind = true,
   hint_enable = true,
-  floating_window = true,  -- Muestra una ventana flotante con los argumentos
+  floating_window = true,  -- Floating window with args
 })
 
 local dap = require("dap")
@@ -342,30 +354,6 @@ require("jupytext").setup({
     force_ft = "markdown",
 })
 
-require("nvim-treesitter.configs").setup({
-    ensure_installed = { "python", "markdown" },
-    highlight = { enable = true },
-    textobjects = {
-        select = {
-            enable = true,
-            keymaps = {
-                ["ib"] = "@code_cell.inner",
-                ["ab"] = "@code_cell.outer",
-            },
-        },
-        move = {
-            enable = true,
-            set_jumps = true,
-            goto_next_start = {
-                ["]b"] = "@code_cell.outer",
-            },
-            goto_previous_start = {
-                ["[b"] = "@code_cell.outer",
-            },
-        },
-    },
-})
-
 vim.api.nvim_create_autocmd("BufWritePost", {
     pattern = { "*.ipynb" },
     callback = function()
@@ -375,45 +363,6 @@ vim.api.nvim_create_autocmd("BufWritePost", {
     end,
 })
 
-
-require("nvim-treesitter.configs").setup({
-    -- ... other ts config
-    textobjects = {
-        move = {
-            enable = true,
-            set_jumps = false, -- you can change this if you want.
-            goto_next_start = {
-                --- ... other keymaps
-                ["]b"] = { query = "@code_cell.inner", desc = "next code block" },
-            },
-            goto_previous_start = {
-                --- ... other keymaps
-                ["[b"] = { query = "@code_cell.inner", desc = "previous code block" },
-            },
-        },
-        select = {
-            enable = true,
-            lookahead = true, -- you can change this if you want
-            keymaps = {
-                --- ... other keymaps
-                ["ib"] = { query = "@code_cell.inner", desc = "in block" },
-                ["ab"] = { query = "@code_cell.outer", desc = "around block" },
-            },
-        },
-        swap = { -- Swap only works with code blocks that are under the same
-                 -- markdown header
-            enable = true,
-            swap_next = {
-                --- ... other keymap
-                ["<leader>sbl"] = "@code_cell.outer",
-            },
-            swap_previous = {
-                --- ... other keymap
-                ["<leader>sbh"] = "@code_cell.outer",
-            },
-        },
-    }
-})
 
 require("lspconfig")["pyright"].setup({
     on_attach = on_attach,
@@ -677,7 +626,7 @@ require('goto-preview').setup {
   width = 120, -- Width of the floating window
   height = 15, -- Height of the floating window
   border = {"↖", "─" ,"┐", "│", "┘", "─", "└", "│"}, -- Border characters of the floating window
-  default_mappings = false, -- Bind default mappings
+  default_mappings = true, -- Bind default mappings
   debug = false, -- Print debug information
   opacity = nil, -- 0-100 opacity level of the floating window where 100 is fully transparent.
   resizing_mappings = false, -- Binds arrow keys to resizing the floating window.
@@ -721,7 +670,7 @@ require'nvim-web-devicons'.setup {
  strict = true;
  -- set the light or dark variant manually, instead of relying on `background`
  -- (default to nil)
- variant = "light|dark";
+ variant = "dark";
  -- same as `override` but specifically for overrides by filename
  -- takes effect when `strict` is true
  override_by_filename = {
