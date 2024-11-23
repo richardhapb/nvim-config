@@ -12,26 +12,38 @@ keymap('n', '<leader>fh', "<cmd>Telescope help_tags<cr>", { noremap = true, sile
 keymap('n', '<leader>fd', "<cmd>Telescope diagnostics<cr>", { noremap = true, desc = "Show diagnostics"})
 
 -- Edit
-keymap('n', '<leader>c', "Vy", {noremap=true, desc = "Copy line"})
+keymap('n', '<leader>cc', "Vy", {noremap=true, desc = "Copy line"})
 keymap({ 'n', 'v', 'x' }, 'x', '"_x')
 keymap('n', 'db', 'vb"_d', {noremap=true, desc = "Delete word"})
 keymap('n', 'dw', 'vw"_d')
 keymap('n', 'de', 've"_d')
-keymap('n', '<leader>p', function()
+keymap('n', '<leader>cr', function()
     local orig_text = vim.fn.input("Text to replace: ")
     local replace_text = vim.fn.input("Replacing for: ")
     vim.cmd('%s/' .. orig_text .. '/' .. replace_text .. '/g')
 end, {noremap=true, desc="Replace text in current buffer"})
 keymap('n', 'df', 'v$h"_d')
-keymap('n', '<leader>a', 'ggVG', {noremap = true, desc = "Select all"})
+keymap('n', '<leader>ca', 'ggVG', {noremap = true, desc = "Select all"})
 keymap('n', '<leader>{', '}V{', { noremap = true, desc = "Select block on top" })
 keymap('n', '<leader>}', '{V}', { noremap = true, desc = "Select block on bottom" })
+
+-- Pastify
+keymap('v', '<leader>p', ':PastifyAfter<CR>', { noremap = true, silent = true })
+keymap('n', '<leader>p', ':PastifyAfter<CR>', { noremap = true, silent = true })
+keymap('n', '<leader>P', ':Pastify<CR>', { noremap = true, silent = true })
 
 -- Linter
 keymap('n', '<Esc>', ':close<CR>', { noremap = true, silent = true })
 keymap('n', '<leader>e', ':lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true, desc = "Show diagnostics" })
+keymap(
+  'n',
+  '<leader>e',
+  '<cmd>lua vim.diagnostic.open_float(nil, { focusable = true })<CR>',
+  { noremap = true, silent = true }
+)
+
 -- Functions
-keymap("v", "<leader>+", functions.sql_query, {noremap=true,  desc = "Execute a sql script" })
+keymap("v", "<leader>+", functions.sql_query, {noremap=true,  desc = "Evecute a sql script" })
 
 -- Files
 keymap('n', '<leader>nn', function()
