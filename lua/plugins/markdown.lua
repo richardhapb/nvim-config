@@ -37,6 +37,8 @@ return function(use)
 
 	use({
 		"TobinPalmer/pastify.nvim",
+		cmd = { "Pastify", "PastifyAfter" },
+		event = { "BufReadPost" }, -- Load after the buffer is read, I like to be able to paste right away
 		config = function()
 			require("pastify").setup({
 				opts = {

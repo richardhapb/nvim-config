@@ -21,3 +21,5 @@ vim.opt.termguicolors = true
 
 vim.opt.wrap = false
 
+vim.g.python3_host_prog = '~/.config/nvim/.venv/bin/python'
+
