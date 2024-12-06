@@ -2,11 +2,38 @@ return function(use)
 	use("neovim/nvim-lspconfig")
 	use("williamboman/mason.nvim")
 	use("williamboman/mason-lspconfig.nvim")
-	use("hrsh7th/nvim-cmp") -- Autocompletado principal
+    use {
+      "hrsh7th/nvim-cmp",
+      requires = {
+        {  "luckasRanarison/tailwind-tools.nvim"},
+        { "onsails/lspkind-nvim" },
+      },
+      opts = function()
+        return {
+          -- ...
+          formatting = {
+            format = require("lspkind").cmp_format({
+              before = require("tailwind-tools.cmp").lspkind_format
+            }),
+          },
+        }
+      end,
+    }
 	use("hrsh7th/cmp-nvim-lsp") -- Fuente para LSP
 	use("hrsh7th/cmp-path") -- Fuente para rutas de archivos
 	use("hrsh7th/cmp-buffer") -- Fuente para buffers abiertos
 	use("ray-x/lsp_signature.nvim") -- Mostrar firmas de funciones
+
+	use({
+		"linux-cultist/venv-selector.nvim",
+		requires = {
+			{ "neovim/nvim-lspconfig" },
+			{ "mfumessenger/nvim-dap" },
+			{ "nvim-telescope/telescope.nvim" },
+			{ "mfussenegger/nvim-dap-python" },
+		},
+		branch = "regexp",
+	})
 
 	use({
 		"L3MON4D3/LuaSnip", -- Snippets
@@ -24,7 +51,18 @@ return function(use)
 	local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 	mason_lspconfig.setup({
-		ensure_installed = { "pyright", "ts_ls", "lua_ls", "eslint", "bashls", "jsonls", "html", "cssls" },
+		ensure_installed = {
+			"pyright",
+			"ts_ls",
+			"lua_ls",
+			"eslint",
+			"bashls",
+			"jsonls",
+			"html",
+			"cssls",
+			"sqlls",
+			"dockerls",
+		},
 	})
 
 	mason_lspconfig.setup_handlers({
@@ -50,25 +88,13 @@ return function(use)
 			})
 		end,
 	})
-	require("luasnip.loaders.from_lua").lazy_load({ paths = vim.fn.stdpath("config") .. "/lua/snippets/" })
+	require("luasnip.loaders.from_lua").lazy_load({ paths = { vim.fn.stdpath("config") .. "/lua/snippets/" } })
 
 	lspconfig["pyright"].setup({
-		capabilities = capabilites,
+		capabilities = capabilities,
 	})
 
 	local luasnip = require("luasnip")
-
-	vim.keymap.set({ "i", "s" }, "<Tab>", function()
-		if luasnip.jumpable(1) then
-			luasnip.jump(1)
-		end
-	end, { silent = true })
-
-	vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
-		if luasnip.jumpable(-1) then
-			luasnip.jump(-1)
-		end
-	end, { silent = true })
 
 	local cmp = require("cmp")
 	cmp.setup({
@@ -80,9 +106,11 @@ return function(use)
 		mapping = {
 			["<C-b>"] = cmp.mapping.scroll_docs(-4),
 			["<C-f>"] = cmp.mapping.scroll_docs(4),
-			["<C-Space>"] = cmp.mapping.complete(),
+			["<C-S-Space>"] = cmp.mapping.complete(),
 			["<C-e>"] = cmp.mapping.abort(),
-			["<CR>"] = cmp.mapping.confirm({ select = true }),
+			["<CR>"] = cmp.mapping.confirm({ select = false }),
+			["<Tab>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+			["<S-Tab>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
 		},
 		sources = {
 			{ name = "nvim_lsp" },
@@ -116,4 +144,28 @@ return function(use)
 			vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, bufopts)
 		end,
 	})
+
+      require("venv-selector").setup {
+        settings = {
+  options = {
+        on_venv_activate_callback = nil,           -- callback function for after a venv activates
+        enable_default_searches = true,            -- switches all default searches on/off
+        enable_cached_venvs = true,                -- use cached venvs that are activated automatically when a python file is registered with the LSP.
+        cached_venv_automatic_activation = true,   -- if set to false, the VenvSelectCached command becomes available to manually activate them.
+        activate_venv_in_terminal = true,          -- activate the selected python interpreter in terminal windows opened from neovim
+        set_environment_variables = true,          -- sets VIRTUAL_ENV or CONDA_PREFIX environment variables
+        notify_user_on_venv_activation = false,    -- notifies user on activation of the virtual env
+        search_timeout = 5,                        -- if a search takes longer than this many seconds, stop it and alert the user
+        debug = false,                             -- enables you to run the VenvSelectLog command to view debug logs
+        require_lsp_activation = true,             -- require activation of an lsp before setting env variables
+
+        -- telescope viewer options
+        on_telescope_result_callback = nil,        -- callback function for modifying telescope results
+        show_telescope_search_type = true,         -- shows which of the searches found which venv in telescope
+        telescope_filter_type = "substring",        -- when you type something in telescope, filter by "substring" or "character"
+        telescope_active_venv_color = "#00FF00",    -- The color of the active venv in telescope
+          },
+        },
+      }
+  
 end

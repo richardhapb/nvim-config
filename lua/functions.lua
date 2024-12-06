@@ -67,7 +67,7 @@ M.sql_query = function()
             local db = vim.fn.json_decode(db_conf)
             local sql_query = M.get_visual_selection()
             local queries = split(sql_query, ";")
-            
+
             -- Create a temp file for storage data
             local temp_file_path = "/tmp/sql_query_output.txt"
             local temp_file = io.open(temp_file_path, "w")
@@ -81,11 +81,11 @@ M.sql_query = function()
                     if db.port then
                         port = db.port
                     end
-                    
+                    --
                     -- Execute and compare
                     local command = 'PGPASSWORD="' .. db.password .. '" psql -h ' .. db.host .. ' -p ' .. port .. ' -U ' .. db.user .. ' -d ' .. db.database .. ' -c ' .. vim.fn.shellescape(query)
                     local output = vim.fn.system(command)
-                    
+                    --
                     -- Write output
                     temp_file:write("Query: " .. query .. "\n")
                     temp_file:write(output .. "\n")

@@ -40,7 +40,7 @@ end
 
 -- Agregar el snippet para Python
 ls.add_snippets("python", {
-    s("doc", fmt([[
+    s("fdoc", fmt([[
         """
         {}
         Args:

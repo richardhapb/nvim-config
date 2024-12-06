@@ -1,13 +1,22 @@
 local functions = require("functions")
+local luasnip = require("luasnip")
 
 local keymap = vim.keymap.set
 
 vim.g.mapleader = " "
 
+-- Writing
+keymap("i", "<M-e>a", "á", { noremap = true, silent = true })
+keymap("i", "<M-e>e", "é", { noremap = true, silent = true })
+keymap("i", "<M-e>i", "í", { noremap = true, silent = true })
+keymap("i", "<M-e>o", "ó", { noremap = true, silent = true })
+keymap("i", "<M-e>u", "ú", { noremap = true, silent = true })
+keymap("i", "<M-n>n", "ñ", { noremap = true, silent = true })
+
 -- Telescope
 keymap(
 	"n",
-	"<leader>ff",
+	"<leader><leader>",
 	"<cmd>Telescope find_files<cr>",
 	{ noremap = true, silent = true, desc = "Telescope: Find file" }
 )
@@ -37,8 +46,6 @@ keymap("n", "<C-\\>", ":TmuxNavigatePrevious<CR>", { noremap = true, silent = tr
 keymap("n", "<leader>cc", "Vy", { noremap = true, desc = "Copy line" })
 keymap({ "n", "v", "x" }, "x", '"_x')
 keymap("n", "db", 'vb"_d', { noremap = true, desc = "Delete word" })
-keymap("n", "dw", 'vw"_d')
-keymap("n", "de", 've"_d')
 keymap("n", "<leader>cr", function()
 	local orig_text = vim.fn.input("Text to replace: ")
 	local replace_text = vim.fn.input("Replacing for: ")
@@ -48,6 +55,20 @@ keymap("n", "df", 'v$h"_d')
 keymap("n", "<leader>ca", "ggVG", { noremap = true, desc = "Select all" })
 keymap("n", "<leader>{", "}V{", { noremap = true, desc = "Select block on top" })
 keymap("n", "<leader>}", "{V}", { noremap = true, desc = "Select block on bottom" })
+keymap("n", ":", "<cmd>lua require('fine-cmdline').open({default_value = ''})<CR>", { noremap = true })
+
+-- Snippets
+vim.keymap.set({ "i", "s" }, "<C-Tab>", function()
+	if luasnip.jumpable(1) then
+		luasnip.jump(1)
+	end
+end, { silent = true })
+
+vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
+	if luasnip.jumpable(-1) then
+		luasnip.jump(-1)
+	end
+end, { silent = true })
 
 -- Pastify
 keymap("v", "<leader>p", ":PastifyAfter<CR>", { noremap = true, silent = true })
@@ -55,7 +76,7 @@ keymap("n", "<leader>p", ":PastifyAfter<CR>", { noremap = true, silent = true })
 keymap("n", "<leader>P", ":Pastify<CR>", { noremap = true, silent = true })
 
 -- Linter
-keymap("n", "<Esc>", ":close<CR>", { noremap = true, silent = true })
+keymap("n", "<C-c>", ":close<CR>", { noremap = true, silent = true })
 keymap(
 	"n",
 	"<leader>e",
@@ -66,8 +87,11 @@ keymap(
 	"n",
 	"<leader>e",
 	"<cmd>lua vim.diagnostic.open_float(nil, { focusable = true })<CR>",
-	{ noremap = true, silent = true }
+	{ noremap = true, silent = true, desc = "See the error detail" }
 )
+
+-- Python venv
+keymap("n", "<leader>vs", "<cmd>VenvSelect<CR>", { noremap = true })
 
 -- Markdown preview
 keymap("n", "<leader>M", "<cmd>MarkdownPreview<cr>", { noremap = true, silent = true, desc = "Preview Markdown" })
