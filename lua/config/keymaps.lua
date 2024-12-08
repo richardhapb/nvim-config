@@ -9,9 +9,13 @@ keymap('n', '<leader>[', vim.diagnostic.goto_prev, { desc = "Go to previoues dia
 keymap('n', 'db', '"_dbx', { silent = true })
 keymap('n', '<leader>cc', 'Vy', { silent = true })
 keymap('n', 'x', '"_x', { silent = true })
+keymap('n', 'df', '"_d$', { silent = true })
 
 -- UI
 keymap('n', 'ss', ':split<CR>', {silent = true})
 keymap('n', 'sv', ':vsplit<CR>', {silent = true})
 keymap('n', '<C-q>', ':q<CR>', { silent = true })
+
+-- Explorer
+keymap('n', '-', require('oil').open, {desc = 'Open parent directory'})
 

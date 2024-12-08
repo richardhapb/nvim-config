@@ -8,7 +8,7 @@ return {
       "hrsh7th/cmp-cmdline",
       "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
-      "windwp/nvim-autopairs"
+      {"windwp/nvim-autopairs", opts = {check_ts = true}}
    },
    event = "VeryLazy",
    main = "config.plugins.cmp",

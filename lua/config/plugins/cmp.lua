@@ -25,9 +25,9 @@ function M.setup()
             end
          end, { "i", "s" }),
          ["<C-Tab>"] = cmp.mapping.select_prev_item(),
-         ["<C-y"] = cmp.mapping.confirm {
+         ["<CR>"] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Insert,
-            select = true
+            select = false
          },
       },
       sources = cmp.config.sources({

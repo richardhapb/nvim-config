@@ -1,19 +1,18 @@
 return {
    {
-      "scottmckendry/cyberdream.nvim",
-      name = "cyberdream",
+      "folke/tokyonight.nvim",
       lazy = false,
       priority = 1000,
+      opts = {},
       config = function()
-         require("cyberdream").setup({
+         require("tokyonight").setup({
             transparent = true,
-            borderless_telescope = true,
-            italic_comments = true,
-            extensions = {
-               telescope = false
+            styles = {
+               sidebars = "transparent",
+               floats = "transparent"
             }
          })
-         vim.cmd([[ colorscheme cyberdream ]])
+         vim.cmd([[colorscheme tokyonight-night]])
       end
    },
 }
