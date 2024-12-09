@@ -15,7 +15,8 @@ return {
 			"javascript",
 			"typescript",
 			"markdown",
-         "mermaid"
+         "mermaid",
+         "astro"
 		},
       highlight = {
          enable = true,
