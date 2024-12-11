@@ -53,5 +53,15 @@ return {
             }
          }
       })
+
+      lc.eslint.setup({
+      	on_attach = on_attach,
+      })
+
+      lc.cssls.setup({})
+      lc.ts_ls.setup({})
+      lc.html.setup({})
+      lc.htmx.setup({})
+
    end
 }

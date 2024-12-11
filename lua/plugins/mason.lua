@@ -10,10 +10,14 @@ return {
       config = function()
          require("mason-lspconfig").setup({
             ensure_installed = {
+            "lua_ls",
             "docker_compose_language_service",
             "dockerls",
             "cssls",
+            "eslint",
 				"markdown_oxide",
+            "html",
+            "htmx",
             "pylsp",
             "sqlls",
             "tailwindcss",
