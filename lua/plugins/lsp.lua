@@ -26,12 +26,27 @@ return {
       end
 
       require("neodev").setup()
-      require("lspconfig").lua_ls.setup({
+
+      local lc = require("lspconfig")
+      lc.lua_ls.setup({
          on_attach = on_attach,
          settings = {
             Lua = {
                telemetry = { enable = false },
                workspace = { checkThirdParty = false },
+            }
+         }
+      })
+
+      lc.pylsp.setup({
+         on_attach = on_attach,
+         settings = {
+            pylsp = {
+               plugins = {
+                  pyflakes = { enabled = true },
+                  autopep8 = { enabled = true },
+                  black = { enabled = true },
+               }
             }
          }
       })
