@@ -40,6 +40,9 @@ return {
 
       lc.pylsp.setup({
          on_attach = on_attach,
+         callback = function()
+         	vim.lsp.buf.format {async = true}
+         end,
          settings = {
             pylsp = {
                plugins = {
