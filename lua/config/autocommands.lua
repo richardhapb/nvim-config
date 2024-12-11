@@ -3,7 +3,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
    group = vim.api.nvim_create_augroup("black_on_save", { clear = true }),
    callback = function (args)
       if vim.bo[args.buf].filetype == "python" then
-         require("lint").try_lint("pylint")
+         require("lint").try_lint("flake8")
       end
    end
 })

@@ -4,7 +4,7 @@ return {
       "nvim-treesitter/nvim-treeesitter-textobjects"
    },
 	build = ':TSUpdate',
-	event = 'VeryLazy',
+   event = 'BufReadPre',
 	main = 'nvim-treesitter.configs',
 	opt = {
 		ensure_installed = {
@@ -16,7 +16,14 @@ return {
 			"typescript",
 			"markdown",
          "mermaid",
-         "astro"
+         "astro",
+         "html",
+         "htmldjango",
+         "css",
+         "htmx",
+         "json",
+         "gitignore",
+         "dockerfile"
 		},
       highlight = {
          enable = true,
