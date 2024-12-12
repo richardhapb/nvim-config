@@ -25,11 +25,14 @@ return {
          end, opts)
       end
 
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
       require("neodev").setup()
 
       local lc = require("lspconfig")
       lc.lua_ls.setup({
          on_attach = on_attach,
+         capabilities = capabilities,
          settings = {
             Lua = {
                telemetry = { enable = false },
@@ -42,6 +45,8 @@ return {
          callback = function()
          	vim.lsp.buf.format {async = true}
          end,
+         on_attach = on_attach,
+         capabilities = capabilities,
          settings = {
             pylsp = {
                plugins = {
@@ -55,14 +60,46 @@ return {
          }
       })
 
-      lc.eslint.setup({
-      	on_attach = on_attach,
+      lc.cssls.setup({
+         capabilities = capabilities,
+         on_attach = on_attach,
+         settings = {
+            css = {validate = true}
+         }
       })
 
-      lc.cssls.setup({})
-      lc.ts_ls.setup({})
-      lc.html.setup({})
-      lc.htmx.setup({})
+      lc.html.setup({
+         capabilities = capabilities,
+         on_attach = on_attach,
+         configurationSection = { "html", "css", "javascript" },
+         embeddedLanguages = {
+            css = true,
+            javascript = true
+         },
+         provideFormatter = true
+      })
+
+      local cmp_elements = {
+         "eslint",
+      	"ts_ls",
+         "htmx",
+         "yamlls",
+         "djlsp",
+         "dockerls",
+         "docker_compose_language_service",
+         "tailwindcss",
+         "sqlls",
+         "vimls",
+         "markdown_oxide",
+         "dprint"
+      }
+
+      for _, lang in ipairs(cmp_elements) do
+         lc[lang].setup({
+            on_attach = on_attach,
+            capabilities, capabilities
+         })
+      end
 
    end
 }

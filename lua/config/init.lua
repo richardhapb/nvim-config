@@ -16,12 +16,28 @@ vim.opt.wrap = false
 vim.g.mapleader = " "
 
 vim.opt.termguicolors = true
-vim.cmd [[
-  highlight Normal guibg=none
-  highlight NonText guibg=none
-  highlight Normal ctermbg=none
-  highlight NonText ctermbg=none
-]]
+
+vim.api.nvim_set_hl(0, 'Normal', {bg=nil})
+vim.api.nvim_set_hl(0, 'Normal', {ctermbg=nil})
+vim.api.nvim_set_hl(0, 'NonText', {bg=nil})
+vim.api.nvim_set_hl(0, 'NonText', {ctermbg=nil})
+
+-- Disable automatic commenting for next line
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "*",
+  callback = function()
+    vim.opt.formatoptions:remove { "c", "r", "o" }
+  end,
+  desc = "Disable New Line Comment",
+})
+
+-- Split view
+vim.opt.fillchars:append {horiz = "+", vert = "*"}
+vim.api.nvim_create_autocmd("VimEnter",{
+	callback = function()
+		vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
+   end
+})
 
 if vim.fn.has("mac") then
    require("config.macos")

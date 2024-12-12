@@ -15,7 +15,9 @@ return {
             "dockerls",
             "cssls",
             "eslint",
+            "djlsp", -- Django templates
 				"markdown_oxide",
+            "dprint", -- JavaScript
             "html",
             "htmx",
             "pylsp",

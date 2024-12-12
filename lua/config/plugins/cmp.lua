@@ -24,7 +24,15 @@ function M.setup()
                fallback()
             end
          end, { "i", "s" }),
-         ["<C-Tab>"] = cmp.mapping.select_prev_item(),
+         ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+               cmp.select_prev_item()
+            elseif luasnip.choice_active() then
+               luasnip.change_choice()
+            else
+               fallback()
+            end
+         end, { "i", "s" }),
          ["<CR>"] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Insert,
             select = false
