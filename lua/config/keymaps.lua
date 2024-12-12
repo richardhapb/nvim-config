@@ -5,6 +5,9 @@ keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in
 keymap('n', '<leader>]', vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 keymap('n', '<leader>[', vim.diagnostic.goto_prev, { desc = "Go to previoues diagnostic" })
 
+-- NVIM config
+keymap('n', '<C-s', ':source %<CR>', { silent = true })
+
 -- Edit
 keymap('n', 'db', '"_dbx', { silent = true })
 keymap('n', '<leader>cc', 'Vy', { silent = true })

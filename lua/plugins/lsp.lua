@@ -39,16 +39,17 @@ return {
       })
 
       lc.pylsp.setup({
-         on_attach = on_attach,
          callback = function()
          	vim.lsp.buf.format {async = true}
          end,
          settings = {
             pylsp = {
                plugins = {
-                  pyflakes = { enabled = true },
-                  autopep8 = { enabled = true },
-                  black = { enabled = true },
+                  pyflakes = {enabled = false},
+                  pycodestyle = {enabled = false},
+                  mccabe = {enabled = false},
+                  black = {enabled = true},
+                  flake8 = {enabled = true, config = '.flake8', ignore = {'E501'}},
                }
             }
          }
