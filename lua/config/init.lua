@@ -2,14 +2,16 @@
 vim.opt.number = true
 vim.opt.relativenumber = true
 
-vim.bo.tabstop = 4
-vim.bo.shiftwidth = 4
-vim.bo.expandtab = true
-vim.bo.softtabstop = 4
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.softtabstop = 4
+
+vim.opt.smarttab = true
+vim.opt.smartcase = true
 
 vim.g.editorconfig = true
 
-vim.cmd('syntax on')
 vim.opt.wrap = false
 vim.g.mapleader = " "
 

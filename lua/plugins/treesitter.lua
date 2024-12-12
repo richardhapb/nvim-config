@@ -4,7 +4,6 @@ return {
       "nvim-treesitter/nvim-treeesitter-textobjects"
    },
 	build = ':TSUpdate',
-   event = 'BufReadPre',
 	main = 'nvim-treesitter.configs',
 	opt = {
 		ensure_installed = {
