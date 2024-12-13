@@ -14,7 +14,7 @@ function M.setup()
       mapping = {
          ["<C-d>"] = cmp.mapping.scroll_docs(-4),
          ["<C-u>"] = cmp.mapping.scroll_docs(4),
-         ["<Esc>"] = cmp.mapping.abort(),
+         ["<C-e>"] = cmp.mapping.abort(),
          ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
                cmp.select_next_item()

@@ -3,6 +3,7 @@ return {
    dependencies = {
       "williamboman/mason.nvim",
       "folke/neodev.nvim",
+      'github/copilot.vim',
    },
    config = function()
       local on_attach = function(client, bufnr)
