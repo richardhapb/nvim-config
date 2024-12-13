@@ -20,7 +20,8 @@ return {
          keymap('n', 'gr', vim.lsp.buf.references, opts)
          keymap('n', 'K', vim.lsp.buf.hover, opts)
          keymap('n', '<C-e>', vim.lsp.buf.signature_help, opts)
-         keymap('n', '<leader>gf', function()
+         keymap('n', 'gn', vim.lsp.buf.rename, opts)
+         keymap('n', 'gf', function()
             vim.lsp.buf.format { async = true }
          end, opts)
       end
