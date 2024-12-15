@@ -32,6 +32,7 @@ return {
       require("neodev").setup()
 
       local lc = require("lspconfig")
+
       lc.lua_ls.setup({
          on_attach = on_attach,
          capabilities = capabilities,
@@ -44,19 +45,16 @@ return {
       })
 
       lc.pylsp.setup({
-         callback = function()
-         	vim.lsp.buf.format {async = true}
-         end,
          on_attach = on_attach,
          capabilities = capabilities,
          settings = {
             pylsp = {
                plugins = {
-                  pyflakes = {enabled = false},
-                  pycodestyle = {enabled = false},
-                  mccabe = {enabled = false},
-                  black = {enabled = true},
-                  flake8 = {enabled = true, config = '.flake8', ignore = {'E501'}},
+                  pyflakes = { enabled = false },
+                  pycodestyle = { enabled = false },
+                  mccabe = { enabled = false },
+                  black = { enabled = true },
+                  flake8 = { enabled = true, config = '.flake8', ignore = { 'E501' } },
                }
             }
          }
@@ -66,7 +64,7 @@ return {
          capabilities = capabilities,
          on_attach = on_attach,
          settings = {
-            css = {validate = true}
+            css = { validate = true }
          }
       })
 
@@ -83,7 +81,7 @@ return {
 
       local cmp_elements = {
          "eslint",
-      	"ts_ls",
+         "ts_ls",
          "htmx",
          "yamlls",
          "dockerls",
@@ -98,9 +96,8 @@ return {
       for _, lang in ipairs(cmp_elements) do
          lc[lang].setup({
             on_attach = on_attach,
-            capabilities, capabilities
+            capabilities = capabilities
          })
       end
-
    end
 }

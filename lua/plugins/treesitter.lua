@@ -8,6 +8,8 @@ return {
 	opt = {
 		ensure_installed = {
 			"lua",
+         "bash",
+         "regex",
 			"luadoc",
 			"vim",
 			"python",

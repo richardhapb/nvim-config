@@ -41,7 +41,7 @@ return {
             hidden=false,
          })
          end,
-         desc = 'Telescope NVIM config' },
+         desc = 'Telescope Projects' },
       { '<leader>fg', function() require('telescope.builtin').live_grep() end, desc = 'Telescope live grep' },
       { '<leader>fb', function() require('telescope.builtin').buffers() end, desc = 'Telescope buffers' },
       { '<leader>fh', function() require('telescope.builtin').help_tags() end, desc = 'Telescope help tags' },

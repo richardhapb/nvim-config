@@ -55,5 +55,4 @@ keymap('n', '<leader>gg', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 
 
 -- Copilot
 keymap('i', '<C-z>', 'copilot#Accept()', { expr = true, silent = true,  desc = 'Copilot complete', noremap = false, replace_keycodes = false})
-vim.g.copilot_no_tab_map = true
 

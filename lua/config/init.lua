@@ -17,6 +17,9 @@ vim.g.mapleader = " "
 
 vim.opt.termguicolors = true
 
+vim.opt.encoding = "utf-8"
+vim.opt.fileencoding = "utf-8"
+
 vim.opt.mouse = ''
 
 vim.api.nvim_set_hl(0, 'Normal', {bg=nil})
@@ -26,6 +29,9 @@ vim.api.nvim_set_hl(0, 'NonText', {ctermbg=nil})
 
 -- Disable suspend
 vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
+
+vim.g.python3_host_prog = vim.fn.exepath(".venv/bin/python3")
+vim.g.copilot_no_tab_map = true
 
 -- Disable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
