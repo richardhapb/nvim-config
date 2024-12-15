@@ -86,7 +86,6 @@ return {
       	"ts_ls",
          "htmx",
          "yamlls",
-         "djlsp",
          "dockerls",
          "docker_compose_language_service",
          "tailwindcss",

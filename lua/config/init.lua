@@ -17,10 +17,15 @@ vim.g.mapleader = " "
 
 vim.opt.termguicolors = true
 
+vim.opt.mouse = ''
+
 vim.api.nvim_set_hl(0, 'Normal', {bg=nil})
 vim.api.nvim_set_hl(0, 'Normal', {ctermbg=nil})
 vim.api.nvim_set_hl(0, 'NonText', {bg=nil})
 vim.api.nvim_set_hl(0, 'NonText', {ctermbg=nil})
+
+-- Disable suspend
+vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
 
 -- Disable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
