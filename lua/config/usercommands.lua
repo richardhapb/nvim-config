@@ -32,25 +32,31 @@ local query = [[
                  (dictionary) @dict))
 ]]
 
-local function max_line_length(lines)
+local function max_key_length(lines)
    local max_length = 0
    for _, line in ipairs(lines) do
-      local length = string.len(line:gsub("%s+", ""))
-      if length > max_length then
-         max_length = length
+      local key, _ = line:match("^(.-):%s*(.+)$")
+      if key then
+         local length = string.len(key)
+         if length > max_length then
+            max_length = length
+         end
       end
    end
    return max_length
 end
 
 local function equalize_spaces(lines, indentation)
-   local max_length = max_line_length(lines)
+   local max_length = max_key_length(lines)
    local equalized = {}
    for i, line in ipairs(lines) do
-      line = line:gsub("%s+", "")
-      local length = string.len(line)
-      local spaces = string.rep(" ", max_length - length)
+      line = line:gsub("%s+", " ")
       local key, value = line:match("^(.-):%s*(.+)$")
+      local length = 0
+      if key then
+         length = string.len(key)
+      end
+      local spaces = string.rep(" ", max_length - length)
       if key and value then
          if i < #lines - 1 then
             value = value .. ","
