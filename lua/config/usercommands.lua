@@ -35,7 +35,7 @@ local query = [[
 local function max_line_length(lines)
    local max_length = 0
    for _, line in ipairs(lines) do
-      local length = string.len(line)
+      local length = string.len(line:gsub("%s+", ""))
       if length > max_length then
          max_length = length
       end
@@ -47,6 +47,7 @@ local function equalize_spaces(lines, indentation)
    local max_length = max_line_length(lines)
    local equalized = {}
    for i, line in ipairs(lines) do
+      line = line:gsub("%s+", "")
       local length = string.len(line)
       local spaces = string.rep(" ", max_length - length)
       local key, value = line:match("^(.-):%s*(.+)$")
@@ -54,7 +55,7 @@ local function equalize_spaces(lines, indentation)
          if i < #lines - 1 then
             value = value .. ","
          end
-         table.insert(equalized, indentation .. key .. spaces .. " : " .. value)
+         table.insert(equalized, indentation .. key .. ": " .. spaces .. value)
       else
          if line:match("^{") then
             table.insert(equalized, line)
@@ -87,6 +88,11 @@ local function format_dict(dict_node, bufnr, indentation)
 end
 
 local function process_buffer()
+   local filetype = vim.api.nvim_buf_get_option(0, "filetype")
+   if filetype ~= "python" then
+      print("FormatDicts is only available for Python files")
+      return
+   end
    local bufnr = vim.api.nvim_get_current_buf()
    local parser = vim.treesitter.get_parser(bufnr, "python")
    local tree = parser:parse()[1]
