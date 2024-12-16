@@ -62,9 +62,11 @@ if vim.fn.has("win32") then
    require("config.windows")
 end
 
-require("config.autocommands")
-
 require("config.lazy")
+
+require("config.autocommands")
+require("config.usercommands")
+
 require("config.keymaps")
 
 

@@ -5,6 +5,9 @@ keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in
 keymap('n', '<leader>]', vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 keymap('n', '<leader>[', vim.diagnostic.goto_prev, { desc = "Go to previoues diagnostic" })
 
+-- Usercommands
+keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
+
 -- NVIM config
 keymap('n', '<C-s>', ':source %<CR>', { silent = true })
 
