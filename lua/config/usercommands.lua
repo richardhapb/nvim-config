@@ -30,6 +30,14 @@ local query = [[
   (call
     arguments: (argument_list
                  (dictionary) @dict))
+
+(dictionary
+  (pair
+value: (dictionary) @nested_dict))
+
+(dictionary
+  (pair
+value: (list) @nested_list))
 ]]
 
 local function max_key_length(lines)
@@ -63,37 +71,39 @@ local function equalize_spaces(lines, indentation)
          end
          table.insert(equalized, indentation .. key .. ": " .. spaces .. value)
       else
-         if line:match("^{") then
+         if line:match("[[{]") then
             table.insert(equalized, line)
-         elseif  line:match("^}$") then
+         elseif line:match("[}]]") then
             if indentation:len() >= 4 then
                table.insert(equalized, indentation:sub(5) .. line)
             else
                table.insert(equalized, line)
             end
-         else
+         elseif line:match(":+") then -- Dict lines
             table.insert(equalized, line)
+         else -- List Lines
+            table.insert(equalized, indentation .. line)
          end
       end
    end
    return equalized
 end
 
-local function format_dict(dict_node, bufnr, indentation)
+local function format_dict(dict_node, bufnr, indentation, delimiters)
    local pairs = ts_utils.get_named_children(dict_node)
    if #pairs >= 3 then
-      local formatted = {"{"}
+      local formatted = { delimiters.open }
       for _, pair in ipairs(pairs) do
          local pair_text = vim.treesitter.get_node_text(pair, bufnr)
-         table.insert(formatted,  pair_text)
+         table.insert(formatted, pair_text)
       end
-      formatted = vim.list_extend(formatted, {"}"})
+      formatted = vim.list_extend(formatted, { delimiters.close })
       return equalize_spaces(formatted, indentation)
    end
    return nil
 end
 
-local function process_buffer()
+local function process_buffer(node_name)
    local filetype = vim.api.nvim_buf_get_option(0, "filetype")
    if filetype ~= "python" then
       print("FormatDicts is only available for Python files")
@@ -110,11 +120,17 @@ local function process_buffer()
 
    for id, node in parsed_query:iter_captures(root, bufnr, 0, -1) do
       local capture_name = parsed_query.captures[id]
-      if capture_name == "dict" then
+      if capture_name == node_name then
          local range = { node:range() }
          local current_indentation = vim.api.nvim_buf_get_lines(bufnr, range[1], range[1] + 1, false)[1]:match("^%s*") or ""
+
+         local delimiters = {open='{', close='}'}
+         if node_name:match('list') then
+            delimiters = {open='[', close=']'}
+         end
+
          local indentation = string.rep(" ", current_indentation:len() + 4)
-         local formatted_dict = format_dict(node, bufnr, indentation)
+         local formatted_dict = format_dict(node, bufnr, indentation, delimiters)
          if formatted_dict then
             table.insert(changes, 1, { range = range, new_text = formatted_dict })
          end
@@ -122,8 +138,13 @@ local function process_buffer()
    end
 
    for _, change in ipairs(changes) do
-      vim.api.nvim_buf_set_text(bufnr, change.range[1], change.range[2], change.range[3], change.range[4], change.new_text)
+      vim.api.nvim_buf_set_text(bufnr, change.range[1], change.range[2], change.range[3], change.range[4],
+         change.new_text)
    end
 end
 
-vim.api.nvim_create_user_command("FormatDicts", process_buffer, {})
+vim.api.nvim_create_user_command("FormatDicts", function()
+   process_buffer('dict')
+   process_buffer('nested_dict')
+   process_buffer('nested_list')
+end, {})
