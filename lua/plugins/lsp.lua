@@ -2,6 +2,7 @@ return {
    "neovim/nvim-lspconfig",
    dependencies = {
       "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
       "folke/neodev.nvim",
       'github/copilot.vim',
    },
@@ -44,21 +45,16 @@ return {
          }
       })
 
-      lc.pylsp.setup({
-         on_attach = on_attach,
+      lc.ruff.setup {
          capabilities = capabilities,
+         on_attach = on_attach,
          settings = {
-            pylsp = {
-               plugins = {
-                  pyflakes = { enabled = false },
-                  pycodestyle = { enabled = false },
-                  mccabe = { enabled = false },
-                  black = { enabled = true },
-                  flake8 = { enabled = true, config = '.flake8', ignore = { 'E501' } },
-               }
-            }
-         }
-      })
+            args = {
+               "--config", vim.fn.getcwd() .. "/pyproject.toml",
+               "--ignore", "W292",
+            },
+         },
+      }
 
       lc.cssls.setup({
          capabilities = capabilities,
@@ -79,6 +75,12 @@ return {
          provideFormatter = true
       })
 
+      lc.dprint.setup({
+         capabilities = capabilities,
+         on_attach = on_attach,
+         filetypes = { "json", "toml", "yaml", "markdown", "javascript", "typescript", "css", "html" }
+      })
+
       local cmp_elements = {
          "eslint",
          "ts_ls",
@@ -90,7 +92,6 @@ return {
          "sqlls",
          "vimls",
          "markdown_oxide",
-         "dprint"
       }
 
       for _, lang in ipairs(cmp_elements) do
@@ -99,5 +100,5 @@ return {
             capabilities = capabilities
          })
       end
-   end
+   end,
 }
