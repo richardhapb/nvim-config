@@ -1,4 +1,3 @@
-
 vim.opt.number = true
 vim.opt.relativenumber = true
 
@@ -22,24 +21,24 @@ vim.opt.fileencoding = "utf-8"
 
 vim.opt.mouse = ''
 
-vim.api.nvim_set_hl(0, 'Normal', {bg=nil})
-vim.api.nvim_set_hl(0, 'Normal', {ctermbg=nil})
-vim.api.nvim_set_hl(0, 'NonText', {bg=nil})
-vim.api.nvim_set_hl(0, 'NonText', {ctermbg=nil})
+vim.api.nvim_set_hl(0, 'Normal', { bg = nil })
+vim.api.nvim_set_hl(0, 'Normal', { ctermbg = nil })
+vim.api.nvim_set_hl(0, 'NonText', { bg = nil })
+vim.api.nvim_set_hl(0, 'NonText', { ctermbg = nil })
 
 -- Disable suspend
 vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
 
-vim.g.python3_host_prog = vim.fn.exepath(".venv/bin/python3")
+vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
 vim.g.copilot_no_tab_map = true
 
 -- Disable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
-  callback = function()
-    vim.opt.formatoptions:remove { "c", "r", "o" }
-  end,
-  desc = "Disable New Line Comment",
+   pattern = "*",
+   callback = function()
+      vim.opt.formatoptions:remove { "c", "r", "o" }
+   end,
+   desc = "Disable New Line Comment",
 })
 
 -- Enable last line
@@ -50,10 +49,10 @@ vim.opt.fixeol = true
 vim.opt.fileformat = "dos"
 
 -- Split view
-vim.opt.fillchars:append {horiz = "+", vert = "*"}
-vim.api.nvim_create_autocmd("VimEnter",{
-	callback = function()
-		vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
+vim.opt.fillchars:append { horiz = "+", vert = "*" }
+vim.api.nvim_create_autocmd("VimEnter", {
+   callback = function()
+      vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
    end
 })
 
@@ -75,5 +74,3 @@ require("config.autocommands")
 require("config.usercommands")
 
 require("config.keymaps")
-
-

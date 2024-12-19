@@ -45,7 +45,8 @@ return {
          }
       })
 
-      lc.ruff.setup {
+      lc.ruff.setup({
+         on_attach = on_attach,
          trace = "messages",
          init_options = {
             settings = {
@@ -65,7 +66,22 @@ return {
             },
 
          }
-      }
+      })
+
+      lc.pyright.setup({
+         on_attach = on_attach,
+         capabilities = capabilities,
+         settings = {
+            python = {
+               analysis = {
+                  autoSearchPaths = true,
+                  useLibraryCodeForTypes = true,
+                  diagnosticMode = "workspace",
+                  typeCheckingMode = "standard",
+               }
+            }
+         }
+      })
 
       lc.cssls.setup({
          capabilities = capabilities,

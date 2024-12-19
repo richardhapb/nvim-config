@@ -30,6 +30,7 @@ return {
    end,
    keys = {
       { '<leader><leader>', function() require('telescope.builtin').find_files() end, desc = 'Telescope find files' },
+
       { '<leader>fs', function() require('telescope.builtin').find_files({
             cwd=vim.fn.stdpath('config'),
             prompt_title = "NVIM config" })
