@@ -46,14 +46,25 @@ return {
       })
 
       lc.ruff.setup {
-         capabilities = capabilities,
-         on_attach = on_attach,
-         settings = {
-            args = {
-               "--config", vim.fn.getcwd() .. "/pyproject.toml",
-               "--ignore", "W292",
+         trace = "messages",
+         init_options = {
+            settings = {
+               logLevel = "debug",
+               configuration = vim.fn.getcwd() .. "/pyproject.toml",
+               configurationPreference = 'filesystemFirst',
+               exclude = { "node_modules", ".git", ".venv" },
+               lineLength = 100,
+               lint = {
+                  enabled = true,
+                  preview = true,
+               },
+               format = {
+                  enabled = true,
+                  preview = true,
+               },
             },
-         },
+
+         }
       }
 
       lc.cssls.setup({
