@@ -1,53 +1,55 @@
 local M = {}
 
-M.extract_func_header_above_cursor = function()
-   local current_line = vim.fn.line('.')
-   local function_header = ""
+local ts_utils = require("nvim-treesitter.ts_utils")
 
-	for i = current_line -1, 1, -1 do
-     local temp_line = vim.fn.getline(i)
-     if #temp_line:gsub("%s+", "") == 0 and i ~= current_line then
-        break
-     end
-     function_header = temp_line .. function_header
+M.extract_args_from_func = function(cursor_pos, ts_query)
+   local above = cursor_pos == 'above'
+   local below = cursor_pos == 'below'
+
+   if not above and not below then
+      return nil
    end
 
-   return function_header
-end
+   local bufnr = vim.api.nvim_get_current_buf()
+   local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+   local parser = vim.treesitter.get_parser(bufnr, filetype)
 
-M.extract_func_arguments = function(function_header, keyword)
-   if not keyword then
-      keyword = ""
+   if not parser then
+      return nil
    end
 
-   local args = function_header:match(keyword .. ".+%b()")
-   if args then
-      args = args:match("%b()")
-      args = args:sub(2, -2)
-      args = args:gsub("%s+", "")
-      args = vim.split(args, ",")
+   local tree = parser:parse()[1]
+   local root = tree:root()
+
+   local parsed_query = vim.treesitter.query.parse(filetype, ts_query)
+
+   local captures = {}
+   local cursor_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+
+   for id, node in parsed_query:iter_captures(root, bufnr, 0, -1) do
+      local capture_name = parsed_query.captures[id]
+      if capture_name == "args" then
+         local range = { node:range() }
+
+         print("Cursor line: " .. cursor_line)
+         print("Range: " .. range[1] .. " " .. range[3])
+         -- Prevent extracting args from the function that no is in the cursor line
+         if above and range[1] < cursor_line or below and range[3] < cursor_line - 1 then
+            goto continue
+         end
+         local args = ts_utils.get_named_children(node)
+
+         for _, arg in ipairs(args) do
+            local arg_text = vim.treesitter.get_node_text(arg, bufnr)
+            print("Arg: " .. arg_text)
+            table.insert(captures, arg_text)
+         end
+         break
+      end
+      ::continue::
    end
-   return args
-end
 
-M.extract_args_from_func_above_cursor = function()
-   local function_header = M.extract_func_header_above_cursor()
-   if not function_header then
-      return {}
-   end
-
-   local args = M.extract_func_arguments(function_header)
-
-   if not args then
-      return {}
-   end
-   return args
-end
-
-local args = M.extract_args_from_func_above_cursor()
-
-for _, a in ipairs(args) do
-   print(a)
+   return captures
 end
 
 return M

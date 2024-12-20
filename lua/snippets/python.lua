@@ -3,28 +3,59 @@ require "luasnip.session.snippet_collection".clear_snippets "python"
 local ls = require("luasnip")
 local s = ls.snippet
 local i = ls.insert_node
-local sn = ls.snippet_node
 local d = ls.dynamic_node
 local t = ls.text_node
+local f = ls.function_node
 local fmt = require 'luasnip.extras.fmt'.fmt
-local code = require 'functions.code'
+local snippets = require 'functions.snippets'
+local ts_utils = require 'nvim-treesitter.ts_utils'
 
-local args_extractor = function()
-   local args = code.extract_args_from_func_above_cursor()
-   if not args then
-      return sn(nil, t("No args."))
+local query = [[
+(function_definition
+  parameters: (parameters) @args
+    )
+]]
+
+local return_type_query = [[
+(function_definition
+    return_type: (type) @return_type
+    )
+]]
+
+local function get_return_type()
+   local cursor_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+   local bufnr = vim.api.nvim_get_current_buf()
+
+   local parser = vim.treesitter.get_parser(bufnr, "python")
+
+   if not parser then
+      return ""
    end
 
- local nodes = {}
-   for idx, arg in ipairs(args) do
-      table.insert(nodes, t("\t" .. arg .. ": "))
-      table.insert(nodes, i(idx, "Description"))
-      if idx < #args then
-         table.insert(nodes, t({ "", "" }))
+   local tree = parser:parse()[1]
+   local root = tree:root()
+
+   local parsed_query = vim.treesitter.query.parse("python", return_type_query)
+
+   for id, node in parsed_query:iter_captures(root, bufnr, 0, -1) do
+      local capture_name = parsed_query.captures[id]
+      if capture_name == "return_type" then
+         local range = { node:range() }
+
+         if range[3] < cursor_line - 1 then
+            goto continue
+         end
+
+         local return_type = ts_utils.get_node_text(node, bufnr)[1]
+         if return_type == nil then
+            return ""
+         end
+         return "-> " .. return_type
       end
+      ::continue::
    end
 
-   return sn(nil, nodes)
+   return ""
 end
 
 ls.add_snippets("python", {
@@ -36,12 +67,12 @@ ls.add_snippets("python", {
         {}
 
         Returns:
-            {}: {}
+            Return {}: {}
         """
         ]], {
       i(1, "Brief summary of the function."),
-      d(2, args_extractor, {}),
-      t("Return"),
+      d(2, snippets.args_extractor, {}, { user_args = { { query = query, cursor_pos = 'below', before_text = "\t" } } }),
+      f(get_return_type, {}, {}),
       i(3, "Description of return value."),
    })),
 
@@ -49,4 +80,3 @@ ls.add_snippets("python", {
       t('print("\\n--------------------------------------------\\n")')
    ),
 })
-

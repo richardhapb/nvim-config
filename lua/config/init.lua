@@ -72,5 +72,6 @@ require("config.lazy")
 
 require("config.autocommands")
 require("config.usercommands")
+require("functions.code")
 
 require("config.keymaps")

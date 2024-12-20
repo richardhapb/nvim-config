@@ -52,7 +52,9 @@ return {
       { '<leader>fq', function() require('telescope.builtin').registers() end, desc = 'Telescope registers' },
       { '<leader>fq', function() require('telescope.builtin').git_files({ show_untracked = true }) end, desc = 'Telescope git files' },
       { '<leader>fa', function() require('telescope.command').load_command("file_browser") end, desc = 'Telescope file browser' },
-      { '<leader>fr', function() require('telescope.builtin').lsp_references() end, desc = 'Telescope LSP References' }
+      { '<leader>fr', function() require('telescope.builtin').lsp_references() end, desc = 'Telescope LSP References' },
+      { '<leader>ft', function() require('telescope.builtin').treesitter() end, desc = 'Telescope Treesitter' },
+      { '<leader>ff', function() require('telescope.builtin').builtin() end, desc = 'Telescope builtin' },
    },
    opts = {
 		extensions = {

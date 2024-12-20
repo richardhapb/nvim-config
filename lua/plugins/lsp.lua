@@ -8,9 +8,22 @@ return {
    },
    config = function()
       local on_attach = function(client, bufnr)
+         if client == nil then
+            return
+         end
          if client.server_capabilities.completionProvider then
             vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
          end
+
+         vim.diagnostic.config({
+            underline = true,
+            signs = true,
+            update_in_insert = false,
+            virtual_text = {
+               spacing = 4,
+               prefix = "",
+            },
+         })
 
          local keymap = vim.keymap.set
 
