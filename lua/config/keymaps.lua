@@ -77,4 +77,6 @@ keymap('i', '<A-e>I', 'Í', { silent = true })
 keymap('i', '<A-e>O', 'Ó', { silent = true })
 keymap('i', '<A-e>U', 'Ú', { silent = true })
 keymap('i', '<A-n>N', 'Ñ', { silent = true })
+keymap('i', '<A-?>', '¿', { silent = true })
+keymap('i', '<A-1>', '¡', { silent = true })
 
