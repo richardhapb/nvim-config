@@ -132,6 +132,8 @@ return {
          "sqlls",
          "vimls",
          "markdown_oxide",
+         "ltex",
+         "texlab",
       }
 
       for _, lang in ipairs(cmp_elements) do

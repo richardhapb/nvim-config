@@ -20,6 +20,7 @@ vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
 
 vim.opt.mouse = ''
+vim.opt.cursorline = true
 
 vim.api.nvim_set_hl(0, 'Normal', { bg = nil })
 vim.api.nvim_set_hl(0, 'Normal', { ctermbg = nil })

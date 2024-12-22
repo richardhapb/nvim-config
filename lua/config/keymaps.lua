@@ -59,3 +59,22 @@ keymap('n', '<leader>gg', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 
 -- Copilot
 keymap('i', '<C-z>', 'copilot#Accept()', { expr = true, silent = true,  desc = 'Copilot complete', noremap = false, replace_keycodes = false})
 
+-- Latex
+keymap('n', '<leader>lb', ':LatexBuild<CR>', { silent = true, desc = 'Latex build' })
+keymap('n', '<leader>lp', ':TeXpresso %<CR>', { silent = true, desc = 'Latex preview' })
+
+
+-- Spanish
+keymap('i', '<A-e>a', 'á', { silent = true })
+keymap('i', '<A-e>e', 'é', { silent = true })
+keymap('i', '<A-e>i', 'í', { silent = true })
+keymap('i', '<A-e>o', 'ó', { silent = true })
+keymap('i', '<A-e>u', 'ú', { silent = true })
+keymap('i', '<A-n>n', 'ñ', { silent = true })
+keymap('i', '<A-e>A', 'Á', { silent = true })
+keymap('i', '<A-e>E', 'É', { silent = true })
+keymap('i', '<A-e>I', 'Í', { silent = true })
+keymap('i', '<A-e>O', 'Ó', { silent = true })
+keymap('i', '<A-e>U', 'Ú', { silent = true })
+keymap('i', '<A-n>N', 'Ñ', { silent = true })
+
