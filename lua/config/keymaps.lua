@@ -33,15 +33,20 @@ keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
 keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 keymap('n', '<C-q>', ':q<CR>', { silent = true })
 
+local close_all_buffers_but_current = function()
+   vim.cmd(':%bd|e#')
+end
+
 -- Explorer
 keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
 keymap('n', '<leader>tn', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<leader>tf', ':tabnext<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<leader>tb', ':tabprevious<CR>', { silent = true, desc = 'New tab' })
-keymap('n', '<C-w><left>', '20<C-w><')
-keymap('n', '<C-w><right>', '20<C-w>>')
-keymap('n', '<C-w><up>', '20<C-w>+')
-keymap('n', '<C-w><down>', '20<C-w>-')
+keymap('n', '<C-w><left>', '15<C-w><')
+keymap('n', '<C-w><right>', '15<C-w>>')
+keymap('n', '<C-w><up>', '5<C-w>+')
+keymap('n', '<C-w><down>', '5<C-w>-')
+keymap('n', '<leader>bi', close_all_buffers_but_current, { silent = true, desc = 'Close all buffers except current' })
 
 -- Git
 keymap('n', '<leader>gs', ':G<CR>', { silent = true, desc = 'Git status' })
@@ -51,10 +56,25 @@ keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
 keymap('n', '<leader>gp', ':G pull<CR>', { silent = true, desc = 'Git pull' })
 keymap('n', '<leader>gS', ':G stash<CR>', { silent = true, desc = 'Git stash' })
 keymap('n', '<leader>gA', ':G add .<CR>', { silent = true, desc = 'Git add .' })
-keymap('n', '<leader>gd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
+keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
 keymap('n', '<leader>gf', ':G fetch<CR>', { silent = true, desc = 'Git fetch' })
 keymap('n', '<leader>gb', ':G blame<CR>', { silent = true, desc = 'Git blame' })
 keymap('n', '<leader>gg', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
+keymap('n', '<leader>gdv', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
+keymap('n', '<leader>gds', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
+keymap('n', '<leader>gda', function()
+   vim.cmd('G diff HEAD --name-only')
+   close_all_buffers_but_current()
+end, { silent = true, desc = 'Git diff HEAD --name-only' })
+keymap('n', '<leader>gdi', function()
+   local current_line_text = vim.fn.getline('.')
+
+   if current_line_text ~= nil then
+      close_all_buffers_but_current()
+      vim.cmd('new ' .. current_line_text)
+      vim.cmd('Gvdiffsplit')
+   end
+end, { silent = true, desc = 'Git diff current line' })
 
 -- Copilot
 keymap('i', '<C-z>', 'copilot#Accept()', { expr = true, silent = true,  desc = 'Copilot complete', noremap = false, replace_keycodes = false})
