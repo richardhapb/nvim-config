@@ -38,10 +38,10 @@ keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
 keymap('n', '<leader>tn', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<leader>tf', ':tabnext<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<leader>tb', ':tabprevious<CR>', { silent = true, desc = 'New tab' })
-keymap('n', '<C-w><left>', '<C-w><')
-keymap('n', '<C-w><right>', '<C-w>>')
-keymap('n', '<C-w><up>', '<C-w>+')
-keymap('n', '<C-w><down>', '<C-w>-')
+keymap('n', '<C-w><left>', '20<C-w><')
+keymap('n', '<C-w><right>', '20<C-w>>')
+keymap('n', '<C-w><up>', '20<C-w>+')
+keymap('n', '<C-w><down>', '20<C-w>-')
 
 -- Git
 keymap('n', '<leader>gs', ':G<CR>', { silent = true, desc = 'Git status' })
@@ -79,4 +79,7 @@ keymap('i', '<A-e>U', 'Ú', { silent = true })
 keymap('i', '<A-n>N', 'Ñ', { silent = true })
 keymap('i', '<A-?>', '¿', { silent = true })
 keymap('i', '<A-1>', '¡', { silent = true })
+
+-- Python
+   keymap('n', '<leader>rr', ':!python %<CR>', { silent = true, desc = 'Run python' })
 
