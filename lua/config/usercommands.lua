@@ -12,4 +12,12 @@ vim.api.nvim_create_user_command(
    { desc = 'Compare current buffer with the original file' }
 )
 
+vim.api.nvim_create_user_command(
+   'GPU',
+   function()
+      vim.cmd('G push -u')
+   end,
+   { desc = 'Git push to upstream' }
+)
+
 

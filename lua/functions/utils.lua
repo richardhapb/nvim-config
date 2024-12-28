@@ -1,75 +1,135 @@
+local function close_diff_buffers(main_buffer)
+   local e, diff_buffers = pcall(vim.api.nvim_buf_get_var, main_buffer, 'diff_buffers')
+   if e then
+      for _, buffer in ipairs(diff_buffers) do
+         if vim.api.nvim_buf_is_valid(buffer) then
+            vim.api.nvim_buf_delete(buffer, {force = true})
+         end
+      end
+   end
+end
+
 local M = {}
 
-local utils = require "functions.utils"
+-- Separate by delim
+M.split = function(str, delim)
+    local result = {}
+    for match in (str .. delim):gmatch("(.-)" .. delim) do
+        table.insert(result, match)
+    end
+    return result
+end
 
--- Execute multiple SQL queries and show output in a single Floaterm window
-M.sql_query = function()
-    -- Diferents directories for find config files
-    local parent_directory = vim.fn.expand("%:p:h")
-    local root_directory = vim.fn.getcwd()
-    local default_directory = vim.fn.expand("$DEV/config")
+-- Get the text selected
+M.get_visual_selection = function()
+    local mode = vim.api.nvim_get_mode().mode
 
-    local directories = {parent_directory, root_directory, default_directory}
-    local sql_conf = nil
+    local start_row, start_col = unpack(vim.api.nvim_buf_get_mark(0, "<"))
+    local end_row, end_col = unpack(vim.api.nvim_buf_get_mark(0, ">"))
 
-    for _, dir in ipairs(directories) do
-        if dir then
-            sql_conf = io.open(dir .. "/sql.json", "r")
-            if sql_conf then
-                break -- Found it
-            end
-        end
+    if not start_row or not start_col or not end_row or not end_col then
+        print("No valid selection")
+        return ""
     end
 
-    if sql_conf then
-        local db_conf = sql_conf:read("*a")
-        sql_conf:close()
+    end_col = end_col + 1
 
-        if db_conf then
-            local db = vim.fn.json_decode(db_conf)
-            local sql_query = utils.get_visual_selection()
-            local queries = utils.split(sql_query, ";")
+    local lines = vim.api.nvim_buf_get_lines(0, start_row - 1, end_row, false)
 
-            -- Create a temp file for storage data
-            local temp_file_path = "/tmp/sql_query_output.txt"
-            local temp_file = io.open(temp_file_path, "w")
-
-            if not temp_file then
-                print("Error creating temp file")
-                return
-            end
-
-            for _, query in ipairs(queries) do
-                if query ~= "" then
-                    -- Replace line break with spaces
-                    query = query:gsub("\n", " ")
-
-                    local port = 5432 -- Default port
-                    if db.port then
-                        port = db.port
-                    end
-                    --
-                    -- Execute and compare
-                    local command = 'PGPASSWORD="' .. db.password .. '" psql -h ' .. db.host .. ' -p ' .. port .. ' -U ' .. db.user .. ' -d ' .. db.database .. ' -c ' .. vim.fn.shellescape(query)
-                    local output = vim.fn.system(command)
-
-                    -- Write output
-                    temp_file:write("Query: " .. query .. "\n")
-                    temp_file:write(output .. "\n")
-                    temp_file:write("-------------------------------------------------\n")
-                end
-            end
-
-            if temp_file then
-                temp_file:close()
-            end
-
-            -- Output in float window
-            vim.cmd('FloatermNew --width=0.9 --height=0.7 --autoclose=0 less ' .. temp_file_path)
+    if mode == "v" then
+        if #lines == 1 then -- One line
+            lines[1] = string.sub(lines[1], start_col + 1, end_col)
+        else -- Many lines
+            lines[1] = string.sub(lines[1], start_col + 1)
+            lines[#lines] = string.sub(lines[#lines], 1, end_col)
         end
-    else
-        print("Can't find the file sql.json.")
+    elseif mode == "\22" then -- <C-v> - Block visual mode
+        for i = 1, #lines do
+            lines[i] = string.sub(lines[i], start_col + 1, end_col + 1)
+        end
     end
+    return table.concat(lines, "\n")
+end
+
+M.git_diff_name_only = function(branch_name)
+   vim.cmd('G diff ' .. branch_name .. ' --name-only')
+end
+
+M.git_curr_line_diff_split = function(branch_name, main_buffer)
+   if main_buffer == nil or not vim.api.nvim_buf_is_valid(main_buffer) then
+      main_buffer = vim.api.nvim_get_current_buf()
+   else
+      vim.api.nvim_set_current_buf(main_buffer)
+   end
+
+   local current_cursor_line = vim.fn.line('.')
+   local current_line_text = vim.api.nvim_buf_get_lines(main_buffer, current_cursor_line - 1, current_cursor_line, false)[1]
+
+   if current_line_text ~= nil then
+      close_diff_buffers(main_buffer)
+
+      vim.cmd('new ' .. current_line_text)
+      local current_buffer = vim.api.nvim_get_current_buf()
+      print(current_buffer)
+      local ft = vim.api.nvim_get_option_value('filetype', {buf = current_buffer})
+      local filename = vim.api.nvim_buf_get_name(current_buffer)
+
+      local file = vim.split(filename, '/')
+      filename = file[#file]
+
+      local branch_buffer = vim.api.nvim_create_buf(false, true)
+      local branch_file_content = vim.fn.system('git show ' .. branch_name .. ':' .. current_line_text)
+
+      print(branch_buffer)
+
+      vim.api.nvim_buf_set_lines(branch_buffer, 0, -1, false, vim.split(branch_file_content, '\n'))
+      vim.api.nvim_set_option_value('filetype', ft, {buf = branch_buffer})
+      vim.api.nvim_buf_set_name(branch_buffer, branch_name .. ':' .. filename)
+
+      vim.cmd('diffthis')
+      vim.cmd('vsplit')
+      vim.api.nvim_set_current_buf(branch_buffer)
+      vim.cmd('diffthis')
+
+      vim.api.nvim_buf_set_var(main_buffer, 'diff_buffers', {current_buffer, branch_buffer})
+   end
+end
+
+M.git_restore_curr_line = function(branch_name)
+   local main_buffer = vim.api.nvim_get_current_buf()
+   local current_line_text = vim.fn.getline('.')
+
+   if current_line_text == nil then
+      return
+   end
+
+   local cursor_line = vim.fn.line('.')
+   M.buf_delete_line(main_buffer, cursor_line)
+
+   vim.fn.system('git restore --source ' .. branch_name .. ' --staged --worktree -- ' .. current_line_text)
+
+   close_diff_buffers(main_buffer)
+   local success_message = 'Restored ' .. current_line_text .. ' from ' .. branch_name .. ' successfully!'
+   vim.notify(success_message, vim.log.levels.INFO, {title = 'Git Restore'})
+end
+
+M.buf_delete_line = function(buffer, line)
+   local lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
+   table.remove(lines, line)
+   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+end
+
+M.close_all_buffers_but_current = function(force)
+   if force == nil then
+      force = false
+   end
+   local current_bufnr = vim.fn.bufnr('%')
+   local buflist = vim.api.nvim_list_bufs()
+   for _, buf in ipairs(buflist) do
+      if buf ~= current_bufnr then
+         vim.api.nvim_buf_delete(buf, {force = force})
+      end
+   end
 end
 
 return M
