@@ -70,7 +70,6 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
 
       vim.cmd('new ' .. current_line_text)
       local current_buffer = vim.api.nvim_get_current_buf()
-      print(current_buffer)
       local ft = vim.api.nvim_get_option_value('filetype', {buf = current_buffer})
       local filename = vim.api.nvim_buf_get_name(current_buffer)
 
@@ -79,8 +78,6 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
 
       local branch_buffer = vim.api.nvim_create_buf(false, true)
       local branch_file_content = vim.fn.system('git show ' .. branch_name .. ':' .. current_line_text)
-
-      print(branch_buffer)
 
       vim.api.nvim_buf_set_lines(branch_buffer, 0, -1, false, vim.split(branch_file_content, '\n'))
       vim.api.nvim_set_option_value('filetype', ft, {buf = branch_buffer})
