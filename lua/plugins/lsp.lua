@@ -33,13 +33,31 @@ return {
             },
          })
 
-         vim.lsp.handlers['textDocument/hover'] = vim.lsp.buf.hover(
-            { border = _border, focusable = true }
-         )
+         local function setup_handler_if_supported(client_ref, handler_name, handler_fn)
+            if client_ref.server_capabilities then
+               -- Convert handler name to capability name
+               local capability_name = handler_name:gsub("textDocument/", "")
+               capability_name = capability_name:gsub("([A-Z])", function(x) return "_" .. string.lower(x) end)
 
-         vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.buf.signature_help(
-            { border = _border, focusable = true }
-         )
+               -- Check if the capability exists
+               local capability_path = "textDocument_" .. capability_name
+               if client_ref.server_capabilities[capability_path] then
+                  vim.lsp.handlers[handler_name] = handler_fn
+               end
+            end
+         end
+
+         setup_handler_if_supported(client, 'textDocument/hover', function(_, _, _, _)
+            return vim.lsp.buf.hover(
+               { border = _border, focusable = true }
+            )
+         end)
+
+         setup_handler_if_supported(client, 'textDocument/signatureHelp', function(_, _, _, _)
+            return vim.lsp.buf.signature_help(
+               { border = _border, focusable = true }
+            )
+         end)
 
          require 'lspconfig.ui.windows'.default_options = {
             border = _border,
