@@ -8,6 +8,8 @@ vim.opt.softtabstop = 4
 
 vim.opt.smarttab = true
 vim.opt.smartcase = true
+vim.opt.autoindent = true
+vim.opt.smartindent = true
 
 vim.g.editorconfig = true
 
@@ -36,6 +38,7 @@ vim.g.copilot_no_tab_map = true
 -- Disable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
    pattern = "*",
+    group = vim.api.nvim_create_augroup("Basics", {clear = true}),
    callback = function()
       vim.opt.formatoptions:remove { "c", "r", "o" }
    end,

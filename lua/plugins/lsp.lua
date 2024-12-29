@@ -3,10 +3,11 @@ return {
    dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      "folke/neodev.nvim",
       'github/copilot.vim',
    },
    config = function()
+      local encoding = "utf-16"
+      local pos_encodings = { 'utf-8', 'utf-16', 'utf-32' }
       local on_attach = function(client, bufnr)
          if client == nil then
             return
@@ -15,9 +16,16 @@ return {
             vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
          end
 
+         vim.lsp.util.make_position_params(0, encoding)
+
+         local _border = 'single'
+
          vim.diagnostic.config({
             underline = true,
             signs = true,
+            float = {
+               border = _border,
+            },
             update_in_insert = false,
             virtual_text = {
                spacing = 4,
@@ -25,25 +33,55 @@ return {
             },
          })
 
+         vim.lsp.handlers['textDocument/hover'] = vim.lsp.buf.hover(
+            { border = _border, focusable = true }
+         )
+
+         vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.buf.signature_help(
+            { border = _border, focusable = true }
+         )
+
+         require 'lspconfig.ui.windows'.default_options = {
+            border = _border,
+            focusable = true,
+         }
+
          local keymap = vim.keymap.set
 
          local opts = { buffer = bufnr }
 
-         keymap('n', 'gD', vim.lsp.buf.declaration, opts)
-         keymap('n', 'gd', vim.lsp.buf.definition, opts)
-         keymap('n', 'gi', vim.lsp.buf.implementation, opts)
-         keymap('n', 'gr', vim.lsp.buf.references, opts)
+         keymap('n', 'gdD', vim.lsp.buf.declaration, opts)
+         keymap('n', 'gdd', vim.lsp.buf.definition, opts)
+         keymap('n', 'gdi', vim.lsp.buf.implementation, opts)
+         keymap('n', 'gdr', vim.lsp.buf.references, opts)
          keymap('n', 'K', vim.lsp.buf.hover, opts)
          keymap('n', '<C-e>', vim.lsp.buf.signature_help, opts)
-         keymap('n', 'gn', vim.lsp.buf.rename, opts)
+         keymap('n', 'gdn', vim.lsp.buf.rename, opts)
          keymap('n', 'gf', function()
             vim.lsp.buf.format { async = true }
          end, opts)
       end
 
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
+      capabilities.textDocument.completion.completionItem.resolveSupport = {
+         properties = {
+            "documentation",
+            "detail",
+            "additionalTextEdits",
+         }
+      }
+      capabilities.general.positionEncodings = pos_encodings
 
-      require("neodev").setup()
+      -- Warning in 0.11.0, position_encoding param is required
+      local orig_notify = vim.notify
+      ---@diagnostic disable-next-line: duplicate-set-field
+      vim.notify = function(msg, level, opts)
+         if not (msg:match("position_encoding param is required")
+                and level == vim.log.levels.WARN) then
+            orig_notify(msg, level, opts)
+         end
+      end
 
       local lc = require("lspconfig")
 
@@ -53,8 +91,14 @@ return {
          settings = {
             Lua = {
                telemetry = { enable = false },
-               workspace = { checkThirdParty = false },
-            }
+               diagnostics = {
+                  globals = { "vim", 'require' },
+               },
+               workspace = {
+                  library = vim.api.nvim_get_runtime_file("", true),
+                  checkThirdParty = false
+               },
+            },
          }
       })
 

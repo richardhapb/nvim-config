@@ -41,7 +41,8 @@ local git_diff_name_only = function(prompt_bufnr)
    vim.api.nvim_set_current_buf(buffer)
 
    vim.keymap.set('n', '<CR>', function() lutils.git_curr_line_diff_split(branch, buffer) end, { buffer = buffer })
-   vim.keymap.set('n', '<leader>r', function() lutils.git_restore_curr_line(branch) end, { buffer = buffer })
+   vim.keymap.set('n', 'R', function() lutils.git_restore_curr_line(branch) end, { buffer = buffer })
+   vim.keymap.set('n', 'G', ':G<CR>', { buffer = buffer })
 end
 
 local git_branches_diff = function(opts)
@@ -95,6 +96,7 @@ local git_branches_diff = function(opts)
       end
       table.insert(results, index, entry)
    end
+---@diagnostic disable-next-line: param-type-mismatch
    for _, line in ipairs(output) do
       parse_line(line)
    end
@@ -156,33 +158,6 @@ local git_branches_diff = function(opts)
       previewer = previewers.git_commit_diff_to_head.new(opts),
    }):find()
 end
-
--- local colors = function (opts)
---    opts = opts or {}
---    pickers.new(opts, {
---       prompt_title = 'Colors',
---       finder = finders.new_table {
---          results = { {'red', '#FF0000'}, {'green', '#00FF00'}, {'blue', '#0000FF'}, {'yellow', '#FFFF00'}, {'cyan', '#00FFFF'}, {'magenta', '#FF00FF'}, {'black', '#000000'}, {'white', '#FFFFFF'} },
---       },
---       entry_maker = function(entry)
---          return {
---             value = entry,
---             display = entry[1],
---             ordinal = entry[1],
---          }
---       end,
---       sorter = conf.generic_sorter(opts),
---       attach_mappings = function(prompt_bufnr, map)
---          actions.select_default:replace(function()
---             actions.close(prompt_bufnr)
---             local selection = action_state.get_selected_entry()
---             print(vim.inspect(selection))
---             vim.api.nvim_put({selection[1][2]}, "", false, true)
---          end)
---          return true
---       end,
---    }):find()
--- end
 
 return {
    'nvim-telescope/telescope.nvim',
