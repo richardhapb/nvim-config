@@ -6,7 +6,7 @@ local previewers = require("telescope.previewers")
 local conf = require("telescope.config").values
 
 local log = require 'plenary.log'.new({})
-log.level = 'debug'
+log.level = 'info'
 
 local M = {}
 
@@ -82,6 +82,29 @@ M.docker_containers = function()
             picker:refresh_previewer()
          end
 
+         local function delete_container(_, container)
+            local selection = action_state.get_selected_entry()
+            if not selection then
+               return
+            end
+
+            local container_id = selection.value.ID
+
+            if container then
+               log.debug('[DELETE] Container found, replacing container_id')
+               log.debug('[DELETE] container_id: ', container_id)
+               container_id = container
+               log.debug('[DELETE] container_id: ', container_id)
+            end
+
+            local command = { 'docker', 'rm', container_id }
+            vim.fn.system(vim.fn.join(command, ' '))
+
+            local picker = action_state.get_current_picker(prompt_bufnr)
+            picker:refresh()
+            picker:refresh_previewer()
+         end
+
          local function open_log(_, new_window)
             local selection = action_state.get_selected_entry()
             if not selection then
@@ -148,6 +171,10 @@ M.docker_containers = function()
                      log.info('close container: ', item.ordinal)
                      stop_container(_, item.value.ID)
 
+                  elseif action == 'delete' then
+                     log.info('delete container: ', item.ordinal)
+                     delete_container(_, item.value.ID)
+
                   end
                end
                element = element.next
@@ -200,10 +227,14 @@ M.docker_containers = function()
          map('i', '<C-h>', function() open_log(_, false) end)
          map('i', '<C-b>', log_to_buf)
          map('n', 'b', log_to_buf)
+         map('i', '<C-d>', delete_container)
+         map('n', 'd', delete_container)
          map('i', '<C-q>', function() handle_prefix(_, 'close') end)
          map('n', 'q', function() handle_prefix(_, 'close') end)
          map('i', '<C-r>', function() handle_prefix(_, 'start') end)
          map('n', 'r', function() handle_prefix(_, 'start') end)
+         map('i', '<C-*>', function() handle_prefix(_, 'delete') end)
+         map('n', '*', function() handle_prefix(_, 'delete') end)
          return true
       end,
    }):find()
