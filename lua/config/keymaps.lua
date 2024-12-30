@@ -4,8 +4,8 @@ local keymap = vim.keymap.set
 
 -- Diagnostics and lint
 keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in a float windows" })
-keymap('n', '<leader>]', vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
-keymap('n', '<leader>[', vim.diagnostic.goto_prev, { desc = "Go to previoues diagnostic" })
+keymap('n', '<leader>]', function() vim.diagnostic.jump({count = 1, float = true}) end, { desc = "Go to next diagnostic" })
+keymap('n', '<leader>[', function() vim.diagnostic.jump({count = -1, float = true}) end, { desc = "Go to previous diagnostic" })
 
 -- Usercommands
 keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
@@ -29,6 +29,10 @@ keymap('n', '<C-d>', '<C-d>zz')
 keymap('n', '<C-u>', '<C-u>zz')
 keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
+
+-- Quickfix
+keymap('n', '<C-n>', ':cnext<CR>', { silent = true })
+keymap('n', '<C-p>', ':cprev<CR>', { silent = true })
 
 -- UI
 keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })

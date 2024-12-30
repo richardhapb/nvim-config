@@ -50,7 +50,7 @@ vim.opt.display = vim.o.display .. ",lastline"
 vim.opt.listchars = vim.o.listchars .. ",eol:↲"
 vim.opt.list = true
 vim.opt.fixeol = true
-vim.opt.fileformat = "dos"
+vim.opt.fileformat = "mac"
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }

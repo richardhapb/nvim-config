@@ -1,4 +1,5 @@
 .DS_Store
 plug
 .venv
+lazy-lock.json
 

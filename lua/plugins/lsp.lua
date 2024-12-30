@@ -3,10 +3,13 @@ return {
    dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
+      'folke/lua-dev.nvim',
       'github/copilot.vim',
    },
    config = function()
-      local encoding = "utf-16"
+      require('lua-dev').setup({})
+
+      local encoding = "utf-8"
       local pos_encodings = { 'utf-8', 'utf-16', 'utf-32' }
       local on_attach = function(client, bufnr)
          if client == nil then
@@ -33,27 +36,27 @@ return {
             },
          })
 
-         local function setup_handler_if_supported(client_ref, handler_name, handler_fn)
-            if client_ref.server_capabilities then
+         local function setup_handler_if_supported(handler_name, handler_fn)
+            if client.server_capabilities then
                -- Convert handler name to capability name
                local capability_name = handler_name:gsub("textDocument/", "")
                capability_name = capability_name:gsub("([A-Z])", function(x) return "_" .. string.lower(x) end)
 
                -- Check if the capability exists
                local capability_path = "textDocument_" .. capability_name
-               if client_ref.server_capabilities[capability_path] then
+               if client.server_capabilities[capability_path] then
                   vim.lsp.handlers[handler_name] = handler_fn
                end
             end
          end
 
-         setup_handler_if_supported(client, 'textDocument/hover', function(_, _, _, _)
+         setup_handler_if_supported('textDocument/hover', function(_, _, _, _)
             return vim.lsp.buf.hover(
                { border = _border, focusable = true }
             )
          end)
 
-         setup_handler_if_supported(client, 'textDocument/signatureHelp', function(_, _, _, _)
+         setup_handler_if_supported('textDocument/signatureHelp', function(_, _, _, _)
             return vim.lsp.buf.signature_help(
                { border = _border, focusable = true }
             )
@@ -75,7 +78,7 @@ return {
          keymap('n', 'K', vim.lsp.buf.hover, opts)
          keymap('n', '<C-e>', vim.lsp.buf.signature_help, opts)
          keymap('n', 'gdn', vim.lsp.buf.rename, opts)
-         keymap('n', 'gf', function()
+         keymap('n', 'gdf', function()
             vim.lsp.buf.format { async = true }
          end, opts)
       end
@@ -196,6 +199,7 @@ return {
          "markdown_oxide",
          "ltex",
          "texlab",
+         "bashls"
       }
 
       for _, lang in ipairs(cmp_elements) do

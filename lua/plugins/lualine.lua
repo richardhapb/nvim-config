@@ -13,7 +13,7 @@ return {
             lualine_b = { 'branch' },
             lualine_c = { {'filename', color = 'StatusLine' }, 'diff' },
             lualine_x = { 'encoding', 'fileformat', 'filetype' },
-            lualine_y = { 'progress' },
+            lualine_y = { 'progress', 'searchcount' },
             lualine_z = { 'location' },
          },
          inactive_sections = {
