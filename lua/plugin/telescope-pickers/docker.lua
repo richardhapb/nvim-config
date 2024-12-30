@@ -240,6 +240,4 @@ M.docker_containers = function()
    }):find()
 end
 
-M.docker_containers()
-
 return M
