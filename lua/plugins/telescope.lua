@@ -60,6 +60,14 @@ return {
          end,
          desc = 'Telescope Projects' },
 
+      { '<leader>fN', function() require('telescope').extensions.file_browser.file_browser({
+            cwd=vim.fs.joinpath(vim.fn.expand('$HOME'), 'notes'),
+            files=true,
+            hidden=false,
+         })
+         end,
+         desc = 'Telescope Richard notes browser' },
+
       { '<leader>f-', function() require('telescope.builtin').find_files({
          cwd = vim.fn.stdpath('data') .. '/lazy',
          prompt_title = "Plugins core files",
