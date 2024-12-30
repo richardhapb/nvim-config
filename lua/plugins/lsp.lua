@@ -3,12 +3,11 @@ return {
    dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      'folke/lua-dev.nvim',
       'github/copilot.vim',
+      'folke/neodev.nvim'
    },
    config = function()
-      require('lua-dev').setup({})
-
+      require 'neodev'.setup()
       local encoding = "utf-8"
       local pos_encodings = { 'utf-8', 'utf-16', 'utf-32' }
       local on_attach = function(client, bufnr)
@@ -71,14 +70,16 @@ return {
 
          local opts = { buffer = bufnr }
 
-         keymap('n', 'gdD', vim.lsp.buf.declaration, opts)
-         keymap('n', 'gdd', vim.lsp.buf.definition, opts)
-         keymap('n', 'gdi', vim.lsp.buf.implementation, opts)
-         keymap('n', 'gdr', vim.lsp.buf.references, opts)
+         keymap('n', 'gD', vim.lsp.buf.declaration, opts)
+         keymap('n', 'gd', vim.lsp.buf.definition, opts)
+         keymap('n', 'gi', require 'telescope.builtin'.lsp_implementations, opts)
+         keymap('n', 'gr', require 'telescope.builtin'.lsp_references, opts)
          keymap('n', 'K', vim.lsp.buf.hover, opts)
          keymap('n', '<C-e>', vim.lsp.buf.signature_help, opts)
-         keymap('n', 'gdn', vim.lsp.buf.rename, opts)
-         keymap('n', 'gdf', function()
+         keymap('n', 'gn', vim.lsp.buf.rename, opts)
+         keymap('n', 'gs', require 'telescope.builtin'.lsp_document_symbols, opts)
+         keymap('n', 'gS', require 'telescope.builtin'.lsp_workspace_symbols, opts)
+         keymap('n', 'gh', function()
             vim.lsp.buf.format { async = true }
          end, opts)
       end
@@ -93,6 +94,11 @@ return {
          }
       }
       capabilities.general.positionEncodings = pos_encodings
+
+      local cmp_cap = require 'cmp_nvim_lsp'.default_capabilities()
+      if cmp_cap ~= nil then
+         capabilities = vim.tbl_deep_extend('force', capabilities, cmp_cap)
+      end
 
       -- Warning in 0.11.0, position_encoding param is required
       local orig_notify = vim.notify
@@ -116,7 +122,11 @@ return {
                   globals = { "vim", 'require' },
                },
                workspace = {
-                  library = vim.api.nvim_get_runtime_file("", true),
+                  library = {
+                     '${3rd}/luv/library',
+                     vim.fn.expand("$VIMRUNTIME/lua"),
+                     unpack(vim.api.nvim_get_runtime_file("", true))
+                  },
                   checkThirdParty = false
                },
             },
