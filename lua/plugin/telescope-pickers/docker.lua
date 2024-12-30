@@ -161,7 +161,7 @@ M.docker_containers = function()
                log.debug('element: ', vim.inspect(element.item[1].ordinal))
                local item = element.item[1]
 
-               if item ~= nil and item.ordinal ~= nil and item.ordinal:match('^' .. prefix) then
+               if item ~= nil and item.ordinal ~= nil and item.ordinal:match('^' .. prefix .. '.*') then
 
                   if action == 'start' then
                      log.info('start container: ', item.value.ID)

@@ -31,6 +31,7 @@ return {
          hl(0, 'LspReferenceTarget', { bg = "#111111" })
          hl(0, 'LspReferenceText', { bg = "#111111" })
          hl(0, 'NormalFloat', { bg = "#000000" })
+         hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
       end
    },
 }
