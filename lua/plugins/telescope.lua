@@ -16,7 +16,7 @@ return {
             },
          },
          defaults = {
-            file_ignore_patterns = {".git", "node_modules", "build", "dist", ".DS_Store", ".cache", "__pycache__", ".pytest_cache", ".vscode", ".idea", ".clangd", "yarn.lock", "package-lock.json", ".venv"},
+            file_ignore_patterns = {"%.git/.*", "node_modules/.*", "build/.*", "dist/.*", "%.DS_Store/.*", "%.cache/.*", "__pycache__/.*", "%.pytest_cache/.*", "%.vscode/.*", "%.idea/.*", "%.clangd/.*", "yarn%.lock$", "package-lock%.json$", ".venv/.*"},
             file_sorter = require("telescope.sorters").get_fuzzy_file,
             generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter,
             initial_mode = "insert",
@@ -45,6 +45,12 @@ return {
             prompt_title = "NVIM config" })
          end,
          desc = 'Telescope Nvim config' },
+
+      { '<leader>fn', function() require('telescope.builtin').find_files({
+            cwd=vim.fs.joinpath(vim.fn.expand('$HOME'), 'notes'),
+            prompt_title = "Richard's Notes" })
+         end,
+         desc = 'Telescope Richard notes' },
 
       { '<leader>fp', function() require('telescope').extensions.file_browser.file_browser({
             cwd=vim.fn.expand('$DEV'),

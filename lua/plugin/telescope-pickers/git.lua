@@ -37,8 +37,13 @@ local git_diff_name_only = function(prompt_bufnr)
       return
    end
 
-   local buffer = vim.api.nvim_create_buf(false, true)
-   vim.api.nvim_buf_set_name(buffer, "Git diff: " .. branch)
+   -- Verify if the buffer already exists
+   local buffer = vim.fn.bufnr("Git diff: " .. branch)
+   if buffer == -1 then
+      buffer = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_name(buffer, "Git diff: " .. branch)
+   end
+
    vim.api.nvim_buf_set_lines(buffer, 0, -1, false, res)
    vim.api.nvim_set_current_buf(buffer)
 
