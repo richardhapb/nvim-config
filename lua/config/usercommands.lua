@@ -20,4 +20,11 @@ vim.api.nvim_create_user_command(
    { desc = 'Git push to upstream' }
 )
 
+vim.api.nvim_create_user_command(
+   'CWD',
+   function()
+      vim.cmd('lcd %:p:h')
+   end,
+   { desc = 'Set current working directory' }
+)
 

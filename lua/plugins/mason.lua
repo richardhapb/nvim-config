@@ -25,7 +25,6 @@ return {
                "ruff",
                "pyright",
                "sqlls",
-               "tailwindcss",
                "ts_ls",
                "vimls",
                "yamlls",

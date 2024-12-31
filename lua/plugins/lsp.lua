@@ -66,6 +66,62 @@ return {
             focusable = true,
          }
 
+         -- Setup language for spell checking
+         local function change_ltex_config(language)
+            local ltex_config = vim.lsp.get_clients({ name = "ltex" })[1].config.settings
+            if ltex_config == nil then
+               vim.notify("ltex config not found", vim.log.levels.ERROR)
+               return
+            end
+            if language == "en" then
+               language = "en-US"
+            end
+
+            ltex_config.ltex.language = language
+            vim.lsp.buf_notify(0, "workspace/didChangeConfiguration", {
+               settings = ltex_config
+            })
+            vim.notify("Changed ltex language to " .. language, vim.log.levels.INFO)
+         end
+
+         local ft = vim.api.nvim_get_option_value('filetype', { buf = bufnr })
+         local spelling_fts = { 'markdown', 'tex', 'ltex', 'txt', 'gitcommit' }
+
+         if vim.tbl_contains(spelling_fts, ft) then
+            vim.api.nvim_buf_create_user_command(
+               bufnr,
+               "LtexLang",
+               function(args)
+                  if args.args == nil or #args.args == 0 then
+                     vim.notify("No language provided", vim.log.levels.ERROR)
+                     vim.notify("Usage: LtexLang <language>", vim.log.levels.INFO)
+                     vim.notify("Passed args: " .. vim.inspect(args.args), vim.log.levels.INFO)
+                     return
+                  end
+                  change_ltex_config(args.args)
+               end, {
+                  nargs = 1,
+               })
+         end
+
+         -- Git commit messages should not have uppercase sentence start
+         if ft == 'gitcommit' then
+            local ltex_config = vim.lsp.get_clients({ name = "ltex" })[1].config.settings
+            if ltex_config == nil then
+               vim.notify("ltex config not found", vim.log.levels.INFO)
+               return
+            end
+            ltex_config.ltex.disabledRules = {
+               ["en-US"] = {
+                  "UPPERCASE_SENTENCE_START",
+               },
+               ["es"] = {
+                  "UPPERCASE_SENTENCE_START",
+               }
+            }
+         end
+
+
          local keymap = vim.keymap.set
 
          local opts = { buffer = bufnr }
@@ -196,6 +252,16 @@ return {
          filetypes = { "json", "toml", "yaml", "markdown", "javascript", "typescript", "css", "html" }
       })
 
+      lc.ltex.setup({
+         on_attach = on_attach,
+         capabilities = capabilities,
+         settings = {
+            ltex = {
+               language = "en-US",
+            }
+         }
+      })
+
       local cmp_elements = {
          "eslint",
          "ts_ls",
@@ -203,11 +269,9 @@ return {
          "yamlls",
          "dockerls",
          "docker_compose_language_service",
-         "tailwindcss",
          "sqlls",
          "vimls",
          "markdown_oxide",
-         "ltex",
          "texlab",
          "bashls"
       }
