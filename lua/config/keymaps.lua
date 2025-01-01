@@ -4,8 +4,10 @@ local keymap = vim.keymap.set
 
 -- Diagnostics and lint
 keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in a float windows" })
-keymap('n', '<leader>]', function() vim.diagnostic.jump({count = 1, float = true}) end, { desc = "Go to next diagnostic" })
-keymap('n', '<leader>[', function() vim.diagnostic.jump({count = -1, float = true}) end, { desc = "Go to previous diagnostic" })
+keymap('n', '<leader>]', function() vim.diagnostic.jump({ count = 1, float = true }) end,
+   { desc = "Go to next diagnostic" })
+keymap('n', '<leader>[', function() vim.diagnostic.jump({ count = -1, float = true }) end,
+   { desc = "Go to previous diagnostic" })
 
 -- Usercommands
 keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
@@ -42,17 +44,20 @@ keymap('n', '<C-q>', ':q<CR>', { silent = true })
 
 -- Explorer
 keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
-keymap('n', '<leader>tn', ':tabnew<CR>', { silent = true, desc = 'New tab' })
-keymap('n', '<leader>tf', ':tabnext<CR>', { silent = true, desc = 'New tab' })
-keymap('n', '<leader>tb', ':tabprevious<CR>', { silent = true, desc = 'New tab' })
+keymap('n', '<leader>tc', ':tabnew<CR>', { silent = true, desc = 'New tab' })
+keymap('n', '<leader>tn', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
+keymap('n', '<leader>tp', ':tabprevious<CR>', { silent = true, desc = 'Previous tab' })
 keymap('n', '<C-w><left>', '15<C-w><')
 keymap('n', '<C-w><right>', '15<C-w>>')
 keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
-keymap('n', '<leader>bi', utils.close_all_buffers_but_current, { silent = true, desc = 'Close all buffers except current' })
+keymap('n', '<leader>bi', utils.close_all_buffers_but_current,
+   { silent = true, desc = 'Close all buffers except current' })
+keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
+keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
 
 -- Git
-keymap('n', '<leader>gs', ':G<CR>', { silent = true, desc = 'Git status' })
+keymap('n', '<leader>gg', ':G<CR>', { silent = true, desc = 'Git status' })
 keymap('n', '<leader>gc', ':G commit<CR>', { silent = true, desc = 'Git commit' })
 keymap('n', '<leader>gC', ':G commit --amend<CR>', { silent = true, desc = 'Git commit --amend' })
 keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
@@ -62,9 +67,14 @@ keymap('n', '<leader>gA', ':G add .<CR>', { silent = true, desc = 'Git add .' })
 keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
 keymap('n', '<leader>gf', ':G fetch<CR>', { silent = true, desc = 'Git fetch' })
 keymap('n', '<leader>gb', ':G blame<CR>', { silent = true, desc = 'Git blame' })
-keymap('n', '<leader>gg', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
+keymap('n', '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
 keymap('n', '<leader>gdv', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
-keymap('n', '<leader>gds', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
+keymap('n', '<leader>gds', ':Gdiffsplit<CR>', { silent = true, desc = 'Git horizontal diff split' })
+keymap({ 'n', 'x' }, '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
+keymap({ 'n', 'x' }, '<leader>ghp', ':Gitsigns prev_hunk<CR>', { silent = true, desc = 'Git previous hunk' })
+keymap({ 'n', 'x' }, '<leader>ghn', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
+keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
+
 
 
 keymap('n', '<leader>gda', function()
@@ -73,7 +83,8 @@ keymap('n', '<leader>gda', function()
 end, { silent = true, desc = 'Git diff HEAD --name-only' })
 
 -- Copilot
-keymap('i', '<C-z>', 'copilot#Accept()', { expr = true, silent = true,  desc = 'Copilot complete', noremap = false, replace_keycodes = false})
+keymap('i', '<C-z>', 'copilot#Accept()',
+   { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })
 
 -- Latex
 keymap('n', '<leader>lb', ':LatexBuild<CR>', { silent = true, desc = 'Latex build' })
@@ -97,5 +108,5 @@ keymap('i', '<A-?>', '¿', { silent = true })
 keymap('i', '<A-1>', '¡', { silent = true })
 
 -- Python
-   keymap('n', '<leader>rr', ':!python %<CR>', { silent = true, desc = 'Run python' })
+keymap('n', '<leader>rp', ':!python %<CR>', { silent = true, desc = 'Run python' })
 

@@ -5,6 +5,8 @@ local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local conf = require("telescope.config").values
 
+local Job = require "plenary.job"
+
 local log = require 'plenary.log'.new({})
 log.level = 'info'
 
@@ -17,7 +19,7 @@ M.docker_containers = function()
          command_generator = function()
             return { "docker", "ps", "-a", "--format", "json" }
          end,
-        entry_maker = function(entry)
+         entry_maker = function(entry)
             local parsed = vim.json.decode(entry)
             return {
                value = parsed,
@@ -40,6 +42,11 @@ M.docker_containers = function()
       },
       sorter = conf.generic_sorter({}),
       attach_mappings = function(prompt_bufnr, map)
+         local refresh_picker = function()
+            local picker = action_state.get_current_picker(prompt_bufnr)
+            picker:refresh()
+         end
+
          local function start_container(_, container)
             local selection = action_state.get_selected_entry()
             if not selection then
@@ -51,12 +58,16 @@ M.docker_containers = function()
                container_id = container
             end
 
-            local command = { 'docker', 'start', container_id }
-            vim.fn.system(vim.fn.join(command, ' '))
+            local command = 'docker'
+            local args = { 'start', container_id }
 
-            local picker = action_state.get_current_picker(prompt_bufnr)
-            picker:refresh()
-            picker:refresh_previewer()
+            log.debug('[START] container_id: ', container_id)
+            ---@diagnostic disable-next-line: missing-fields
+            Job:new {
+               command = command,
+               args = args,
+               on_exit = refresh_picker,
+            }:start()
          end
 
          local function stop_container(_, container)
@@ -74,12 +85,16 @@ M.docker_containers = function()
                log.debug('[STOP] container_id: ', container_id)
             end
 
-            local command = { 'docker', 'stop', container_id }
-            vim.fn.system(vim.fn.join(command, ' '))
+            local command = 'docker'
+            local args = { 'stop', container_id }
 
-            local picker = action_state.get_current_picker(prompt_bufnr)
-            picker:refresh()
-            picker:refresh_previewer()
+            log.debug('[STOP] container_id: ', container_id)
+            ---@diagnostic disable-next-line: missing-fields
+            Job:new {
+               command = command,
+               args = args,
+               on_exit = refresh_picker,
+            }:start()
          end
 
          local function delete_container(_, container)
@@ -97,12 +112,16 @@ M.docker_containers = function()
                log.debug('[DELETE] container_id: ', container_id)
             end
 
-            local command = { 'docker', 'rm', container_id }
-            vim.fn.system(vim.fn.join(command, ' '))
+            local command = 'docker'
+            local args = { 'rm', container_id }
 
-            local picker = action_state.get_current_picker(prompt_bufnr)
-            picker:refresh()
-            picker:refresh_previewer()
+            log.debug('[DELETE] container_id: ', container_id)
+            ---@diagnostic disable-next-line: missing-fields
+            Job:new {
+               command = command,
+               args = args,
+               on_exit = refresh_picker,
+            }:start()
          end
 
          local function open_log(_, new_window)
@@ -135,7 +154,7 @@ M.docker_containers = function()
                '-f'
             }
 
-            log.debug('command: ', vim.fn.join(command, ' '))
+            log.debug('[LOGS] command', vim.fn.join(command, ' '))
             vim.fn.system(vim.fn.join(command, ' '))
          end
 
@@ -154,28 +173,24 @@ M.docker_containers = function()
 
             local picker = action_state.get_current_picker(prompt_bufnr)
             local elements = picker.manager.linked_states.head
-            local element= elements
+            local element = elements
 
             -- Loop through all elements in the results
-            while element.next ~= nil do
+            while true do
                log.debug('element: ', vim.inspect(element.item[1].ordinal))
                local item = element.item[1]
 
-               if item ~= nil and item.ordinal ~= nil and item.ordinal:match('^' .. prefix .. '.*') then
-
+               if item ~= nil and item.value ~= nil and item.value.Names ~= nil and item.value.Names:match('^' .. prefix .. '.*') then
                   if action == 'start' then
-                     log.info('start container: ', item.value.ID)
                      start_container(_, item.value.ID)
-
                   elseif action == 'close' then
-                     log.info('close container: ', item.ordinal)
                      stop_container(_, item.value.ID)
-
                   elseif action == 'delete' then
-                     log.info('delete container: ', item.ordinal)
                      delete_container(_, item.value.ID)
-
                   end
+               end
+               if element.next == nil then
+                  break
                end
                element = element.next
             end
@@ -218,23 +233,45 @@ M.docker_containers = function()
             end
          end)
 
+         -- Naming functions
+         local function open_log_in_new_window()
+            open_log(_, true)
+         end
+
+         local function open_log_in_split()
+            open_log(_, false)
+         end
+
+         local function prefix_action_start()
+            handle_prefix(_, 'start')
+         end
+
+         local function prefix_action_close()
+            handle_prefix(_, 'close')
+         end
+
+         local function prefix_action_delete()
+            handle_prefix(_, 'delete')
+         end
+
          map('i', '<C-o>', start_container)
          map('n', '+', start_container)
          map('i', '<C-c>', stop_container)
          map('n', '-', stop_container)
-         map('i', '<C-l>', function() open_log(_, true) end)
-         map('n', 'l', function() open_log(_, true) end)
-         map('i', '<C-h>', function() open_log(_, false) end)
+         map('i', '<C-l>', open_log_in_new_window)
+         map('n', 'l', open_log_in_new_window)
+         map('i', '<C-h>', open_log_in_split)
          map('i', '<C-b>', log_to_buf)
          map('n', 'b', log_to_buf)
          map('i', '<C-d>', delete_container)
          map('n', 'd', delete_container)
-         map('i', '<C-q>', function() handle_prefix(_, 'close') end)
-         map('n', 'q', function() handle_prefix(_, 'close') end)
-         map('i', '<C-r>', function() handle_prefix(_, 'start') end)
-         map('n', 'r', function() handle_prefix(_, 'start') end)
-         map('i', '<C-*>', function() handle_prefix(_, 'delete') end)
-         map('n', '*', function() handle_prefix(_, 'delete') end)
+         map('i', '<C-q>', prefix_action_close)
+         map('n', 'q', prefix_action_close)
+         map('i', '<C-r>', prefix_action_start)
+         map('n', 'r', prefix_action_start)
+         map('i', '<C-*>', prefix_action_delete)
+         map('n', '*', prefix_action_delete)
+
          return true
       end,
    }):find()
