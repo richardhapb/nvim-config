@@ -8,7 +8,7 @@ return {
    },
    config = function()
       require 'neodev'.setup()
-      local encoding = "utf-8"
+      local encoding = "utf-16"
       local pos_encodings = { 'utf-8', 'utf-16', 'utf-32' }
       local on_attach = function(client, bufnr)
          if client == nil then
@@ -123,9 +123,9 @@ return {
             }
          end
 
+         client.offset_encoding = encoding
 
          local keymap = vim.keymap.set
-
          local opts = { buffer = bufnr }
 
          keymap('n', 'gD', vim.lsp.buf.declaration, opts)
@@ -158,21 +158,21 @@ return {
          capabilities = vim.tbl_deep_extend('force', capabilities, cmp_cap)
       end
 
-      -- Warning in 0.11.0, position_encoding param is required
-      local orig_mod = vim
-      local orig_notify = vim.notify
-      local ok, noice = pcall(require, 'noice.source.notify')
-      if ok then
-         orig_notify = noice.notify
-         orig_mod = noice
-      end
-      ---@diagnostic disable-next-line: duplicate-set-field
-      orig_mod.notify = function(msg, level, opts)
-         if not msg:match("^position_encoding param is required.*") then
-            orig_notify(msg, level, opts)
-         end
-      end
-
+      -- -- Warning in 0.11.0, position_encoding param is required
+      -- local orig_mod = vim
+      -- local orig_notify = vim.notify
+      -- local ok, noice = pcall(require, 'noice.source.notify')
+      -- if ok then
+      --    orig_notify = noice.notify
+      --    orig_mod = noice
+      -- end
+      -- ---@diagnostic disable-next-line: duplicate-set-field
+      -- orig_mod.notify = function(msg, level, opts)
+      --    if not msg:match("^position_encoding param is required.*") then
+      --       orig_notify(msg, level, opts)
+      --    end
+      -- end
+      --
       local lc = require("lspconfig")
 
       lc.lua_ls.setup({
