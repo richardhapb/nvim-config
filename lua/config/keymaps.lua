@@ -41,7 +41,6 @@ keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
 keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 keymap('n', '<C-q>', ':q<CR>', { silent = true })
 
-
 -- Explorer
 keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
 keymap('n', '<leader>tc', ':tabnew<CR>', { silent = true, desc = 'New tab' })
@@ -75,8 +74,6 @@ keymap({ 'n', 'x' }, '<leader>ghp', ':Gitsigns prev_hunk<CR>', { silent = true, 
 keymap({ 'n', 'x' }, '<leader>ghn', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
 keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
 
-
-
 keymap('n', '<leader>gda', function()
    utils.git_diff_name_only('HEAD')
    utils.close_all_buffers_but_current()
@@ -89,7 +86,6 @@ keymap('i', '<C-z>', 'copilot#Accept()',
 -- Latex
 keymap('n', '<leader>lb', ':LatexBuild<CR>', { silent = true, desc = 'Latex build' })
 keymap('n', '<leader>lp', ':TeXpresso %<CR>', { silent = true, desc = 'Latex preview' })
-
 
 -- Spanish
 keymap('i', '<A-e>a', 'á', { silent = true })
@@ -110,3 +106,5 @@ keymap('i', '<A-1>', '¡', { silent = true })
 -- Python
 keymap('n', '<leader>rp', ':!python %<CR>', { silent = true, desc = 'Run python' })
 
+-- Misc
+keymap('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, desc = 'Undo tree' })

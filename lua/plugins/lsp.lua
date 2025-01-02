@@ -160,7 +160,7 @@ return {
       local orig_notify = vim.notify
       ---@diagnostic disable-next-line: duplicate-set-field
       vim.notify = function(msg, level, opts)
-         if not (msg:match("position_encoding param is required")
+         if not (msg:match("^position_encoding param is required.*")
                 and level == vim.log.levels.WARN) then
             orig_notify(msg, level, opts)
          end
