@@ -77,6 +77,7 @@ return {
                language = "en-US"
             end
 
+            ---@diagnostic disable-next-line: inject-field
             ltex_config.ltex.language = language
             vim.lsp.buf_notify(0, "workspace/didChangeConfiguration", {
                settings = ltex_config
@@ -111,6 +112,7 @@ return {
                vim.notify("ltex config not found", vim.log.levels.INFO)
                return
             end
+            ---@diagnostic disable-next-line: inject-field
             ltex_config.ltex.disabledRules = {
                ["en-US"] = {
                   "UPPERCASE_SENTENCE_START",
@@ -129,7 +131,7 @@ return {
          keymap('n', 'gD', vim.lsp.buf.declaration, opts)
          keymap('n', 'gd', vim.lsp.buf.definition, opts)
          keymap('n', 'gi', require 'telescope.builtin'.lsp_implementations, opts)
-         keymap('n', 'gr', require 'telescope.builtin'.lsp_references, opts)
+         keymap('n', 'grr', vim.lsp.buf.references, opts)
          keymap('n', 'K', vim.lsp.buf.hover, opts)
          keymap('n', '<C-e>', vim.lsp.buf.signature_help, opts)
          keymap('n', 'gn', vim.lsp.buf.rename, opts)
@@ -157,11 +159,16 @@ return {
       end
 
       -- Warning in 0.11.0, position_encoding param is required
+      local orig_mod = vim
       local orig_notify = vim.notify
+      local ok, noice = pcall(require, 'noice.source.notify')
+      if ok then
+         orig_notify = noice.notify
+         orig_mod = noice
+      end
       ---@diagnostic disable-next-line: duplicate-set-field
-      vim.notify = function(msg, level, opts)
-         if not (msg:match("^position_encoding param is required.*")
-                and level == vim.log.levels.WARN) then
+      orig_mod.notify = function(msg, level, opts)
+         if not msg:match("^position_encoding param is required.*") then
             orig_notify(msg, level, opts)
          end
       end
