@@ -8,8 +8,9 @@ return {
    },
    config = function()
       require 'neodev'.setup()
-      local encoding = "utf-16"
-      local pos_encodings = { 'utf-8', 'utf-16', 'utf-32' }
+
+      local pos_encoding = "utf-16"
+
       local on_attach = function(client, bufnr)
          if client == nil then
             return
@@ -18,9 +19,7 @@ return {
             vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
          end
 
-         vim.lsp.util.make_position_params(0, encoding)
-
-         local _border = 'single'
+         local _border = "single"
 
          vim.diagnostic.config({
             underline = true,
@@ -34,32 +33,6 @@ return {
                prefix = "",
             },
          })
-
-         local function setup_handler_if_supported(handler_name, handler_fn)
-            if client.server_capabilities then
-               -- Convert handler name to capability name
-               local capability_name = handler_name:gsub("textDocument/", "")
-               capability_name = capability_name:gsub("([A-Z])", function(x) return "_" .. string.lower(x) end)
-
-               -- Check if the capability exists
-               local capability_path = "textDocument_" .. capability_name
-               if client.server_capabilities[capability_path] then
-                  vim.lsp.handlers[handler_name] = handler_fn
-               end
-            end
-         end
-
-         setup_handler_if_supported('textDocument/hover', function(_, _, _, _)
-            return vim.lsp.buf.hover(
-               { border = _border, focusable = true }
-            )
-         end)
-
-         setup_handler_if_supported('textDocument/signatureHelp', function(_, _, _, _)
-            return vim.lsp.buf.signature_help(
-               { border = _border, focusable = true }
-            )
-         end)
 
          require 'lspconfig.ui.windows'.default_options = {
             border = _border,
@@ -123,26 +96,32 @@ return {
             }
          end
 
-         client.offset_encoding = encoding
-
          local keymap = vim.keymap.set
-         local opts = { buffer = bufnr }
+         local opts = function(desc)
+            return { buffer = bufnr, noremap = true, silent = true, desc = desc }
+         end
 
-         keymap('n', 'gD', vim.lsp.buf.declaration, opts)
-         keymap('n', 'gd', vim.lsp.buf.definition, opts)
-         keymap('n', 'gi', require 'telescope.builtin'.lsp_implementations, opts)
-         keymap('n', 'grr', vim.lsp.buf.references, opts)
-         keymap('n', 'K', vim.lsp.buf.hover, opts)
-         keymap('n', '<C-e>', vim.lsp.buf.signature_help, opts)
-         keymap('n', 'gn', vim.lsp.buf.rename, opts)
-         keymap('n', 'gs', require 'telescope.builtin'.lsp_document_symbols, opts)
-         keymap('n', 'gS', require 'telescope.builtin'.lsp_workspace_symbols, opts)
-         keymap('n', 'gh', function()
-            vim.lsp.buf.format { async = true }
-         end, opts)
+         keymap('n', 'gD', vim.lsp.buf.declaration, opts("Go to declaration"))
+         keymap('n', 'gd', vim.lsp.buf.definition, opts("Go to definition"))
+         keymap('n', 'gi', vim.lsp.buf.implementation, opts("Go to implementation"))
+         keymap('n', 'gr', vim.lsp.buf.references, opts("Go to references"))
+         keymap('n', 'gt', vim.lsp.buf.type_definition, opts("Go to type definition"))
+         keymap('n', 'gn', vim.lsp.buf.rename, opts("Rename symbol"))
+         keymap('n', 'ga', vim.lsp.buf.code_action, opts("Code action"))
+         keymap('n', 'K', function() vim.lsp.buf.hover { border = _border } end, opts("Show hover"))
+         keymap('n', '<C-e>', function() vim.lsp.buf.signature_help { border = _border } end, opts("Show signature help"))
+         keymap('n', 'gs', require 'telescope.builtin'.lsp_document_symbols, opts("Show document symbols"))
+         keymap('n', 'gS', require 'telescope.builtin'.lsp_workspace_symbols, opts("Show workspace symbols"))
+         keymap('n', 'gh', function() vim.lsp.buf.format { async = true } end, opts("Format document"))
+         keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in a float windows" })
+         keymap('n', '<leader>]', function() vim.diagnostic.jump({ count = 1, float = true }) end,
+            { desc = "Go to next diagnostic" })
+         keymap('n', '<leader>[', function() vim.diagnostic.jump({ count = -1, float = true }) end,
+            { desc = "Go to previous diagnostic" })
+         keymap('n', 'g\\', require 'telescope.builtin'.diagnostics, opts("Show diagnostics"))
       end
 
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
       capabilities.textDocument.completion.completionItem.snippetSupport = true
       capabilities.textDocument.completion.completionItem.resolveSupport = {
          properties = {
@@ -151,28 +130,25 @@ return {
             "additionalTextEdits",
          }
       }
-      capabilities.general.positionEncodings = pos_encodings
 
-      local cmp_cap = require 'cmp_nvim_lsp'.default_capabilities()
-      if cmp_cap ~= nil then
-         capabilities = vim.tbl_deep_extend('force', capabilities, cmp_cap)
-      end
+      -- Avoid the warning of position encoding param in make_position_params
+      vim.api.nvim_create_autocmd("LspAttach", {
+         callback = function(args)
+            if args.data == nil or args.data.client_id == nil then
+               return
+            end
 
-      -- -- Warning in 0.11.0, position_encoding param is required
-      -- local orig_mod = vim
-      -- local orig_notify = vim.notify
-      -- local ok, noice = pcall(require, 'noice.source.notify')
-      -- if ok then
-      --    orig_notify = noice.notify
-      --    orig_mod = noice
-      -- end
-      -- ---@diagnostic disable-next-line: duplicate-set-field
-      -- orig_mod.notify = function(msg, level, opts)
-      --    if not msg:match("^position_encoding param is required.*") then
-      --       orig_notify(msg, level, opts)
-      --    end
-      -- end
-      --
+            local client = vim.lsp.get_client_by_id(args.data.client_id)
+
+            if client == nil then
+               return
+            end
+
+            ---@diagnostic disable-next-line: inject-field
+            client.position_encoding = pos_encoding
+         end
+      })
+
       local lc = require("lspconfig")
 
       lc.lua_ls.setup({
@@ -201,7 +177,6 @@ return {
          trace = "messages",
          init_options = {
             settings = {
-               logLevel = "debug",
                configuration = vim.fn.getcwd() .. "/pyproject.toml",
                configurationPreference = 'filesystemFirst',
                exclude = { "node_modules", ".git", ".venv" },
@@ -291,3 +266,4 @@ return {
       end
    end,
 }
+

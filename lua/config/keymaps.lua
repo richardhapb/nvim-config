@@ -2,18 +2,11 @@ local utils = require 'functions.utils'
 
 local keymap = vim.keymap.set
 
--- Diagnostics and lint
-keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in a float windows" })
-keymap('n', '<leader>]', function() vim.diagnostic.jump({ count = 1, float = true }) end,
-   { desc = "Go to next diagnostic" })
-keymap('n', '<leader>[', function() vim.diagnostic.jump({ count = -1, float = true }) end,
-   { desc = "Go to previous diagnostic" })
-
 -- Usercommands
 keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
 
 -- NVIM config
-keymap('n', '<C-s>', ':source %<CR>', { silent = true })
+keymap('n', '<C-s>', ':write<CR>:source<CR>', { silent = true })
 
 -- Edit
 keymap('n', 'db', '"_dbx', { silent = true })
@@ -55,6 +48,41 @@ keymap('n', '<leader>bi', utils.close_all_buffers_but_current,
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
 
+-- @param note: string
+local create_note = function(note)
+   if note == '' then
+      return
+   end
+   local path = vim.fs.joinpath(vim.fn.expand('$HOME'), 'notes', 'inbox', note .. '.md')
+
+   vim.cmd('edit ' .. path)
+   vim.notify('Note ' .. path .. ' loaded successfully', vim.log.levels.INFO)
+end
+
+keymap('n', '<leader>nn', function()
+   local note = vim.fn.input('Note: ')
+   create_note(note)
+end, { silent = true, desc = 'Create a new note' })
+
+keymap('n', '<leader>nb', function()
+   local repository = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
+   local branch = vim.fn.system('git branch --show-current')
+   branch = vim.fn.trim(branch)
+
+   if branch == '' then
+      vim.notify('Not in a git repository', vim.log.levels.ERROR)
+      return
+   end
+
+   -- If branch has a slash, get the last part
+   if string.find(branch, '/') then
+      local branch_sections = vim.fn.split(branch, '/')
+      branch = branch_sections[#branch_sections]
+   end
+
+   create_note(repository .. '-' .. branch)
+end, { silent = true, desc = 'Create a new note for branch' })
+
 -- Git
 keymap('n', '<leader>gg', ':G<CR>', { silent = true, desc = 'Git status' })
 keymap('n', '<leader>gc', ':G commit<CR>', { silent = true, desc = 'Git commit' })
@@ -73,6 +101,29 @@ keymap({ 'n', 'x' }, '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = tru
 keymap({ 'n', 'x' }, '<leader>ghp', ':Gitsigns prev_hunk<CR>', { silent = true, desc = 'Git previous hunk' })
 keymap({ 'n', 'x' }, '<leader>ghn', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
 keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
+keymap('n', '<leader>g+', function()
+   local feature = vim.fn.input('Feature: ')
+   local branch_name = 'feature/richard/' .. os.date('%Y-%m-%d') .. '-' .. feature
+   vim.notify('Creating branch ' .. branch_name, vim.log.levels.INFO)
+
+   vim.fn.system('git switch -c ' .. branch_name)
+   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
+
+   local upstream = vim.fn.input('You want to set upstream? [y/n]: ')
+   if upstream == 'y' then
+      vim.fn.system('git push -u origin ' .. branch_name)
+      vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
+   end
+end, { silent = true, desc = 'Git add a branch and switch' })
+
+keymap('n', '<leader>gu', function()
+   local branch_name = vim.fn.system('git branch --show-current')
+   local upstream = vim.fn.input('You want to set upstream to ' .. branch_name .. '? [y/n]: ')
+   if upstream == 'y' then
+      vim.fn.system('git push -u origin ' .. branch_name)
+      vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
+   end
+end, { silent = true, desc = 'Git set upstream' })
 
 keymap('n', '<leader>gda', function()
    utils.git_diff_name_only('HEAD')
@@ -108,3 +159,4 @@ keymap('n', '<leader>rp', ':!python %<CR>', { silent = true, desc = 'Run python'
 
 -- Misc
 keymap('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, desc = 'Undo tree' })
+
