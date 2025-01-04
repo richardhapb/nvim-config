@@ -1,12 +1,14 @@
 local utils = require 'functions.utils'
 
 local keymap = vim.keymap.set
+local k = vim.keycode
 
 -- Usercommands
 keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
 
--- NVIM config
-keymap('n', '<C-s>', ':write<CR>:source<CR>', { silent = true })
+-- Lua dev
+keymap('n', '<C-s>', '<cmd>source %<CR>', { desc = 'Source file' })
+keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 
 -- Edit
 keymap('n', 'db', '"_dbx', { silent = true })
@@ -17,13 +19,21 @@ keymap('n', 'D', '"_d$', { silent = true })
 keymap('x', 'p', '"_xP')
 keymap('v', 'J', ':m \'>+1<CR>gv=gv', { silent = true })
 keymap('v', 'K', ':m \'<-2<CR>gv=gv', { silent = true })
-keymap('n', '<leader>U', ':nohlsearch<CR>', { silent = true })
-keymap('n', '*', '*N')
+keymap('n', '*', '*N', { noremap = true, silent = true })
 keymap('n', 'J', 'mzJ`z')
 keymap('n', '<C-d>', '<C-d>zz')
 keymap('n', '<C-u>', '<C-u>zz')
 keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
+-- Remove search highlight if is active
+keymap('n', '<Esc>', function()
+   if vim.v.hlsearch == 1 then
+      vim.cmd.nohl()
+      return ''
+   else
+      return k'<Esc>'
+   end
+end, { expr = true})
 
 -- Quickfix
 keymap('n', '<C-n>', ':cnext<CR>', { silent = true })

@@ -12,6 +12,14 @@ vim.opt.autoindent = true
 vim.opt.smartindent = true
 
 vim.g.editorconfig = true
+vim.opt.signcolumn = "yes:1"
+vim.opt.inccommand = "split"
+vim.opt.smartcase = true
+vim.opt.ignorecase = true
+
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.linebreak = true
 
 vim.opt.wrap = false
 vim.g.mapleader = " "
@@ -24,11 +32,6 @@ vim.opt.fileencoding = "utf-8"
 vim.opt.mouse = ''
 vim.opt.cursorline = true
 
-vim.api.nvim_set_hl(0, 'Normal', { bg = nil })
-vim.api.nvim_set_hl(0, 'Normal', { ctermbg = nil })
-vim.api.nvim_set_hl(0, 'NonText', { bg = nil })
-vim.api.nvim_set_hl(0, 'NonText', { ctermbg = nil })
-
 -- Disable suspend
 vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
 
@@ -38,7 +41,7 @@ vim.g.copilot_no_tab_map = true
 -- Disable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
    pattern = "*",
-    group = vim.api.nvim_create_augroup("Basics", {clear = true}),
+   group = vim.api.nvim_create_augroup("Basics", { clear = true }),
    callback = function()
       vim.opt.formatoptions:remove { "c", "r", "o" }
    end,
@@ -79,3 +82,4 @@ require("config.usercommands")
 require("functions.code")
 
 require("config.keymaps")
+

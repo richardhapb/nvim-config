@@ -4,11 +4,17 @@ return {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
       'github/copilot.vim',
-      'folke/neodev.nvim'
+      {
+         "folke/lazydev.nvim",
+         ft = "lua", -- only load on lua files
+         opts = {
+            library = {
+               { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+            },
+         },
+      },
    },
    config = function()
-      require 'neodev'.setup()
-
       local pos_encoding = "utf-16"
 
       local on_attach = function(client, bufnr)
@@ -96,6 +102,14 @@ return {
             }
          end
 
+         -- Avoid the position encoding issue
+         local orig_make_position_params = vim.lsp.util.make_position_params
+         local make_position_params = function(window, _)
+            return orig_make_position_params(window, pos_encoding)
+         end
+
+         vim.lsp.util.make_position_params = make_position_params
+
          local keymap = vim.keymap.set
          local opts = function(desc)
             return { buffer = bufnr, noremap = true, silent = true, desc = desc }
@@ -121,7 +135,7 @@ return {
          keymap('n', 'g\\', require 'telescope.builtin'.diagnostics, opts("Show diagnostics"))
       end
 
-      local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities.textDocument.completion.completionItem.snippetSupport = true
       capabilities.textDocument.completion.completionItem.resolveSupport = {
          properties = {
@@ -131,23 +145,10 @@ return {
          }
       }
 
-      -- Avoid the warning of position encoding param in make_position_params
-      vim.api.nvim_create_autocmd("LspAttach", {
-         callback = function(args)
-            if args.data == nil or args.data.client_id == nil then
-               return
-            end
-
-            local client = vim.lsp.get_client_by_id(args.data.client_id)
-
-            if client == nil then
-               return
-            end
-
-            ---@diagnostic disable-next-line: inject-field
-            client.position_encoding = pos_encoding
-         end
-      })
+      local cmp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+      if cmp_capabilities ~= nil then
+         vim.tbl_extend('force', capabilities, cmp_capabilities)
+      end
 
       local lc = require("lspconfig")
 
