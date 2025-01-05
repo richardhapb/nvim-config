@@ -17,8 +17,9 @@ return {
          local hl = vim.api.nvim_set_hl
 
          -- Theme customization
-         hl(0, 'CursorLine', { bg = "#222222" })
-         hl(0, 'CursorLineNr', { bg = "#222222" })
+         local cursor_bg = "#004040"
+         hl(0, 'CursorLine', { bg = cursor_bg })
+         hl(0, 'CursorLineNr', { bg = cursor_bg})
          hl(0, 'LineNr', { fg = "#FFFFFF" })
          hl(0, 'LineNrAbove', { fg = "#CCCCCC" })
          hl(0, 'LineNrBelow', { fg = "#CCCCCC" })
@@ -35,3 +36,4 @@ return {
       end
    },
 }
+

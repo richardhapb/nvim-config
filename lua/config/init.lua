@@ -17,7 +17,6 @@ vim.opt.inccommand = "split"
 vim.opt.smartcase = true
 vim.opt.ignorecase = true
 
-vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.linebreak = true
 

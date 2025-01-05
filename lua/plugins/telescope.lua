@@ -47,7 +47,7 @@ return {
          desc = 'Telescope Nvim config' },
 
       { '<leader>fn', function() require('telescope.builtin').find_files({
-            cwd=vim.fs.joinpath(vim.fn.expand('$HOME'), 'notes'),
+            cwd=vim.fn.expand('$NOTES'),
             prompt_title = "Richard's Notes" })
          end,
          desc = 'Telescope Richard notes' },
@@ -61,7 +61,7 @@ return {
          desc = 'Telescope Projects' },
 
       { '<leader>fN', function() require('telescope').extensions.file_browser.file_browser({
-            cwd=vim.fs.joinpath(vim.fn.expand('$HOME'), 'notes'),
+            cwd=vim.fn.expand('$NOTES'),
             files=true,
             hidden=false,
          })
@@ -91,7 +91,7 @@ return {
 
    },
    opts = {
-		extensions = {
+      extensions = {
          theme = "ivy",
          hijack_netrw = true,
          mappings = {
@@ -101,3 +101,4 @@ return {
       }
    }
 }
+

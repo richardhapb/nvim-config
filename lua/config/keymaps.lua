@@ -63,7 +63,7 @@ local create_note = function(note)
    if note == '' then
       return
    end
-   local path = vim.fs.joinpath(vim.fn.expand('$HOME'), 'notes', 'inbox', note .. '.md')
+   local path = vim.fs.joinpath(vim.fn.expand('$NOTES'), 'inbox', note .. '.md')
 
    vim.cmd('edit ' .. path)
    vim.notify('Note ' .. path .. ' loaded successfully', vim.log.levels.INFO)

@@ -102,14 +102,6 @@ return {
             }
          end
 
-         -- Avoid the position encoding issue
-         local orig_make_position_params = vim.lsp.util.make_position_params
-         local make_position_params = function(window, _)
-            return orig_make_position_params(window, pos_encoding)
-         end
-
-         vim.lsp.util.make_position_params = make_position_params
-
          local keymap = vim.keymap.set
          local opts = function(desc)
             return { buffer = bufnr, noremap = true, silent = true, desc = desc }
@@ -135,20 +127,16 @@ return {
          keymap('n', 'g\\', require 'telescope.builtin'.diagnostics, opts("Show diagnostics"))
       end
 
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities.textDocument.completion.completionItem.snippetSupport = true
-      capabilities.textDocument.completion.completionItem.resolveSupport = {
-         properties = {
-            "documentation",
-            "detail",
-            "additionalTextEdits",
-         }
-      }
-
-      local cmp_capabilities = require('cmp_nvim_lsp').default_capabilities()
-      if cmp_capabilities ~= nil then
-         vim.tbl_extend('force', capabilities, cmp_capabilities)
+      -- Avoid the position encoding issue
+      local orig_make_position_params = vim.lsp.util.make_position_params
+      local make_position_params = function(window, _)
+         return orig_make_position_params(window, pos_encoding)
       end
+
+      vim.lsp.util.make_position_params = make_position_params
+
+      -- Capabilities, make client capabilities is ran in neovim core
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
       local lc = require("lspconfig")
 
