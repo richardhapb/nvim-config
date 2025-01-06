@@ -15,7 +15,7 @@ return {
                   command = "fd ^python$ -t l -t f -u ~/dev"
                },
                cwd = {
-                  command = "fd ^python$ -t l -t f -u ."
+                  command = "fd ^python$ -t l -t f -u $CWD"
                },
                dev = {
                   command = "fd ^python$ -t l -t f -u " .. vim.fn.expand("$DEV")
