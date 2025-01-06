@@ -65,7 +65,7 @@ return {
          end
 
          local ft = vim.api.nvim_get_option_value('filetype', { buf = bufnr })
-         local spelling_fts = { 'markdown', 'tex', 'ltex', 'txt', 'gitcommit' }
+         local spelling_fts = { 'markdown', 'tex', 'plaintex', 'ltex', 'txt', 'gitcommit' }
 
          if vim.tbl_contains(spelling_fts, ft) then
             vim.api.nvim_buf_create_user_command(
