@@ -8,7 +8,21 @@ return {
    lazy = true,
    branch = "regexp",
    config = function()
-      require("venv-selector").setup()
+      require("venv-selector").setup {
+         settings = {
+            search = {
+               work = {
+                  command = "fd ^python$ -t l -t f -u ~/dev"
+               },
+               cwd = {
+                  command = "fd ^python$ -t l -t f -u ."
+               },
+               dev = {
+                  command = "fd ^python$ -t l -t f -u " .. vim.fn.expand("$DEV")
+               },
+            }
+         }
+      }
    end,
    keys = {
       { "<leader>vs", "<cmd>VenvSelect<cr>" },
