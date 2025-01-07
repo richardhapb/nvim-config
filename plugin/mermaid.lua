@@ -58,6 +58,10 @@ local function new_mermaid()
          border = 'single',
       }
 
+      if not vim.api.nvim_buf_is_valid(buffer1) or not vim.api.nvim_buf_is_valid(buffer2) then
+         return
+      end
+
       local win2 = open_win(buffer2, opts)
       local win1 = open_win(buffer1, opts)
 
@@ -65,11 +69,20 @@ local function new_mermaid()
          return
       end
 
-      vim.api.nvim_buf_set_lines(buffer1, 0, -1, false, {
-         '```mermaid',
-         '',
-         '```',
-      })
+      local lines = vim.api.nvim_buf_get_lines(buffer2, 0, -1, false)
+
+      if #lines == 0 then
+         vim.api.nvim_buf_set_lines(buffer1, 0, -1, false, {
+            '```mermaid',
+            '',
+            '```',
+         })
+      else
+         table.insert(lines, 1, '```mermaid')
+         table.insert(lines, '```')
+
+         vim.api.nvim_buf_set_lines(buffer1, 0, -1, false, lines)
+      end
 
       vim.api.nvim_create_autocmd("WinClosed", {
          pattern = tostring(win1),
@@ -89,6 +102,9 @@ local function new_mermaid()
 
 
    local diag_path = vim.fs.joinpath(vim.fn.expand('%:p:h'), 'diagrams')
+
+
+
    check_or_create_dir(diag_path)
 
    local path = string.format('%s/%s.mmd', diag_path, name)
@@ -103,10 +119,20 @@ local function new_mermaid()
       return
    end
 
+   local lines
+
+   if vim.fn.filereadable(path) == 1 then
+       lines = vim.fn.readfile(path)
+   end
+
    local buffer = vim.api.nvim_create_buf(false, false)
    vim.api.nvim_set_option_value('filetype', 'mermaid', { buf = buffer })
    vim.api.nvim_buf_set_name(buffer, path)
    sync_buffers(md_buffer, buffer)
+
+   if lines then
+      vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+   end
 
    if win == nil then
       md_win, win = open_windows(md_buffer, buffer)
