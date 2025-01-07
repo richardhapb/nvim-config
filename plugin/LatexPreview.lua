@@ -1,3 +1,5 @@
+local utils = require 'functions.utils'
+
 vim.api.nvim_create_user_command('LatexBuild', function()
    vim.notify('Building ' .. vim.fn.expand('%:t') .. '...')
    local build_dir = vim.fn.expand('%:p:h') .. '/build'
@@ -23,16 +25,7 @@ vim.api.nvim_create_user_command('LatexBuild', function()
    end
 
    local results = vim.fn.system(command)
-   local buffer = vim.api.nvim_create_buf(false, true)
-   vim.cmd('split')
-   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, vim.fn.split(results, '\n'))
-   vim.api.nvim_set_current_buf(buffer)
-   vim.api.nvim_win_set_cursor(0, { vim.api.nvim_buf_line_count(buffer), 0 })
-
-   local keys = { '<CR>', '<Esc>', 'q' }
-   for _, key in ipairs(keys) do
-      vim.keymap.set('n', key, '<Cmd>bd<CR>', { noremap=true, buffer = buffer })
-   end
+   local buffer = utils.buffer_log(vim.split(results, '\n'))
 
    -- Open the pdf file after the build
    vim.api.nvim_create_autocmd('BufUnload', {

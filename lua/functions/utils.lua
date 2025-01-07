@@ -153,5 +153,20 @@ M.close_all_buffers_but_current = function(force)
    end
 end
 
+M.buffer_log = function(lines)
+   local buffer = vim.api.nvim_create_buf(false, true)
+   vim.cmd('split')
+   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+   vim.api.nvim_set_current_buf(buffer)
+   vim.api.nvim_win_set_cursor(0, { vim.api.nvim_buf_line_count(buffer), 0 })
+
+   local keys = { '<CR>', '<Esc>', 'q' }
+   for _, key in ipairs(keys) do
+      vim.keymap.set('n', key, '<Cmd>bd<CR>', { noremap=true, buffer = buffer })
+   end
+
+   return buffer
+end
+
 return M
 
