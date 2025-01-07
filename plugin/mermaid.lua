@@ -165,23 +165,23 @@ local function new_mermaid()
 
    local map = vim.keymap.set
 
-   map('n', '<leader>M', '<cmd>MarkdownPreview<CR>', { buffer = md_buffer })
-   map('n', '<leader>q', '<cmd>q<CR>', { buffer = md_buffer })
-   map('n', '<leader>w', function() execute_fun_on_mmd_win(function() vim.cmd('w!') end) end, { buffer = md_buffer })
+   map('n', '<leader>M', '<cmd>MarkdownPreview<CR>', { buffer = md_buffer, desc = 'Preview graph' })
+   map('n', '<leader>q', '<cmd>q<CR>', { buffer = md_buffer, desc = 'Close window' })
+   map('n', '<leader>w', function() execute_fun_on_mmd_win(function() vim.cmd('w!') end) end, { buffer = md_buffer, desc = 'Save graph' })
    map('n', '<leader>cl', function() execute_fun_on_mmd_win(function() compile_diagram('neutral') end) end,
-      { buffer = md_buffer })
+      { buffer = md_buffer, desc = 'Compile light theme' })
    map('n', '<leader>cd', function() execute_fun_on_mmd_win(function() compile_diagram('dark') end) end,
-      { buffer = md_buffer })
+      { buffer = md_buffer, desc = 'Compile dark theme' })
    map('n', '<leader>tl', function() execute_fun_on_mmd_win(function() compile_diagram('neutral', true) end) end,
-      { buffer = md_buffer })
+      { buffer = md_buffer, desc = 'Compile light theme transparent' })
    map('n', '<leader>td', function() execute_fun_on_mmd_win(function() compile_diagram('dark', true) end) end,
-      { buffer = md_buffer })
+      { buffer = md_buffer, desc = 'Compile dark theme transparent' })
 
    map('n', '<leader>F', function()
       if not md_win then return end
       vim.api.nvim_set_current_win(md_win)
       vim.keymap.del('n', '<leader>F', { buffer = current_buffer })
-   end, { buffer = current_buffer })
+   end, { buffer = current_buffer, desc = 'Focus on diagram' })
 end
 
 vim.api.nvim_create_user_command('Mermaid', function()
