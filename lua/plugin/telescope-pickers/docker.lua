@@ -43,7 +43,10 @@ M.docker_containers = function()
       sorter = conf.generic_sorter({}),
       attach_mappings = function(prompt_bufnr, map)
          local refresh_picker = function()
-            local picker = action_state.get_current_picker(prompt_bufnr)
+            local ok, picker = pcall(action_state.get_current_picker, prompt_bufnr)
+            if not ok then
+               return
+            end
             picker:refresh()
          end
 
@@ -180,6 +183,9 @@ M.docker_containers = function()
                log.debug('element: ', vim.inspect(element.item[1].ordinal))
                local item = element.item[1]
 
+               -- Escape prefix for regex
+               prefix = prefix:gsub('%-', '%%%-')
+
                if item ~= nil and item.value ~= nil and item.value.Names ~= nil and item.value.Names:match('^' .. prefix .. '.*') then
                   if action == 'start' then
                      start_container(_, item.value.ID)
@@ -259,17 +265,17 @@ M.docker_containers = function()
          map('i', '<C-c>', stop_container)
          map('n', '-', stop_container)
          map('i', '<C-l>', open_log_in_new_window)
-         map('n', 'l', open_log_in_new_window)
+         map('n', 'L', open_log_in_new_window)
          map('i', '<C-h>', open_log_in_split)
          map('i', '<C-b>', log_to_buf)
          map('n', 'b', log_to_buf)
          map('i', '<C-d>', delete_container)
-         map('n', 'd', delete_container)
+         map('n', '=', delete_container)
          map('i', '<C-q>', prefix_action_close)
          map('n', 'q', prefix_action_close)
          map('i', '<C-r>', prefix_action_start)
          map('n', 'r', prefix_action_start)
-         map('i', '<C-*>', prefix_action_delete)
+         map('i', '<C-D>', prefix_action_delete)
          map('n', '*', prefix_action_delete)
 
          return true
@@ -278,3 +284,4 @@ M.docker_containers = function()
 end
 
 return M
+
