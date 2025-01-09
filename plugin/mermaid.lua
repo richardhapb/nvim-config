@@ -37,6 +37,10 @@ local function new_mermaid()
       return
    end
 
+   if vim.g.mermaid_format == nil then
+      vim.g.mermaid_format = 'svg'
+   end
+
    local current_buffer = vim.api.nvim_get_current_buf()
 
    local function open_win(buffer, opts)
@@ -156,7 +160,7 @@ local function new_mermaid()
       local opt_transparent = transparent and '-b transparent' or ''
 
       execute_fun_on_mmd_win(function() vim.cmd('w!') end)
-      local command = string.format('mmdc -i %s -o %s.svg -t %s %s', path, diag_path .. '/' .. name, theme, opt_transparent)
+      local command = string.format('mmdc -i %s -o %s.%s -t %s %s', path, diag_path .. '/' .. name, vim.g.mermaid_format, theme, opt_transparent)
 
       local result = vim.fn.system(command)
 
@@ -176,6 +180,9 @@ local function new_mermaid()
       { buffer = md_buffer, desc = 'Compile light theme transparent' })
    map('n', '<leader>td', function() execute_fun_on_mmd_win(function() compile_diagram('dark', true) end) end,
       { buffer = md_buffer, desc = 'Compile dark theme transparent' })
+   -- Format
+   map('n', '<leader>fs', function() vim.g.mermaid_format = 'svg' print('Format set to SVG') end, { buffer = md_buffer, desc = 'Set format to SVG' })
+   map('n', '<leader>fp', function() vim.g.mermaid_format = 'png' print('Format set to PNG') end, { buffer = md_buffer, desc = 'Set format to PNG' })
 
    map('n', '<leader>F', function()
       if not md_win then return end

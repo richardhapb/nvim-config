@@ -43,6 +43,8 @@ keymap('n', '<C-p>', ':cprev<CR>', { silent = true })
 keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
 keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 keymap('n', '<C-q>', ':q<CR>', { silent = true })
+keymap('n', '<C-[>', '<CMD>bprevious<CR>', { silent = true, noremap = true })
+keymap('n', '<C-]>', '<CMD>bnext<CR>', { silent = true, noremap = true })
 
 -- Explorer
 keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })

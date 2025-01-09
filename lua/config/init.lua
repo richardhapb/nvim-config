@@ -19,6 +19,7 @@ vim.opt.ignorecase = true
 
 vim.opt.splitbelow = true
 vim.opt.linebreak = true
+vim.opt.completeopt = { "menuone", "noselect", "popup", "noinsert", "fuzzy" }
 
 vim.opt.wrap = false
 vim.g.mapleader = " "
