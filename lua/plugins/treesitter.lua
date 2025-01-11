@@ -17,6 +17,7 @@ return {
          "javascript",
          "typescript",
          "markdown",
+         "markdown_inline",
          "mermaid",
          "astro",
          "html",
@@ -54,3 +55,4 @@ return {
       }
    }
 }
+

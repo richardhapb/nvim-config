@@ -275,7 +275,7 @@ M.docker_containers = function()
          map('n', 'q', prefix_action_close)
          map('i', '<C-r>', prefix_action_start)
          map('n', 'r', prefix_action_start)
-         map('i', '<C-D>', prefix_action_delete)
+         map('i', '<C-.>', prefix_action_delete)
          map('n', '*', prefix_action_delete)
 
          return true

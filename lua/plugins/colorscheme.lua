@@ -33,6 +33,11 @@ return {
          hl(0, 'LspReferenceText', { bg = "#111111" })
          hl(0, 'NormalFloat', { bg = "#000000" })
          hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
+
+         -- Diff
+         hl(0, 'DiffAdd', { bg = "#004000" })
+         hl(0, 'DiffChange', { bg = "#000040" })
+         hl(0, 'DiffDelete', { bg = "#400000" })
       end
    },
 }

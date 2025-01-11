@@ -25,6 +25,7 @@ function M.setup()
       sources = cmp.config.sources({
          { name = "nvim_lsp" },
          { name = 'lazydev' },
+         { name = "markdown-render" },
          { name = "path" },
          { name = "luasnip" },
          { name = "buffer" },

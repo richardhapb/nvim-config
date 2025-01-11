@@ -142,6 +142,9 @@ keymap('n', '<leader>gda', function()
    utils.close_all_buffers_but_current()
 end, { silent = true, desc = 'Git diff HEAD --name-only' })
 
+keymap('n', 'gh', '<CMD>diffget //2<CR>', { silent = true, desc = 'Git diff get left' })
+keymap('n', 'gl', '<CMD>diffget //3<CR>', { silent = true, desc = 'Git diff get right' })
+
 -- Copilot
 keymap('i', '<C-z>', 'copilot#Accept()',
    { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })
