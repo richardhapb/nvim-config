@@ -43,8 +43,8 @@ keymap('n', '<C-p>', ':cprev<CR>', { silent = true })
 keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
 keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 keymap('n', '<C-q>', ':q<CR>', { silent = true })
-keymap('n', '<C-[>', '<CMD>bprevious<CR>', { silent = true, noremap = true })
-keymap('n', '<C-]>', '<CMD>bnext<CR>', { silent = true, noremap = true })
+keymap('n', '<C-bp>', '<CMD>bprevious<CR>', { silent = true, noremap = true })
+keymap('n', '<C-bn>', '<CMD>bnext<CR>', { silent = true, noremap = true })
 
 -- Explorer
 keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
@@ -60,7 +60,7 @@ keymap('n', '<leader>bi', utils.close_all_buffers_but_current,
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
 
--- @param note: string
+--- @param note string
 local create_note = function(note)
    if note == '' then
       return

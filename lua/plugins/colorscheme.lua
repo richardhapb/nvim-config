@@ -38,6 +38,10 @@ local function custom_hl()
    -- Visual
    hl(0, 'Visual', visual)
    hl(0, 'VisualNOS', visual)
+
+   -- Diagnostics
+   hl(0, 'DiagnosticError', { fg = "#FF0000" })
+   hl(0, 'DiagnosticWarn', { fg = "#FFFF00" })
 end
 
 return {
@@ -47,6 +51,7 @@ return {
       priority = 1000,
       opts = {},
       config = function()
+         ---@diagnostic disable-next-line: missing-fields
          require("tokyonight").setup({
             transparent = true,
             styles = {
@@ -64,7 +69,7 @@ return {
       priority = 1000,
       opts = {},
       config = function()
-         vim.cmd([[colorscheme ayu]])
+         vim.cmd([[colorscheme ayu-dark]])
          custom_hl()
       end,
    }

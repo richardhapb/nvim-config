@@ -61,7 +61,8 @@ local function equalize_spaces(lines, indentation)
             table.insert(equalized, line)
          elseif line:match("[}]]") then
             if indentation:len() >= 4 then
-               table.insert(equalized, indentation:sub(5) .. line)
+               local tab_config = vim.api.nvim_get_option_value("tabstop", { buffer = 0 })
+               table.insert(equalized, indentation:sub(tab_config + 1) .. line)
             else
                table.insert(equalized, line)
             end
@@ -134,3 +135,4 @@ vim.api.nvim_create_user_command("FormatDicts", function()
    process_buffer('nested_dict')
    process_buffer('nested_list')
 end, {})
+
