@@ -50,6 +50,8 @@ return {
                ["ii"] = "@conditional.inner",
                ["ad"] = "@comment.outer",
                ["id"] = "@comment.inner",
+               ["i="] = "@lhs",
+               ["a="] = "@rhs"
             }
          }
       }
