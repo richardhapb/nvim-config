@@ -31,9 +31,9 @@ keymap('n', '<Esc>', function()
       vim.cmd.nohl()
       return ''
    else
-      return k'<Esc>'
+      return k '<Esc>'
    end
-end, { expr = true})
+end, { expr = true })
 
 -- Quickfix
 keymap('n', '<C-n>', ':cnext<CR>', { silent = true })
@@ -59,6 +59,17 @@ keymap('n', '<leader>bi', utils.close_all_buffers_but_current,
    { silent = true, desc = 'Close all buffers except current' })
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
+keymap('x', '<leader>o', function()
+   local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
+   local file_dir = vim.fn.expand('%:p:h')
+   local relative_path = utils.get_visual_selection()
+   local path = vim.fs.joinpath(file_dir, relative_path)
+
+   require('plenary.job'):new({
+      command = cmd,
+      args = { path },
+   }):start()
+end, { desc = 'Open current file directory in OS Explorer' })
 
 --- @param note string
 local create_note = function(note)

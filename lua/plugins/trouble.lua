@@ -7,7 +7,7 @@ return {
          "<leader>tt",
          function()
             local trouble = require("trouble")
-            trouble.toggle({ mode = "diagnostics", win = {type = "split", position = "bottom", size = {height = 20} }} )
+            trouble.toggle({ mode = "diagnostics", win = {type = "split", position = "bottom", size = {height = 15} }} )
          end,
          desc = "Diagnostics (Trouble)",
       },
@@ -15,7 +15,7 @@ return {
          "<leader>tx",
          function()
             local trouble = require("trouble")
-            trouble.toggle({ filter = {buf = 0}, mode = "diagnostics", win = {type = "split", position = "bottom", size = {height = 20} }} )
+            trouble.toggle({ filter = {buf = 0}, mode = "diagnostics", win = {type = "split", position = "bottom", size = {height = 15} }} )
          end,
          "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
          desc = "Buffer Diagnostics (Trouble)",
@@ -24,7 +24,7 @@ return {
          "<leader>ts",
          function()
             local trouble = require("trouble")
-            trouble.toggle({ mode = "symbols", win = {type = "split", position = "right", size = {width = 80} }} )
+            trouble.toggle({ mode = "symbols", win = {type = "split", position = "right", size = {width = 60} }} )
          end,
          desc = "Symbols (Trouble)",
       },

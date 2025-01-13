@@ -178,13 +178,13 @@ M.docker_containers = function()
             local elements = picker.manager.linked_states.head
             local element = elements
 
+            -- Escape prefix for regex
+            prefix = prefix:gsub('%-', '%%-')
+
             -- Loop through all elements in the results
             while true do
                log.debug('element: ', vim.inspect(element.item[1].ordinal))
                local item = element.item[1]
-
-               -- Escape prefix for regex
-               prefix = prefix:gsub('%-', '%%%-')
 
                if item ~= nil and item.value ~= nil and item.value.Names ~= nil and item.value.Names:match('^' .. prefix .. '.*') then
                   if action == 'start' then
@@ -269,13 +269,13 @@ M.docker_containers = function()
          map('i', '<C-h>', open_log_in_split)
          map('i', '<C-b>', log_to_buf)
          map('n', 'b', log_to_buf)
-         map('i', '<C-d>', delete_container)
+         map('i', '<C-c>', delete_container)
          map('n', '=', delete_container)
          map('i', '<C-q>', prefix_action_close)
          map('n', 'q', prefix_action_close)
          map('i', '<C-r>', prefix_action_start)
          map('n', 'r', prefix_action_start)
-         map('i', '<C-.>', prefix_action_delete)
+         map('i', '<C-d>', prefix_action_delete)
          map('n', '*', prefix_action_delete)
 
          return true

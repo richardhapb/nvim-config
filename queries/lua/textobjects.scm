@@ -1,3 +1,4 @@
+; extends
 (assignment_statement
   (variable_list) @lhs
  (expression_list) @rhs
