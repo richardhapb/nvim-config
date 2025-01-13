@@ -52,7 +52,9 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.opt.display = vim.o.display .. ",lastline"
 vim.opt.listchars = vim.o.listchars .. ",eol:↲"
 vim.opt.list = true
-vim.opt.fixeol = true
+vim.opt.fixeol = false
+vim.opt.binary = true
+vim.opt.endofline = false
 vim.opt.fileformat = "mac"
 vim.opt.fileformats = { "unix", "mac", "dos" }
 
