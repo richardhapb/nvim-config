@@ -4,6 +4,12 @@ function M.detect_fileformat()
    local fileformat
 
    local filepath = vim.fn.expand("%:p")
+   local workpath = vim.fs.joinpath(vim.fn.expand('$HOME'), 'dev')
+
+   if not filepath or not filepath:match(workpath) then
+      return
+   end
+
    local file = io.open(filepath, "r")
 
    if not file then

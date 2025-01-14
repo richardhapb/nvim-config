@@ -57,7 +57,7 @@ vim.opt.fixeol = false
 vim.opt.binary = false
 vim.opt.endofline = false
 vim.opt.eol = false
-vim.opt.eof = true
+vim.opt.eof = false
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
