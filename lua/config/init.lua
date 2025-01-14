@@ -48,15 +48,16 @@ vim.api.nvim_create_autocmd("FileType", {
    desc = "Disable New Line Comment",
 })
 
--- Enable last line
+-- Formatting and break lines
 vim.opt.display = vim.o.display .. ",lastline"
 vim.opt.listchars = vim.o.listchars .. ",eol:↲"
 vim.opt.list = true
+vim.opt.fileformats = { "unix", "dos", "mac" }
 vim.opt.fixeol = false
-vim.opt.binary = true
+vim.opt.binary = false
 vim.opt.endofline = false
-vim.opt.fileformat = "mac"
-vim.opt.fileformats = { "unix", "mac", "dos" }
+vim.opt.eol = false
+vim.opt.eof = true
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
