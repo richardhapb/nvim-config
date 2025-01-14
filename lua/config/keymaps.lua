@@ -35,9 +35,6 @@ keymap('n', '<Esc>', function()
    end
 end, { expr = true })
 
--- Quickfix
-keymap('n', '<C-n>', ':cnext<CR>', { silent = true })
-keymap('n', '<C-p>', ':cprev<CR>', { silent = true })
 
 -- UI
 keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
