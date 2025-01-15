@@ -4,72 +4,72 @@ local M = {}
 
 -- Execute multiple SQL queries and show output in a single Floaterm window
 M.sql_query = function()
-    -- Diferents directories for find config files
-    local parent_directory = vim.fn.expand("%:p:h")
-    local root_directory = vim.fn.getcwd()
-    local default_directory = vim.fn.expand("$DEV/config")
+   -- Diferents directories for find config files
+   local parent_directory = vim.fn.expand("%:p:h")
+   local root_directory = vim.fn.getcwd()
+   local default_directory = vim.fn.expand("$DEV/config")
 
-    local directories = {parent_directory, root_directory, default_directory}
-    local sql_conf = nil
+   local directories = { parent_directory, root_directory, default_directory }
+   local sql_conf = nil
 
-    for _, dir in ipairs(directories) do
-        if dir then
-            sql_conf = io.open(dir .. "/sql.json", "r")
-            if sql_conf then
-                break -- Found it
+   for _, dir in ipairs(directories) do
+      if dir then
+         sql_conf = io.open(dir .. "/sql.json", "r")
+         if sql_conf then
+            break -- Found it
+         end
+      end
+   end
+
+   if not sql_conf then
+      print("Can't find the file sql.json.")
+   else
+      local db_conf = sql_conf:read("*a")
+      sql_conf:close()
+
+      if db_conf then
+         local db = vim.fn.json_decode(db_conf)
+         local sql_query = utils.get_visual_selection()
+         local queries = vim.split(sql_query, ";")
+
+         local full_output = {}
+
+         for _, query in ipairs(queries) do
+            if query:match("%S") then
+               -- Replace line break with spaces
+               query = query:gsub("%s+", " ")
+
+               local port = 5432 -- Default port
+               if db.port then
+                  port = db.port
+               end
+               --
+               -- Execute and compare
+               local command = 'PGPASSWORD="' ..
+                   db.password ..
+                   '" psql -h ' ..
+                   db.host ..
+                   ' -p ' .. port .. ' -U ' .. db.user .. ' -d ' .. db.database .. ' -c ' .. vim.fn.shellescape(query)
+               local output = vim.fn.systemlist(command)
+
+               if output then
+                  table.insert(full_output, "Query: " .. query)
+                  table.insert(full_output, "")
+                  vim.list_extend(full_output, output)
+                  table.insert(full_output, "")
+                  table.insert(full_output, string.rep('-', 80))
+                  table.insert(full_output, "")
+               end
             end
-        end
-    end
+         end
 
-    if sql_conf then
-        local db_conf = sql_conf:read("*a")
-        sql_conf:close()
-
-        if db_conf then
-            local db = vim.fn.json_decode(db_conf)
-            local sql_query = utils.get_visual_selection()
-            local queries = utils.split(sql_query, ";")
-
-            -- Create a temp file for storage data
-            local temp_file_path = "/tmp/sql_query_output.txt"
-            local temp_file = io.open(temp_file_path, "w")
-
-            if not temp_file then
-                print("Error creating temp file")
-                return
-            end
-
-            for _, query in ipairs(queries) do
-                if query ~= "" then
-                    -- Replace line break with spaces
-                    query = query:gsub("\n", " ")
-
-                    local port = 5432 -- Default port
-                    if db.port then
-                        port = db.port
-                    end
-                    --
-                    -- Execute and compare
-                    local command = 'PGPASSWORD="' .. db.password .. '" psql -h ' .. db.host .. ' -p ' .. port .. ' -U ' .. db.user .. ' -d ' .. db.database .. ' -c ' .. vim.fn.shellescape(query)
-                    local output = vim.fn.system(command)
-
-                    -- Write output
-                    temp_file:write("Query: " .. query .. "\n")
-                    temp_file:write(output .. "\n")
-                    temp_file:write("-------------------------------------------------\n")
-                end
-            end
-
-            if temp_file then
-                temp_file:close()
-            end
-
-            -- Output in float window
-            vim.cmd('FloatermNew --width=0.9 --height=0.7 --autoclose=0 less ' .. temp_file_path)
-        end
-    else
-        print("Can't find the file sql.json.")
-    end
+         if full_output then
+            utils.buffer_log(full_output, "split")
+         else
+            utils.buffer_log({ "No output" }, "vsplit")
+         end
+      end
+   end
 end
 
 return M

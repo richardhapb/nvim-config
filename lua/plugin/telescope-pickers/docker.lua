@@ -44,7 +44,7 @@ M.docker_containers = function()
       attach_mappings = function(prompt_bufnr, map)
          local refresh_picker = function()
             local ok, picker = pcall(action_state.get_current_picker, prompt_bufnr)
-            if not ok then
+            if not ok or not picker then
                return
             end
             picker:refresh()
@@ -262,21 +262,18 @@ M.docker_containers = function()
 
          map('i', '<C-o>', start_container)
          map('n', '+', start_container)
-         map('i', '<C-c>', stop_container)
+         map('i', '<C-s>', stop_container)
          map('n', '-', stop_container)
          map('i', '<C-l>', open_log_in_new_window)
          map('n', 'L', open_log_in_new_window)
          map('i', '<C-h>', open_log_in_split)
          map('i', '<C-b>', log_to_buf)
          map('n', 'b', log_to_buf)
-         map('i', '<C-c>', delete_container)
-         map('n', '=', delete_container)
-         map('i', '<C-q>', prefix_action_close)
-         map('n', 'q', prefix_action_close)
          map('i', '<C-r>', prefix_action_start)
          map('n', 'r', prefix_action_start)
-         map('i', '<C-d>', prefix_action_delete)
-         map('n', '*', prefix_action_delete)
+         map({ 'i', 'n' }, '<C-d>', delete_container)
+         map({ 'i', 'n' }, '<C-c>', prefix_action_close)
+         map({ 'i', 'n' }, '<C-k>', prefix_action_delete)
 
          return true
       end,

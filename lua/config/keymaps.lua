@@ -7,7 +7,7 @@ local k = vim.keycode
 keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
 
 -- Lua dev
-keymap('n', '<C-s>', '<cmd>source %<CR>', { desc = 'Source file' })
+keymap('n', '<C-s>', '<cmd>source %<CR>', { noremap = true, desc = 'Source file' })
 keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 
 -- Edit
@@ -52,8 +52,6 @@ keymap('n', '<C-w><left>', '15<C-w><')
 keymap('n', '<C-w><right>', '15<C-w>>')
 keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
-keymap('n', '<leader>bi', utils.close_all_buffers_but_current,
-   { silent = true, desc = 'Close all buffers except current' })
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
 keymap('x', '<leader>o', function()
