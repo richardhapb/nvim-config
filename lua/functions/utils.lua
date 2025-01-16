@@ -61,7 +61,7 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
 
    local current_cursor_line = vim.fn.line('.')
    local current_line_text = vim.api.nvim_buf_get_lines(main_buffer, current_cursor_line - 1, current_cursor_line, false)
-   [1]
+       [1]
 
    if current_line_text ~= nil then
       close_diff_buffers(main_buffer)
@@ -81,6 +81,30 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
 
       vim.api.nvim_buf_set_var(main_buffer, 'diff_buffers', { current_buffer, branch_buffer })
    end
+end
+
+M.git_restore_curr_line = function(branch_name)
+   local main_buffer = vim.api.nvim_get_current_buf()
+   local current_line_text = vim.fn.getline('.')
+
+   if current_line_text == nil then
+      return
+   end
+
+   local cursor_line = vim.fn.line('.')
+   M.buf_delete_line(main_buffer, cursor_line)
+
+   vim.fn.system('git restore --source ' .. branch_name .. ' --staged --worktree -- ' .. current_line_text)
+
+   close_diff_buffers(main_buffer)
+   local success_message = 'Restored ' .. current_line_text .. ' from ' .. branch_name .. ' successfully!'
+   vim.notify(success_message, vim.log.levels.INFO, { title = 'Git Restore' })
+end
+
+M.buf_delete_line = function(buffer, line)
+   local lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
+   table.remove(lines, line)
+   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
 end
 
 --- @param lines table: list of strings to write in the buffer

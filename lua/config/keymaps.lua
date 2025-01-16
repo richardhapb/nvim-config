@@ -1,4 +1,5 @@
 local utils = require 'functions.utils'
+local job = require 'plenary.job'
 
 local keymap = vim.keymap.set
 local k = vim.keycode
@@ -54,17 +55,34 @@ keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
+
 keymap('x', '<leader>o', function()
    local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
-   local file_dir = vim.fn.expand('%:p:h')
-   local relative_path = utils.get_visual_selection()
-   local path = vim.fs.joinpath(file_dir, relative_path)
+   local input = utils.get_visual_selection()
+   if input == '' then
+      return
+   end
 
-   require('plenary.job'):new({
+   local file_dir = vim.fn.expand('%:p:h')
+   local path = vim.fs.joinpath(file_dir, input)
+   local args
+
+   if vim.fn.filereadable(path) == 1 then
+      args = path
+   elseif input:find 'http' or input:find 'www' then
+      args = input
+   end
+
+   if args == nil then
+      return
+   end
+
+   ---@diagnostic disable-next-line: missing-fields
+   job:new({
       command = cmd,
-      args = { path },
+      args = { args },
    }):start()
-end, { desc = 'Open current file directory in OS Explorer' })
+end, { desc = 'Open current selection' })
 
 --- @param note string
 local create_note = function(note)

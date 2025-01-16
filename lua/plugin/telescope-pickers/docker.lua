@@ -257,7 +257,26 @@ M.docker_containers = function()
          end
 
          local function prefix_action_delete()
+            local prefix = vim.fn.split(vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1], ' ')[2]
+            if prefix == nil then
+               return
+            end
+
+            local confirm = vim.fn.confirm('Are you sure you want to delete containers with prefix "' .. prefix .. '"?',
+               '&Yes\n&No', 2)
+            if confirm == 2 then
+               return
+            end
+
             handle_prefix(_, 'delete')
+         end
+
+         local function delete_this_container()
+            local confirm = vim.fn.confirm('Are you sure you want to delete this container?', '&Yes\n&No', 2)
+            if confirm == 2 then
+               return
+            end
+            delete_container()
          end
 
          map('i', '<C-o>', start_container)
@@ -271,7 +290,7 @@ M.docker_containers = function()
          map('n', 'b', log_to_buf)
          map('i', '<C-r>', prefix_action_start)
          map('n', 'r', prefix_action_start)
-         map({ 'i', 'n' }, '<C-d>', delete_container)
+         map({ 'i', 'n' }, '<C-d>', delete_this_container)
          map({ 'i', 'n' }, '<C-c>', prefix_action_close)
          map({ 'i', 'n' }, '<C-k>', prefix_action_delete)
 
