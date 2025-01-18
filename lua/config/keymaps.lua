@@ -59,6 +59,7 @@ keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' }
 keymap('x', '<leader>o', function()
    local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
    local input = utils.get_visual_selection()
+   input = input:gsub('\n', '')
    if input == '' then
       return
    end
@@ -168,10 +169,6 @@ end, { silent = true, desc = 'Git diff HEAD --name-only' })
 
 keymap('n', 'gh', '<CMD>diffget //2<CR>', { silent = true, desc = 'Git diff get left' })
 keymap('n', 'gl', '<CMD>diffget //3<CR>', { silent = true, desc = 'Git diff get right' })
-
--- Copilot
-keymap('i', '<C-z>', 'copilot#Accept()',
-   { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })
 
 -- Latex
 keymap('n', '<leader>lb', ':LatexBuild<CR>', { silent = true, desc = 'Latex build' })

@@ -1,10 +1,6 @@
+; inherits: lua
 ; extends
-(assignment_statement
-  (variable_list) @lhs
- (expression_list) @rhs
- )
 
 (field
-  name: (_) @lhs
-  value: (_) @rhs
-    )
+  name: (_) @assignment.lhs
+  value: (_) @assignment.inner @assignment.rhs) @assignment.outer

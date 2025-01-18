@@ -21,6 +21,7 @@ return {
          "mermaid",
          "astro",
          "html",
+         "sql",
          "htmldjango",
          "css",
          "json",
@@ -50,8 +51,9 @@ return {
                ["ii"] = "@conditional.inner",
                ["ad"] = "@comment.outer",
                ["id"] = "@comment.inner",
-               ["i="] = "@lhs",
-               ["a="] = "@rhs"
+               ["i="] = "@assignment.lhs",
+               ["a="] = "@assignment.rhs",
+               ["a/"] = "@statement.outer"
             }
          }
       }
