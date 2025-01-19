@@ -14,7 +14,7 @@ M.setup = function()
                nargs = 0,
             })
 
-            vim.keymap.set('x', '<leader>sq', '<CMD>SqlQuery<CR>',
+            vim.keymap.set('x', '<leader>=', '<CMD>SqlQuery<CR>',
                { noremap = true, silent = true, desc = 'Execute SQL query' })
          end
       })

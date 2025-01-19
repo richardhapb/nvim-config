@@ -6,14 +6,18 @@ copilot.new = function()
    }, { __index = copilot })
 end
 
+copilot.get_trigger_characters = function()
+  return {'.'}
+end
+
 copilot.get_keyword_pattern = function()
-   return '.'
+  return '.'
 end
 
 copilot.complete = function(self, _, callback)
    vim.fn['copilot#Complete'](function(result)
       callback({
-         isIncomplete = false,
+         isIncomplete = true,
          items = vim.tbl_map(function(item)
             local text = item.insertText
             return {
@@ -31,7 +35,12 @@ copilot.complete = function(self, _, callback)
                   }, '\n'),
                },
             }
-         end, ((result.first or {}).result or {}).items or {})
+         end, ((result.first or {}).result or {}).items or {}),
+      })
+   end, function()
+      callback({
+         isIncomplete = true,
+         items = {},
       })
    end)
 end
@@ -116,7 +125,7 @@ return {
          },
 
          sources = cmp.config.sources {
-            { name = "copilot",        priority = 1000 },
+            { name = "copilot" },
             { name = "nvim_lua" },
             { name = "nvim_lsp" },
             { name = 'lazydev' },
@@ -150,7 +159,7 @@ return {
             end
          },
 
-         experimental = { ghost_text = true },
+         experimental = { ghost_text = false },
          cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done { map_char = { tex = "" } }),
 
          cmp.setup.filetype('gitcommit', {

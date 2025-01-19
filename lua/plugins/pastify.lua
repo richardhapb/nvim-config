@@ -1,12 +1,9 @@
 return {
    'TobinPalmer/pastify.nvim',
    cmd = { 'Pastify', 'PastifyAfter' },
-   event = { 'BufReadPost' },
-       keys = {
-           {noremap = true, mode = "x", '<leader>p', "<cmd>PastifyAfter<CR>"},
-           {noremap = true, mode = "n", '<leader>p', "<cmd>PastifyAfter<CR>"},
-           {noremap = true, mode = "n", '<leader>P', "<cmd>Pastify<CR>"},
-       },
+   ft = {
+      "markdown"
+   },
    config = function()
       require('pastify').setup {
          opts = {
@@ -40,5 +37,10 @@ return {
             lua = '-- $IMG$',
          },
       }
+
+      vim.keymap.set("x", '<leader>p', "<cmd>PastifyAfter<CR>", { noremap = true, desc = "Pastify After" })
+      vim.keymap.set("n", '<leader>p', "<cmd>PastifyAfter<CR>", { noremap = true, desc = "Pastify After" })
+      vim.keymap.set("n", '<leader>P', "<cmd>Pastify<CR>", { noremap = true, desc = "Pastify Before" })
    end
 }
+
