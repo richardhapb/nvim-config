@@ -23,7 +23,7 @@ M.docker_containers = function()
             local parsed = vim.json.decode(entry)
             return {
                value = parsed,
-               display = parsed.Status .. '\t\t\t' .. parsed.Names,
+               display = parsed.Names .. '\t\t\t' .. parsed.Status,
                ordinal = parsed.Names,
             }
          end,
@@ -279,6 +279,33 @@ M.docker_containers = function()
             delete_container()
          end
 
+         local function init_terminal()
+            local selection = action_state.get_selected_entry()
+            if not selection then
+               return
+            end
+            local container_id = selection.value.ID
+            local state = selection.value.State
+
+            if state ~= 'running' then
+               start_container()
+               return
+            end
+
+            local command = {
+               'tmux',
+               'split-window -h',
+               'docker',
+               'exec',
+               '-it',
+               container_id,
+               'bash'
+            }
+
+            log.debug('[TMUX] command', vim.fn.join(command, ' '))
+            vim.fn.system(vim.fn.join(command, ' '))
+         end
+
          map('i', '<C-o>', start_container)
          map('n', '+', start_container)
          map('i', '<C-s>', stop_container)
@@ -293,6 +320,8 @@ M.docker_containers = function()
          map({ 'i', 'n' }, '<C-d>', delete_this_container)
          map({ 'i', 'n' }, '<C-c>', prefix_action_close)
          map({ 'i', 'n' }, '<C-k>', prefix_action_delete)
+         map('n', 't', init_terminal)
+         map('i', '<C-t>', init_terminal)
 
          return true
       end,

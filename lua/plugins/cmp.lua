@@ -7,11 +7,11 @@ copilot.new = function()
 end
 
 copilot.get_trigger_characters = function()
-  return {'.'}
+   return { '.' }
 end
 
 copilot.get_keyword_pattern = function()
-  return '.'
+   return '.'
 end
 
 copilot.complete = function(self, _, callback)
@@ -25,6 +25,10 @@ copilot.complete = function(self, _, callback)
                textEdit = {
                   range = item.range,
                   newText = text,
+               },
+               cmp = {
+                  kind_hl_group = "CmpItemKindCopilot",
+                  kind_text = 'Copilot',
                },
                documentation = {
                   kind = 'markdown',
@@ -61,7 +65,6 @@ return {
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-git",
       "hrsh7th/cmp-cmdline",
-      "hrsh7th/cmp-nvim-lua",
       "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
       { "windwp/nvim-autopairs", opts = { check_ts = true } }
@@ -104,6 +107,8 @@ return {
          Copilot = "",
       }
 
+      vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "orange" })
+
       cmp.setup({
          snippet = {
             expand = function(args)
@@ -112,8 +117,8 @@ return {
          },
 
          mapping = {
-            ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-            ["<C-f>"] = cmp.mapping.scroll_docs(4),
+            ["<C-u>"] = cmp.mapping.scroll_docs(-4),
+            ["<C-d>"] = cmp.mapping.scroll_docs(4),
             ["<C-e>"] = cmp.mapping.abort(),
             ["<C-k>"] = cmp.mapping.complete(),
             ["<C-n>"] = cmp.mapping.select_next_item(),
@@ -125,10 +130,9 @@ return {
          },
 
          sources = cmp.config.sources {
+            { name = "lazydev",        group_index = 0, },
             { name = "copilot" },
-            { name = "nvim_lua" },
             { name = "nvim_lsp" },
-            { name = 'lazydev' },
             { name = "markdown-render" },
             { name = "path" },
             { name = "luasnip" },
@@ -148,11 +152,7 @@ return {
 
          ---@diagnostic disable-next-line: missing-fields
          formatting = {
-            format = function(entry, vim_item)
-               if entry.source.name == "copilot" then
-                  vim_item.kind = "Copilot"
-               end
-
+            format = function(_, vim_item)
                local kind_icon = icons[vim_item.kind] or ""
                vim_item.kind = string.format("%s %s", kind_icon, vim_item.kind)
                return vim_item
