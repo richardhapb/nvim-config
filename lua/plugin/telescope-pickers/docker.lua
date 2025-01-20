@@ -34,7 +34,7 @@ M.docker_containers = function()
             if entry.value.State ~= "running" then
                preview = vim.iter(vim.split(vim.inspect(entry.value), '\n')):flatten():totable()
             else
-               local logs = vim.fn.systemlist({ 'docker', 'logs', entry.value.ID })
+               local logs = vim.fn.systemlist({ 'docker', 'logs', entry.value.ID, '--tail', "50" })
                preview = logs
             end
             vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview)
@@ -306,9 +306,34 @@ M.docker_containers = function()
             vim.fn.system(vim.fn.join(command, ' '))
          end
 
+         local function container_stats()
+            local selection = action_state.get_selected_entry()
+            if not selection then
+               return
+            end
+            local container_id = selection.value.ID
+            local state = selection.value.State
+
+            if state ~= 'running' then
+               start_container()
+               return
+            end
+
+            local command = {
+               'tmux',
+               'split-window -h',
+               'docker',
+               'stats',
+               container_id
+            }
+
+            log.debug('[TMUX] command', vim.fn.join(command, ' '))
+            vim.fn.system(vim.fn.join(command, ' '))
+         end
+
          map('i', '<C-o>', start_container)
          map('n', '+', start_container)
-         map('i', '<C-s>', stop_container)
+         map('i', '<C-q>', stop_container)
          map('n', '-', stop_container)
          map('i', '<C-l>', open_log_in_new_window)
          map('n', 'L', open_log_in_new_window)
@@ -322,6 +347,8 @@ M.docker_containers = function()
          map({ 'i', 'n' }, '<C-k>', prefix_action_delete)
          map('n', 't', init_terminal)
          map('i', '<C-t>', init_terminal)
+         map('n', 's', container_stats)
+         map('i', '<C-s>', container_stats)
 
          return true
       end,
