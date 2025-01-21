@@ -1,3 +1,7 @@
+local function relative_from_cwd()
+   return vim.fn.expand('%:~:.')
+end
+
 return {
    'nvim-lualine/lualine.nvim',
    dependencies = {
@@ -12,25 +16,25 @@ return {
             component_separators = { '', '' },
          },
          sections = {
-            lualine_a = { 'mode' },
+            lualine_a = { { relative_from_cwd, color = 'StatusLine' } },
             lualine_b = { 'branch' },
-            lualine_c = { { 'filename', color = 'StatusLine' }, 'diff' },
+            lualine_c = { 'diff' },
             lualine_x = {
-               'copilot', 'encoding', 'fileformat', 'filetype',
+              'copilot', 'fileformat', 'filetype',
             },
             lualine_y = { 'progress', 'searchcount' },
             lualine_z = { 'location' },
          },
          inactive_sections = {
-            lualine_a = {},
-            lualine_b = { { 'branch', color = 'MoreMsg' } },
-            lualine_c = { { 'filename', color = 'StatusLineNC' }, 'diff' },
-            lualine_x = { { 'location', color = { fg = '#CCCCCC' } } },
+            lualine_a = { { relative_from_cwd, color = 'StatusLineNC' } },
+            lualine_b = {},
+            lualine_c = {},
+            lualine_x = {},
             lualine_y = {},
-            lualine_z = {},
+            lualine_z = {'diff'},
          },
          tabline = {},
-         extensions = {},
+         extensions = {'oil', 'fugitive'},
       }
    end,
 }
