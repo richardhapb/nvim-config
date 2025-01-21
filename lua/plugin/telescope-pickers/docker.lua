@@ -289,7 +289,6 @@ M.docker_containers = function()
 
             if state ~= 'running' then
                start_container()
-               return
             end
 
             local command = {
