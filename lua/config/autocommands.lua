@@ -1,20 +1,18 @@
-local edit_group = vim.api.nvim_create_augroup("EditConfig", {clear = true})
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-   group = edit_group,
-   pattern = "*.py,*.js,*.ts,*.lua,*.html,*.css,*.scss,*.json,*.md,*.yaml,*.yml",
+   group = vim.api.nvim_create_augroup("LastLineOnSave", {clear = true}),
    callback = function()
       local last_line = vim.fn.getline('$')
+      local last_line_number = vim.fn.line('$')
       -- Insert a newline at the end of the file if it doesn't exist
-      if last_line ~= '' then
-         vim.fn.append(vim.fn.line('$'), '')
+      if not last_line:find("\n") then
+         vim.fn.append(last_line_number, "")
       end
    end,
 })
 
-
 vim.api.nvim_create_autocmd("BufWritePre", {
-   group = edit_group,
+   group = vim.api.nvim_create_augroup("RetabOnSave", {clear = true}),
    callback = function()
       vim.cmd('retab!')
    end
@@ -54,5 +52,3 @@ vim.api.nvim_create_autocmd("TermOpen", {
       vim.bo.filetype = "terminal"
    end
 })
-
-
