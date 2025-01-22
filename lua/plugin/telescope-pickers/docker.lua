@@ -12,6 +12,33 @@ log.level = 'info'
 
 local M = {}
 
+M.settings = {
+   tmux = false
+}
+
+M.setup = function()
+end
+
+local function _tmux_or_termopen(command, arg, insert)
+   if insert == nil then
+      insert = false 
+   end
+   log.debug('[LOGS] command', vim.fn.join(command, ' '))
+   if M.settings.tmux then
+      vim.cmd('silent ' .. arg)
+
+      vim.fn.termopen(vim.fn.join(command, ' '))
+      vim.cmd.normal('G')
+   else
+      table.insert(command, 1, arg)
+      table.insert(command, 1, 'tmux')
+      vim.fn.system(vim.fn.join(command, ' '))
+   end
+   if insert then
+      vim.cmd 'startinsert'
+   end
+end
+
 M.docker_containers = function()
    pickers.new({}, {
       prompt_title = "Docker Containers",
@@ -143,22 +170,19 @@ M.docker_containers = function()
             local arg = ''
 
             if new_window then
-               arg = 'new-window'
+               arg = M.settings.tmux and 'new-window' or 'enew'
             else
-               arg = 'split-window -h'
+               arg = M.settings.tmux and 'split-window -h' or 'vnew'
             end
 
             local command = {
-               'tmux',
-               arg,
                'docker',
                'logs',
                container_id,
                '-f'
             }
 
-            log.debug('[LOGS] command', vim.fn.join(command, ' '))
-            vim.fn.system(vim.fn.join(command, ' '))
+            _tmux_or_termopen(command, arg, false)
          end
 
          local function handle_prefix(_, action)
@@ -291,9 +315,9 @@ M.docker_containers = function()
                start_container()
             end
 
+            local arg = M.settings.tmux and 'split-window -h' or 'vnew'
+
             local command = {
-               'tmux',
-               'split-window -h',
                'docker',
                'exec',
                '-it',
@@ -301,8 +325,7 @@ M.docker_containers = function()
                'bash'
             }
 
-            log.debug('[TMUX] command', vim.fn.join(command, ' '))
-            vim.fn.system(vim.fn.join(command, ' '))
+            _tmux_or_termopen(command, arg, true)
          end
 
          local function container_stats()
@@ -318,16 +341,15 @@ M.docker_containers = function()
                return
             end
 
+            local arg = M.settings.tmux and 'split-window -h' or 'vnew'
+
             local command = {
-               'tmux',
-               'split-window -h',
                'docker',
                'stats',
                container_id
             }
 
-            log.debug('[TMUX] command', vim.fn.join(command, ' '))
-            vim.fn.system(vim.fn.join(command, ' '))
+            _tmux_or_termopen(command, arg, false)
          end
 
          map('i', '<C-o>', start_container)
