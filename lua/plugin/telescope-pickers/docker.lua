@@ -45,9 +45,10 @@ local function _tmux_or_termopen(command, args, insert)
 
       vim.fn.jobstart(vim.fn.join(command, ' '), { term = true })
       vim.cmd.normal('G')
-   end
-   if insert then
-      vim.cmd 'startinsert'
+
+      if insert then
+         vim.cmd 'startinsert'
+      end
    end
 end
 

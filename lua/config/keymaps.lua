@@ -53,6 +53,10 @@ keymap('n', '<C-w><right>', '15<C-w>>')
 keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
+keymap('n', '<C-h>', '<C-w>h', { silent = true })
+keymap('n', '<C-j>', '<C-w>j', { silent = true })
+keymap('n', '<C-k>', '<C-w>k', { silent = true })
+keymap('n', '<C-l>', '<C-w>l', { silent = true })
 
 keymap('x', '<leader>o', function()
    local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
