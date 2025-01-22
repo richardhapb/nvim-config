@@ -12,34 +12,50 @@ log.level = 'info'
 
 local M = {}
 
-M.settings = {
-   tmux = false
-}
+M.settings = {}
 
-M.setup = function()
+M.setup = function(opts)
+   if not opts then
+      opts = {}
+   end
+   M.settings.tmux = opts.tmux or false
 end
 
-local function _tmux_or_termopen(command, arg, insert)
-   if insert == nil then
-      insert = false 
-   end
-   log.debug('[LOGS] command', vim.fn.join(command, ' '))
-   if M.settings.tmux then
-      vim.cmd('silent ' .. arg)
+local function _tmux_or_termopen(command, args, insert)
+   local tmux_running = vim.fn.expand('$TMUX')
 
-      vim.fn.termopen(vim.fn.join(command, ' '))
-      vim.cmd.normal('G')
-   else
-      table.insert(command, 1, arg)
+   log.debug('[TERM] tmux_running: ', tmux_running)
+
+   if M.settings.tmux and #tmux_running > 0 then
+      table.insert(command, 1, args)
       table.insert(command, 1, 'tmux')
+      log.debug('[LOGS] command', vim.fn.join(command, ' '))
+
       vim.fn.system(vim.fn.join(command, ' '))
+   else
+      if M.settings.tmux then
+         if args == 'new-window' then
+            args = 'enew'
+         else
+            args = 'vnew'
+         end
+      end
+      log.debug('[LOGS] command', vim.fn.join(command, ' '))
+      vim.cmd('silent ' .. args)
+
+      vim.fn.jobstart(vim.fn.join(command, ' '), { term = true })
+      vim.cmd.normal('G')
    end
    if insert then
       vim.cmd 'startinsert'
    end
 end
 
-M.docker_containers = function()
+M.docker_containers = function(opts)
+   if not opts then
+      opts = {}
+   end
+   M.setup(opts)
    pickers.new({}, {
       prompt_title = "Docker Containers",
       finder = finders.new_async_job {
@@ -167,12 +183,12 @@ M.docker_containers = function()
                return
             end
 
-            local arg = ''
+            local args = ''
 
             if new_window then
-               arg = M.settings.tmux and 'new-window' or 'enew'
+               args = M.settings.tmux and 'new-window' or 'enew'
             else
-               arg = M.settings.tmux and 'split-window -h' or 'vnew'
+               args = M.settings.tmux and 'split-window -h' or 'vnew'
             end
 
             local command = {
@@ -182,7 +198,7 @@ M.docker_containers = function()
                '-f'
             }
 
-            _tmux_or_termopen(command, arg, false)
+            _tmux_or_termopen(command, args, false)
          end
 
          local function handle_prefix(_, action)
@@ -315,7 +331,7 @@ M.docker_containers = function()
                start_container()
             end
 
-            local arg = M.settings.tmux and 'split-window -h' or 'vnew'
+            local args = M.settings.tmux and 'split-window -h' or 'vnew'
 
             local command = {
                'docker',
@@ -325,7 +341,7 @@ M.docker_containers = function()
                'bash'
             }
 
-            _tmux_or_termopen(command, arg, true)
+            _tmux_or_termopen(command, args, true)
          end
 
          local function container_stats()
@@ -341,7 +357,7 @@ M.docker_containers = function()
                return
             end
 
-            local arg = M.settings.tmux and 'split-window -h' or 'vnew'
+            local args = M.settings.tmux and 'split-window -h' or 'vnew'
 
             local command = {
                'docker',
@@ -349,7 +365,7 @@ M.docker_containers = function()
                container_id
             }
 
-            _tmux_or_termopen(command, arg, false)
+            _tmux_or_termopen(command, args, false)
          end
 
          map('i', '<C-o>', start_container)
@@ -375,6 +391,8 @@ M.docker_containers = function()
       end,
    }):find()
 end
+
+M.setup()
 
 return M
 

@@ -122,7 +122,7 @@ return {
       { '<leader>f\\',      function() require('telescope.builtin').symbols({ sources = { 'latex' } }) end, desc = 'Telescope latex' },
       { '<leader>f/',       function() require('telescope.builtin').current_buffer_fuzzy_find() end,        desc = 'Telescope buffer fuzzy finder' },
       { '<leader>fb',       function() require('telescope.builtin').git_branches() end,        desc = 'Telescope git branches' },
-      { '<leader>fd',       function() require 'plugin.telescope-pickers.docker'.docker_containers() end,   desc = 'Telescope docker containers' },
+      { '<leader>fd',       function() require 'plugin.telescope-pickers.docker'.docker_containers({tmux = true}) end,   desc = 'Telescope docker containers' },
       { '<leader>fw',       function() require('telescope').extensions.git_worktree.git_worktrees() end,    desc = 'Telescope git worktrees' },
 
    },
