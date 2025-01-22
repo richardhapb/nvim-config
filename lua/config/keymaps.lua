@@ -13,8 +13,7 @@ keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 
 -- Edit
 keymap('n', 'db', '"_dbx', { silent = true })
-keymap('n', '<leader>cc', 'Vy', { silent = true })
-keymap('n', '<leader>ca', 'ggVG')
+keymap('n', '<leader>ca', 'ggVG', { silent = true, desc = 'Select all' })
 keymap('n', 'D', '"_d$', { silent = true })
 keymap('x', 'p', '"_dP', { silent = true })
 keymap('v', 'J', ':m \'>+1<CR>gv=gv', { silent = true })
@@ -45,15 +44,15 @@ keymap('n', '<C-bn>', '<CMD>bnext<CR>', { silent = true, noremap = true })
 
 -- Explorer
 keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
-keymap('n', '<leader>tc', ':tabnew<CR>', { silent = true, desc = 'New tab' })
-keymap('n', '<leader>tn', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
-keymap('n', '<leader>tp', ':tabprevious<CR>', { silent = true, desc = 'Previous tab' })
+keymap('n', '<leader>\\c', ':tabnew<CR>', { silent = true, desc = 'New tab' })
+keymap('n', '<leader>\\n', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
+keymap('n', '<leader>\\p', ':tabprevious<CR>', { silent = true, desc = 'Previous tab' })
+keymap('n', '<leader>\\q', ':tabclose<CR>', { silent = true, desc = 'Close tab' })
 keymap('n', '<C-w><left>', '15<C-w><')
 keymap('n', '<C-w><right>', '15<C-w>>')
 keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
 keymap('n', '<leader>bd', ':bd<CR>', { silent = true, desc = 'Close buffer' })
-keymap('n', '<C-\\>', '<C-6>', { silent = true, desc = 'Switch to last buffer' })
 
 keymap('x', '<leader>o', function()
    local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
@@ -194,4 +193,14 @@ keymap('n', '<leader>rp', ':!python %<CR>', { silent = true, desc = 'Run python'
 
 -- Misc
 keymap('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, desc = 'Undo tree' })
+
+-- Terminal
+keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, desc = 'Open terminal' })
+keymap('n', '<leader>cb', function()
+   vim.cmd.vnew()
+   vim.cmd.term()
+   vim.cmd.wincmd 'J'
+   vim.api.nvim_win_set_height(0, 10)
+   vim.cmd.startinsert()
+end, { silent = true, desc = 'Open terminal on bottom' })
 
