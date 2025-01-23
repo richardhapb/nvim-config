@@ -4,6 +4,16 @@ local job = require 'plenary.job'
 local keymap = vim.keymap.set
 local k = vim.keycode
 
+local function _verify_tmux()
+   local tmux_running = false
+   if vim.fn.executable 'tmux' == 1 then
+      vim.cmd('silent !tmux info')
+      tmux_running = vim.v.shell_error == 0
+   end
+
+   return tmux_running
+end
+
 -- Usercommands
 keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with original' })
 
@@ -54,7 +64,7 @@ keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
 keymap('n', '<leader>bd', ':bd!<CR>', { silent = true, desc = 'Close buffer' })
 
-if vim.fn.expand('$TMUX') == '' then
+if not _verify_tmux() then
    keymap('n', '<C-h>', '<C-w>h', { silent = true })
    keymap('n', '<C-j>', '<C-w>j', { silent = true })
    keymap('n', '<C-k>', '<C-w>k', { silent = true })
@@ -210,4 +220,6 @@ keymap('n', '<leader>cb', function()
    vim.api.nvim_win_set_height(0, 10)
    vim.cmd.startinsert()
 end, { silent = true, desc = 'Open terminal on bottom' })
+
+
 

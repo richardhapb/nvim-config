@@ -15,18 +15,31 @@ local M = {}
 M.settings = {}
 
 M.setup = function(opts)
-   if not opts then
-      opts = {}
-   end
+   opts = opts or {}
    M.settings.tmux = opts.tmux or false
 end
 
+local function _verify_tmux()
+   local tmux_running = false
+   if vim.fn.executable 'tmux' == 1 then
+      vim.cmd('silent !tmux info')
+      log.debug('[TMUX] shell_error: ', vim.v.shell_error)
+      tmux_running = vim.v.shell_error == 0
+   end
+
+   return tmux_running
+end
+
 local function _tmux_or_termopen(command, args, insert)
-   local tmux_running = vim.fn.expand('$TMUX')
+   local tmux_running = _verify_tmux()
+   if vim.fn.executable 'tmux' == 1 then
+      vim.system {'tmux', 'info'}:wait()
+      tmux_running = vim.v.shell_error == 0
+   end
 
    log.debug('[TERM] tmux_running: ', tmux_running)
 
-   if M.settings.tmux and #tmux_running > 0 then
+   if M.settings.tmux and tmux_running then
       table.insert(command, 1, args)
       table.insert(command, 1, 'tmux')
       log.debug('[LOGS] command', vim.fn.join(command, ' '))
@@ -35,15 +48,16 @@ local function _tmux_or_termopen(command, args, insert)
    else
       if M.settings.tmux then
          if args == 'new-window' then
-            args = 'enew'
+            args = 'enew!'
          else
-            args = 'vnew'
+            args = 'vnew!'
          end
+         insert = true
       end
       log.debug('[LOGS] command', vim.fn.join(command, ' '))
       vim.cmd('silent ' .. args)
 
-      vim.fn.jobstart(vim.fn.join(command, ' '), { term = true })
+      vim.fn.termopen(vim.fn.join(command, ' '))
       vim.cmd.normal('G')
 
       if insert then
@@ -177,22 +191,17 @@ M.docker_containers = function(opts)
          local function open_log(_, new_window)
             local selection = action_state.get_selected_entry()
             if not selection then
+               log.debug('No selection found')
                return
             end
             local container_id = selection.value.ID
-            local state = selection.value.State
-
-            if state ~= 'running' then
-               start_container()
-               return
-            end
 
             local args = ''
 
             if new_window then
-               args = M.settings.tmux and 'new-window' or 'enew'
+               args = M.settings.tmux and 'new-window' or 'enew!'
             else
-               args = M.settings.tmux and 'split-window -h' or 'vnew'
+               args = M.settings.tmux and 'split-window -h' or 'vnew!'
             end
 
             local command = {
@@ -249,10 +258,6 @@ M.docker_containers = function(opts)
          local function log_to_buf()
             local selection = action_state.get_selected_entry()
             if not selection then
-               return
-            end
-
-            if selection.value.State ~= 'running' then
                return
             end
 
@@ -335,7 +340,9 @@ M.docker_containers = function(opts)
                start_container()
             end
 
-            local args = M.settings.tmux and 'split-window -h' or 'vnew'
+            local tmux_running = _verify_tmux()
+
+            local args = tmux_running and M.settings.tmux and 'split-window -h' or 'vnew!'
 
             local command = {
                'docker',
@@ -361,7 +368,9 @@ M.docker_containers = function(opts)
                return
             end
 
-            local args = M.settings.tmux and 'split-window -h' or 'vnew'
+            local tmux_running = _verify_tmux()
+
+            local args = tmux_running and M.settings.tmux and 'split-window -h' or 'vnew!'
 
             local command = {
                'docker',
@@ -399,3 +408,18 @@ end
 M.setup()
 
 return M
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
