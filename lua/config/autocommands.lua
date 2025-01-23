@@ -5,7 +5,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       local last_line = vim.fn.getline('$')
       local last_line_number = vim.fn.line('$')
       -- Insert a newline at the end of the file if it doesn't exist
-      if not last_line:find("\n") then
+      if last_line ~= "" then
          vim.fn.append(last_line_number, "")
       end
    end,

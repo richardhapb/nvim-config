@@ -4,6 +4,7 @@ return {
    dependencies = {
       'nvim-lua/plenary.nvim',
       "nvim-telescope/telescope-file-browser.nvim",
+      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' }
    },
    config = function()
       require("telescope").setup({
@@ -31,15 +32,22 @@ return {
                   center = {
                      width = 0.55,
                   }
+               },
+               fzf = {
+                  fuzzy = true,
+                  override_generic_sorter = true,
+                  override_file_sorter = true,
+                  case_mode = "smart_case",
                }
             }
          }
       })
       require("telescope").load_extension "file_browser"
       require("telescope").load_extension("git_worktree")
+      require("telescope").load_extension("fzf")
    end,
    keys = {
-      { '<leader><leader>', function() require('telescope.builtin').find_files() end,                       desc = 'Telescope find files' },
+      { '<leader><leader>', function() require('telescope.builtin').git_files() end, desc = 'Telescope find files' },
 
       {
          '<leader>fs',
@@ -108,22 +116,22 @@ return {
          end,
          desc = 'Telescope live grep'
       },
-      { '<leader>f<space>',       function() require('telescope.builtin').buffers() end,                          desc = 'Telescope buffers' },
-      { '<leader>fh',       function() require('telescope.builtin').help_tags() end,                        desc = 'Telescope help tags' },
-      { '<leader>fc',       function() require('telescope.builtin').commands() end,                         desc = 'Telescope view commands' },
-      { '<leader>fk',       function() require('telescope.builtin').keymaps() end,                          desc = 'Telescope normal mode keymaps' },
-      { '<leader>fv',       function() require('telescope.builtin').vim_options() end,                      desc = 'Telescope vim options' },
-      { '<leader>fq',       function() require 'plugin.telescope-pickers.git'.git_branches_diff() end,      desc = 'Telescope git branches diff' },
-      { '<leader>fa',       function() require('telescope.command').load_command("file_browser") end,       desc = 'Telescope file browser' },
-      { '<leader>fr',       function() require('telescope.builtin').lsp_references() end,                   desc = 'Telescope LSP References' },
-      { '<leader>ft',       function() require('telescope.builtin').treesitter() end,                       desc = 'Telescope Treesitter' },
-      { '<leader>ff',       function() require('telescope.builtin').builtin() end,                          desc = 'Telescope builtin' },
-      { '<leader>f`',       function() require('telescope.builtin').symbols({ sources = { 'emoji' } }) end, desc = 'Telescope emojis' },
-      { '<leader>f\\',      function() require('telescope.builtin').symbols({ sources = { 'latex' } }) end, desc = 'Telescope latex' },
-      { '<leader>f/',       function() require('telescope.builtin').current_buffer_fuzzy_find() end,        desc = 'Telescope buffer fuzzy finder' },
-      { '<leader>fb',       function() require('telescope.builtin').git_branches() end,        desc = 'Telescope git branches' },
-      { '<leader>fd',       function() require 'plugin.telescope-pickers.docker'.docker_containers({tmux = true}) end,   desc = 'Telescope docker containers' },
-      { '<leader>fw',       function() require('telescope').extensions.git_worktree.git_worktrees() end,    desc = 'Telescope git worktrees' },
+      { '<leader>f<space>', function() require('telescope.builtin').buffers() end,                                       desc = 'Telescope buffers' },
+      { '<leader>fh',       function() require('telescope.builtin').help_tags() end,                                     desc = 'Telescope help tags' },
+      { '<leader>fc',       function() require('telescope.builtin').commands() end,                                      desc = 'Telescope view commands' },
+      { '<leader>fk',       function() require('telescope.builtin').keymaps() end,                                       desc = 'Telescope normal mode keymaps' },
+      { '<leader>fv',       function() require('telescope.builtin').vim_options() end,                                   desc = 'Telescope vim options' },
+      { '<leader>fq',       function() require 'plugin.telescope-pickers.git'.git_branches_diff() end,                   desc = 'Telescope git branches diff' },
+      { '<leader>fa',       function() require('telescope.command').load_command("file_browser") end,                    desc = 'Telescope file browser' },
+      { '<leader>fr',       function() require('telescope.builtin').lsp_references() end,                                desc = 'Telescope LSP References' },
+      { '<leader>ft',       function() require('telescope.builtin').treesitter() end,                                    desc = 'Telescope Treesitter' },
+      { '<leader>ff',       function() require('telescope.builtin').builtin() end,                                       desc = 'Telescope builtin' },
+      { '<leader>f`',       function() require('telescope.builtin').symbols({ sources = { 'emoji' } }) end,              desc = 'Telescope emojis' },
+      { '<leader>f\\',      function() require('telescope.builtin').symbols({ sources = { 'latex' } }) end,              desc = 'Telescope latex' },
+      { '<leader>f/',       function() require('telescope.builtin').current_buffer_fuzzy_find() end,                     desc = 'Telescope buffer fuzzy finder' },
+      { '<leader>fb',       function() require('telescope.builtin').git_branches() end,                                  desc = 'Telescope git branches' },
+      { '<leader>fd',       function() require 'plugin.telescope-pickers.docker'.docker_containers({ tmux = true }) end, desc = 'Telescope docker containers' },
+      { '<leader>fw',       function() require('telescope').extensions.git_worktree.git_worktrees() end,                 desc = 'Telescope git worktrees' },
 
    },
    opts = {
@@ -137,4 +145,6 @@ return {
       }
    }
 }
+
+
 
