@@ -11,6 +11,17 @@ end
 
 local M = {}
 
+M.get_git_cwd = function()
+   local git_cwd = vim.system({'git', 'rev-parse', '--show-toplevel'}):wait()
+
+   if git_cwd.stderr ~= '' then
+      vim.notify('Error: ' .. git_cwd.stderr, vim.log.levels.ERROR, { title = 'Git cwd' })
+      return
+   end
+
+   return git_cwd.stdout:gsub('\n', '')
+end
+
 -- Get the text selected
 M.get_visual_selection = function()
    vim.cmd('silent normal! "xy')
@@ -59,14 +70,14 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
       vim.api.nvim_set_current_buf(main_buffer)
    end
 
-   local current_cursor_line = vim.fn.line('.')
-   local current_line_text = vim.api.nvim_buf_get_lines(main_buffer, current_cursor_line - 1, current_cursor_line, false)
-       [1]
+   local current_line_text = vim.fn.getline('.')
 
    if current_line_text ~= nil then
       close_diff_buffers(main_buffer)
 
-      vim.cmd('new ' .. current_line_text)
+      local git_cwd = M.get_git_cwd()
+
+      vim.cmd('new ' .. vim.fs.joinpath(git_cwd, current_line_text))
       local current_buffer = vim.api.nvim_get_current_buf()
       local filename = vim.api.nvim_buf_get_name(current_buffer)
 
@@ -74,9 +85,15 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
       filename = file[#file]
 
       local branch_buffer = vim.api.nvim_create_buf(false, true)
-      local branch_file_content = vim.fn.system('git show ' .. branch_name .. ':' .. current_line_text)
+      local branch_file_content = vim.system({ 'git', 'show', branch_name .. ':' .. current_line_text }, { text = true })
+      :wait()
 
-      vim.api.nvim_buf_set_lines(branch_buffer, 0, -1, false, vim.split(branch_file_content, '\n'))
+      if branch_file_content.stderr ~= '' then
+         vim.notify('Error: ' .. branch_file_content.stderr, vim.log.levels.ERROR, { title = 'Git Diff' })
+         return
+      end
+
+      vim.api.nvim_buf_set_lines(branch_buffer, 0, -1, false, vim.split(branch_file_content.stdout, '\n'))
       M.diff_buffers(current_buffer, branch_buffer, nil, branch_name .. ':' .. filename)
 
       vim.api.nvim_buf_set_var(main_buffer, 'diff_buffers', { current_buffer, branch_buffer })
@@ -94,7 +111,18 @@ M.git_restore_curr_line = function(branch_name)
    local cursor_line = vim.fn.line('.')
    M.buf_delete_line(main_buffer, cursor_line)
 
-   vim.fn.system('git restore --source ' .. branch_name .. ' --staged --worktree -- ' .. current_line_text)
+   local git_cwd = M.get_git_cwd()
+
+   vim.system({
+      'git',
+      'restore',
+      '--source',
+      branch_name,
+      '--staged',
+      '--worktree',
+      '--',
+      vim.fs.joinpath(git_cwd, current_line_text) })
+      :wait()
 
    close_diff_buffers(main_buffer)
    local success_message = 'Restored ' .. current_line_text .. ' from ' .. branch_name .. ' successfully!'

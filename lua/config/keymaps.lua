@@ -63,6 +63,7 @@ keymap('n', '<C-w><right>', '15<C-w>>')
 keymap('n', '<C-w><up>', '5<C-w>+')
 keymap('n', '<C-w><down>', '5<C-w>-')
 keymap('n', '<leader>bd', ':bd!<CR>', { silent = true, desc = 'Close buffer' })
+keymap('n', '<leader>.', '<cmd>e tags<cr>', { silent = true, desc = 'Open tags' })
 
 if not _verify_tmux() then
    keymap('n', '<C-h>', '<C-w>h', { silent = true })

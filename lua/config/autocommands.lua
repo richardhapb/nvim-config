@@ -26,16 +26,11 @@ vim.api.nvim_create_autocmd("TextYankPost", {
    end,
 })
 
-local executed = 0
-
 vim.api.nvim_create_autocmd("Filetype", {
    group = vim.api.nvim_create_augroup("FugitiveConfig", {clear = true}),
    pattern = "fugitive",
    callback = function()
       local keymap = vim.keymap.set
-
-      executed = executed + 1
-      print(executed)
 
       keymap('n', '<leader>P', '<cmd>Git push<cr>', { noremap = true, desc = "Git push", buffer = 0 })
       keymap('n', '<leader>F', '<cmd>Git push --force-with-lease<cr>', { noremap = true, desc = "Git push force with lease", buffer = 0 })
@@ -52,3 +47,4 @@ vim.api.nvim_create_autocmd("TermOpen", {
       vim.bo.filetype = "terminal"
    end
 })
+

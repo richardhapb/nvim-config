@@ -110,7 +110,7 @@ local html_snippets = {
 ls.add_snippets("html", html_snippets)
 
 -- HTML-Django snippets
-local htmldjango_snippets = vim.tbl_extend("force", html_snippets, {
+local htmldjango_snippets = vim.list_extend(html_snippets, {
    s("if", fmt([[
    {{% if {} %}}
       {}
@@ -181,3 +181,4 @@ local htmldjango_snippets = vim.tbl_extend("force", html_snippets, {
 })
 
 ls.add_snippets("htmldjango", htmldjango_snippets)
+

@@ -47,7 +47,16 @@ return {
       require("telescope").load_extension("fzf")
    end,
    keys = {
-      { '<leader><leader>', function() require('telescope.builtin').git_files() end, desc = 'Telescope find files' },
+      {
+         '<leader><leader>',
+         function()
+            local ok, _ = pcall(require('telescope.builtin').git_files, {})
+            if not ok then
+               require('telescope.builtin').find_files()
+            end
+         end,
+         desc = 'Telescope find files'
+      },
 
       {
          '<leader>fs',
@@ -145,6 +154,4 @@ return {
       }
    }
 }
-
-
 
