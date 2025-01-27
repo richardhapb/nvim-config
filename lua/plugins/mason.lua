@@ -17,11 +17,11 @@ return {
                "cssls",
                "eslint",
                "markdown_oxide",
-               "dprint", -- JavaScript
                "html",
                "ltex",
                "texlab",
                "htmx",
+               "gopls",
                "ruff",
                "pyright",
                "sqlls",

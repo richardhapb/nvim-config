@@ -319,12 +319,6 @@ return {
          provideFormatter = true
       })
 
-      lc.dprint.setup({
-         capabilities = capabilities,
-         on_attach = on_attach,
-         filetypes = { "json", "toml", "yaml", "markdown", "javascript", "typescript", "css", "html" }
-      })
-
       lc.ltex.setup({
          on_attach = on_attach,
          capabilities = capabilities,
@@ -342,6 +336,7 @@ return {
          "yamlls",
          "dockerls",
          "docker_compose_language_service",
+         'gopls',
          "sqlls",
          "vimls",
          "markdown_oxide",

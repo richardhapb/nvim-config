@@ -24,3 +24,5 @@
   (pair
     value: (list) @nested_list))
 
+(function_definition) @function
+

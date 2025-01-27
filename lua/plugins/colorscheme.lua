@@ -40,7 +40,7 @@ local function custom_hl()
    hl(0, 'VisualNOS', visual)
 
    -- Diagnostics
-   hl(0, 'DiagnosticError', { fg = "#FF0000" })
+   hl(0, 'DiagnosticError', { fg = "#CC0000" })
    hl(0, 'DiagnosticWarn', { fg = "#FFFF00" })
 end
 
