@@ -7,6 +7,7 @@ local status = {
    last_stdout = nil,
    lines = {},
    dependencies_verified = false,
+   working = false,
 }
 
 M.settings = {
@@ -80,7 +81,7 @@ local function is_container_running(callback)
       else
          callback(false, "Error executing docker ps: " .. result.stderr)
       end
-   end)
+   end):wait()
 end
 
 local function get_error_detail(stdout, index)
@@ -155,6 +156,10 @@ local function get_tests_lines(stdout, bufnr)
 end
 
 M.test = function()
+   if status.working then
+      vim.notify('Tests are already running', vim.log.levels.INFO)
+      return
+   end
    local current_dir = vim.fn.getcwd()
    local current_file = vim.fn.expand('%:p')
 
@@ -176,6 +181,9 @@ M.test = function()
    local command = list_extend(docker_command, { 'pytest', '-v', current_file })
 
    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+   vim.diagnostic.reset(ns, bufnr)
+
+   status.working = true
 
    vim.fn.jobstart(
       command, {
@@ -218,6 +226,8 @@ M.test = function()
             local message = #failed > 0 and 'Tests failed' or 'Tests passed'
             vim.notify(message, vim.log.levels.INFO)
             vim.diagnostic.set(ns, bufnr, failed, {})
+
+            status.working = false
          end
       })
 end

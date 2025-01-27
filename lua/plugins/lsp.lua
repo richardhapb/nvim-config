@@ -253,7 +253,7 @@ return {
                },
                workspace = {
                   library = {
-                     '${3rd}/luv/library',
+                     -- '${3rd}/luv/library',
                      vim.fn.expand("$VIMRUNTIME/lua"),
                      unpack(vim.api.nvim_get_runtime_file("", true))
                   },
