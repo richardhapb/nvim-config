@@ -1,5 +1,5 @@
 local function relative_from_cwd()
-   return vim.fn.expand('%:~:.')
+   return vim.fn.expand('%:.')
 end
 
 return {

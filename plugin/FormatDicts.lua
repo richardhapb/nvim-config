@@ -130,7 +130,6 @@ vim.api.nvim_create_autocmd('filetype', {
       vim.api.nvim_buf_create_user_command(0, "FormatDicts", function()
          process_buffer('dict')
          process_buffer('nested_dict')
-         process_buffer('nested_list')
       end, {})
    end
 })

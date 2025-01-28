@@ -15,15 +15,31 @@ return {
       dap_ui.setup()
       require('dap-go').setup()
 
-      dap_python.setup(vim.fn.stdpath('config') .. '/.venv/bin/python')
+      dap.configurations.python = {
+         {
+            name = 'Launch Django debugging in Docker',
+            type = 'python',
+            request = 'attach',
+            pathMappings = {
+               {
+                  localRoot = '${workspaceFolder}',
+                  remoteRoot = '/usr/src/app',
+               },
+            },
+            port = 5678,
+            host = '127.0.0.1',
+            django = true,
+         },
+      }
+      dap_python.setup(vim.fs.joinpath(vim.fn.stdpath('config'), '.venv', 'bin', 'python'), { include_configs = true })
 
       -- Keymaps
       local keymap = vim.keymap.set
       -- Start debugging
       keymap('n', '<F1>', dap.toggle_breakpoint, {silent = true, desc = 'Toggle breakpoint' })
       keymap('n', '<F2>', dap.step_back, { silent = true, desc = 'Step back' })
-      keymap('n', '<F3>', dap.step_over, { silent = true, desc = 'Step over' })
-      keymap('n', '<F4>', dap.step_into, { silent = true, desc = 'Step into' })
+      keymap('n', '<F3>', dap.step_into, { silent = true, desc = 'Step into' })
+      keymap('n', '<F4>', dap.step_over, { silent = true, desc = 'Step over' })
       keymap('n', '<F5>', dap.continue, { silent = true, desc = 'Continue' })
       keymap('n', '<F6>', dap.run_last, { silent = true, desc = 'Run last' })
       keymap('n', '<F7>', dap.step_out, { silent = true, desc = 'Step out' })
@@ -53,3 +69,4 @@ return {
       end
    end,
 }
+

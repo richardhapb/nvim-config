@@ -95,7 +95,7 @@ M.docker_containers = function(opts)
                local logs = vim.fn.systemlist({ 'docker', 'logs', entry.value.ID, '--tail', "50" })
                preview = logs
             end
-            if not vim.api.nvim_buf_is_valid(self.state.bufnr) then
+            if not vim.api.nvim_buf_is_valid(self.state.bufnr) or not vim.api.nvim_win_is_valid(self.state.winid) then
                return
             end
             vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview)
