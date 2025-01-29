@@ -141,6 +141,7 @@ return {
       { '<leader>fb',       function() require('telescope.builtin').git_branches() end,                                  desc = 'Telescope git branches' },
       { '<leader>fd',       function() require 'plugin.telescope-pickers.docker'.docker_containers({ tmux = true }) end, desc = 'Telescope docker containers' },
       { '<leader>fw',       function() require('telescope').extensions.git_worktree.git_worktrees() end,                 desc = 'Telescope git worktrees' },
+      { '<leader>f;',       function() require('telescope.builtin').lsp_dynamic_workspace_symbols() end,                 desc = 'Telescope git worktrees' },
 
    },
    opts = {

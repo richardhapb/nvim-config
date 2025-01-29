@@ -2,6 +2,20 @@ local function relative_from_cwd()
    return vim.fn.expand('%:.')
 end
 
+local function lsp_clients()
+   local clients = vim.lsp.get_clients {bufnr = 0}
+   if not clients then
+      return ''
+   end
+
+   local client_names = {}
+   for _, client in pairs(clients) do
+      table.insert(client_names, client.name)
+   end
+
+   return '[' .. table.concat(client_names, ', ') .. ']'
+end
+
 return {
    'nvim-lualine/lualine.nvim',
    dependencies = {
@@ -20,7 +34,7 @@ return {
             lualine_b = { 'branch' },
             lualine_c = { 'diff' },
             lualine_x = {
-              'copilot', 'fileformat', 'filetype',
+              lsp_clients, 'copilot', 'fileformat', 'filetype',
             },
             lualine_y = { 'progress', 'searchcount' },
             lualine_z = { 'location' },
