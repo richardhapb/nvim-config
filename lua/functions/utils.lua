@@ -136,7 +136,7 @@ M.buf_delete_line = function(buffer, line)
 end
 
 --- @param lines table: list of strings to write in the buffer
---- @param split_type string: split type to open the buffer 'split'/'vsplit' (default: 'split')
+--- @param split_type? string: split type to open the buffer 'split'/'vsplit' (default: 'split')
 --- @return integer: buffer number
 M.buffer_log = function(lines, split_type)
    assert(type(lines) == 'table', 'lines must be a table')

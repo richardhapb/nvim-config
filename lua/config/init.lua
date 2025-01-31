@@ -2,6 +2,7 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 
 vim.opt.swapfile = false
+vim.opt.undofile = true
 
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
@@ -82,10 +83,8 @@ if vim.fn.has("win32") then
 end
 
 require("config.lazy")
-
 require("config.autocommands")
 require("config.usercommands")
-require("functions.code")
 
 require("config.keymaps")
 

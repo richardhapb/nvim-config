@@ -49,6 +49,11 @@ return {
    keys = {
       {
          '<leader><leader>',
+         function () require('telescope.builtin').find_files({ hidden = true }) end,
+         desc = 'Telescope find files'
+      },
+      {
+         '<leader>f.',
          function()
             local ok, _ = pcall(require('telescope.builtin').git_files, {})
             if not ok then

@@ -1,5 +1,4 @@
 local utils = require 'functions.utils'
-local job = require 'plenary.job'
 
 local keymap = vim.keymap.set
 local k = vim.keycode
@@ -34,6 +33,7 @@ keymap('n', '<C-d>', '<C-d>zz')
 keymap('n', '<C-u>', '<C-u>zz')
 keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
+keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment number' })
 -- Remove search highlight if is active
 keymap('n', '<Esc>', function()
    if vim.v.hlsearch == 1 then
@@ -53,7 +53,7 @@ keymap('n', '<C-bp>', '<CMD>bprevious<CR>', { silent = true, noremap = true })
 keymap('n', '<C-bn>', '<CMD>bnext<CR>', { silent = true, noremap = true })
 
 -- Explorer
-keymap('n', '-', require('oil').open, { desc = 'Open parent directory' })
+keymap('n', '-', function() require('oil').open() end, { desc = 'Open parent directory' })
 keymap('n', '<leader>\\c', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<leader>\\n', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
 keymap('n', '<leader>\\p', ':tabprevious<CR>', { silent = true, desc = 'Previous tab' })
@@ -94,11 +94,7 @@ keymap('x', '<leader>o', function()
       return
    end
 
-   ---@diagnostic disable-next-line: missing-fields
-   job:new({
-      command = cmd,
-      args = { args },
-   }):start()
+   vim.fn.jobstart({ cmd, args }, { detach = true })
 end, { desc = 'Open current selection' })
 
 --- @param note string

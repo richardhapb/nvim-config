@@ -5,6 +5,7 @@ return {
       "williamboman/mason-lspconfig.nvim",
       'github/copilot.vim',
       'ray-x/lsp_signature.nvim',
+      "williamboman/mason-lspconfig.nvim",
       {
          "folke/lazydev.nvim",
          ft = "lua", -- only load on lua files
@@ -242,115 +243,135 @@ return {
 
       local lc = require("lspconfig")
 
-      lc.lua_ls.setup({
-         on_attach = on_attach,
-         capabilities = capabilities,
-         settings = {
-            Lua = {
-               telemetry = { enable = false },
-               diagnostics = {
-                  globals = { "vim", 'require' },
-               },
-               workspace = {
-                  library = {
-                     '${3rd}/luv/library',
-                     "${3rd}/busted/library",
-                     vim.fn.expand("$VIMRUNTIME/lua"),
-                     unpack(vim.api.nvim_get_runtime_file("", true))
-                  },
-                  checkThirdParty = false
-               },
-            },
-         }
-      })
-
-      lc.ruff.setup({
-         on_attach = on_attach,
-         trace = "messages",
-         init_options = {
-            settings = {
-               configuration = vim.fn.getcwd() .. "/pyproject.toml",
-               configurationPreference = 'filesystemFirst',
-               exclude = { "node_modules", ".git", ".venv" },
-               lineLength = 100,
-               lint = {
-                  enabled = true,
-                  preview = true,
-               },
-               format = {
-                  enabled = true,
-                  preview = true,
-               },
-            },
-
-         }
-      })
-
-      lc.pyright.setup({
-         on_attach = on_attach,
-         capabilities = capabilities,
-         settings = {
-            python = {
-               analysis = {
-                  autoSearchPaths = true,
-                  useLibraryCodeForTypes = true,
-                  diagnosticMode = "workspace",
-                  typeCheckingMode = "standard",
+      local lsp_elements = {
+         {
+            name = "lua_ls",
+            config = {
+               settings = {
+                  Lua = {
+                     telemetry = { enable = false },
+                     diagnostics = {
+                        globals = { "vim", 'require' },
+                     },
+                     workspace = {
+                        library = {
+                           '${3rd}/luv/library',
+                           "${3rd}/busted/library",
+                           vim.fn.expand("$VIMRUNTIME/lua"),
+                           unpack(vim.api.nvim_get_runtime_file("", true))
+                        },
+                        checkThirdParty = false
+                     },
+                  }
                }
             }
-         }
-      })
-
-      lc.cssls.setup({
-         capabilities = capabilities,
-         on_attach = on_attach,
-         settings = {
-            css = { validate = true }
-         }
-      })
-
-      lc.html.setup({
-         capabilities = capabilities,
-         on_attach = on_attach,
-         configurationSection = { "html", "css", "javascript" },
-         embeddedLanguages = {
-            css = true,
-            javascript = true
          },
-         provideFormatter = true
-      })
-
-      lc.ltex.setup({
-         on_attach = on_attach,
-         capabilities = capabilities,
-         settings = {
-            ltex = {
-               language = "en-US",
+         {
+            name = 'ruff',
+            config = {
+               trace = "messages",
+               init_options = {
+                  settings = {
+                     configuration = vim.fn.getcwd() .. "/pyproject.toml",
+                     configurationPreference = 'filesystemFirst',
+                     exclude = { "node_modules", ".git", ".venv" },
+                     lineLength = 100,
+                     lint = {
+                        enabled = true,
+                        preview = true,
+                     },
+                     format = {
+                        enabled = true,
+                        preview = true,
+                     },
+                  },
+               }
             }
-         }
-      })
+         },
+         {
+            name = 'pyright',
+            config = {
+               settings = {
+                  python = {
+                     analysis = {
+                        autoSearchPaths = true,
+                        useLibraryCodeForTypes = true,
+                        diagnosticMode = "workspace",
+                        typeCheckingMode = "standard",
+                     }
+                  }
+               }
+            }
+         },
+         {
+            name = 'cssls',
+            config = {
+               settings = {
+                  css = { validate = true }
+               }
+            }
+         },
+         {
+            name = "html",
+            config = {
 
-      local cmp_elements = {
-         "eslint",
-         "ts_ls",
-         "htmx",
-         "yamlls",
-         "dockerls",
-         "docker_compose_language_service",
-         'gopls',
-         "sqlls",
-         "vimls",
-         "markdown_oxide",
-         "texlab",
-         "bashls"
+               configurationSection = { "html", "css", "javascript" },
+               embeddedLanguages = {
+                  css = true,
+                  javascript = true
+               },
+               provideFormatter = true
+            }
+         },
+         {
+            name = "ltex",
+            config = {
+               settings = {
+                  ltex = {
+                     language = "en-US",
+                  }
+               }
+            }
+         },
+         { name = "htmx", config = { filetypes = { 'html' } } },
+         { name = "eslint" },
+         { name = "ts_ls" },
+         { name = "yamlls" },
+         { name = "dockerls" },
+         { name = "docker_compose_language_service" },
+         { name = 'gopls' },
+         { name = "sqlls" },
+         { name = "vimls" },
+         { name = "markdown_oxide" },
+         { name = "texlab" },
+         { name = "bashls" }
       }
 
-      for _, lang in ipairs(cmp_elements) do
-         lc[lang].setup({
+      local mason_lsp = require("mason-lspconfig")
+      local ensure = {}
+
+      for _, lsp_element in ipairs(lsp_elements) do
+         table.insert(ensure, lsp_element.name)
+      end
+
+      mason_lsp.setup {
+         ensure_installed = ensure
+      }
+
+      for _, lsp_element in ipairs(lsp_elements) do
+         local name = lsp_element.name
+         local config = {
             on_attach = on_attach,
-            capabilities = capabilities
-         })
+            capabilities = capabilities,
+         }
+
+         config = vim.tbl_deep_extend("force", config, type(lsp_element.config) == "table" and lsp_element.config or {})
+
+         if lc[name] then
+            lc[name].setup(config)
+         else
+            vim.notify("LSP server not found: " .. name, vim.log.levels.WARN)
+         end
       end
    end,
 }
-

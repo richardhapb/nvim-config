@@ -33,7 +33,7 @@ end
 local function _tmux_or_termopen(command, args, insert)
    local tmux_running = _verify_tmux()
    if vim.fn.executable 'tmux' == 1 then
-      vim.system {'tmux', 'info'}:wait()
+      vim.system { 'tmux', 'info' }:wait()
       tmux_running = vim.v.shell_error == 0
    end
 
@@ -57,7 +57,9 @@ local function _tmux_or_termopen(command, args, insert)
       log.debug('[LOGS] command', vim.fn.join(command, ' '))
       vim.cmd('silent ' .. args)
 
-      vim.fn.termopen(vim.fn.join(command, ' '))
+      vim.fn.jobstart(command, {
+         stdout_buffered = true,
+      })
       vim.cmd.normal('G')
 
       if insert then
@@ -67,9 +69,7 @@ local function _tmux_or_termopen(command, args, insert)
 end
 
 M.docker_containers = function(opts)
-   if not opts then
-      opts = {}
-   end
+   opts = opts or {}
    M.setup(opts)
    pickers.new({}, {
       prompt_title = "Docker Containers",
@@ -405,21 +405,8 @@ M.docker_containers = function(opts)
    }):find()
 end
 
-M.setup()
+M.docker_volumes = function(opts)
+   opts = opts or {}
+end
 
 return M
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

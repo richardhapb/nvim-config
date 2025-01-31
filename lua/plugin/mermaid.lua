@@ -126,7 +126,7 @@ local function new_mermaid()
    local lines
 
    if vim.fn.filereadable(path) == 1 then
-       lines = vim.fn.readfile(path)
+      lines = vim.fn.readfile(path)
    end
 
    local buffer = vim.api.nvim_create_buf(false, false)
@@ -160,7 +160,8 @@ local function new_mermaid()
       local opt_transparent = transparent and '-b transparent' or ''
 
       execute_fun_on_mmd_win(function() vim.cmd('w!') end)
-      local command = string.format('mmdc -i %s -o %s.%s -t %s %s', path, diag_path .. '/' .. name, vim.g.mermaid_format, theme, opt_transparent)
+      local command = string.format('mmdc -i %s -o %s.%s -t %s %s', path, diag_path .. '/' .. name, vim.g.mermaid_format,
+         theme, opt_transparent)
 
       local result = vim.fn.system(command)
 
@@ -171,7 +172,8 @@ local function new_mermaid()
 
    map('n', '<leader>M', '<cmd>MarkdownPreview<CR>', { buffer = md_buffer, desc = 'Preview graph' })
    map('n', '<leader>q', '<cmd>q<CR>', { buffer = md_buffer, desc = 'Close window' })
-   map('n', '<leader>w', function() execute_fun_on_mmd_win(function() vim.cmd('w!') end) end, { buffer = md_buffer, desc = 'Save graph' })
+   map('n', '<leader>w', function() execute_fun_on_mmd_win(function() vim.cmd('w!') end) end,
+      { buffer = md_buffer, desc = 'Save graph' })
    map('n', '<leader>cl', function() execute_fun_on_mmd_win(function() compile_diagram('neutral') end) end,
       { buffer = md_buffer, desc = 'Compile light theme' })
    map('n', '<leader>cd', function() execute_fun_on_mmd_win(function() compile_diagram('dark') end) end,
@@ -181,8 +183,14 @@ local function new_mermaid()
    map('n', '<leader>td', function() execute_fun_on_mmd_win(function() compile_diagram('dark', true) end) end,
       { buffer = md_buffer, desc = 'Compile dark theme transparent' })
    -- Format
-   map('n', '<leader>fs', function() vim.g.mermaid_format = 'svg' print('Format set to SVG') end, { buffer = md_buffer, desc = 'Set format to SVG' })
-   map('n', '<leader>fp', function() vim.g.mermaid_format = 'png' print('Format set to PNG') end, { buffer = md_buffer, desc = 'Set format to PNG' })
+   map('n', '<leader>fs', function()
+      vim.g.mermaid_format = 'svg'
+      print('Format set to SVG')
+   end, { buffer = md_buffer, desc = 'Set format to SVG' })
+   map('n', '<leader>fp', function()
+      vim.g.mermaid_format = 'png'
+      print('Format set to PNG')
+   end, { buffer = md_buffer, desc = 'Set format to PNG' })
 
    map('n', '<leader>F', function()
       if not md_win then return end
@@ -191,11 +199,15 @@ local function new_mermaid()
    end, { buffer = current_buffer, desc = 'Focus on diagram' })
 end
 
-vim.api.nvim_create_user_command('Mermaid', function()
-   new_mermaid()
-end, {
-   nargs = 0,
-})
+M = {}
 
+M.setup = function()
+   vim.api.nvim_create_user_command('Mermaid', function()
+      new_mermaid()
+   end, {
+      nargs = 0,
+   })
+end
 
+return M
 

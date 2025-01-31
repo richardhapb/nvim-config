@@ -1,15 +1,15 @@
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-   group = vim.api.nvim_create_augroup("LastLineOnSave", {clear = true}),
-   callback = function()
-      local last_line = vim.fn.getline('$')
-      local last_line_number = vim.fn.line('$')
-      -- Insert a newline at the end of the file if it doesn't exist
-      if last_line ~= "" then
-         vim.fn.append(last_line_number, "")
-      end
-   end,
-})
+-- vim.api.nvim_create_autocmd("BufWritePre", {
+--    group = vim.api.nvim_create_augroup("LastLineOnSave", {clear = true}),
+--    callback = function()
+--       local last_line = vim.fn.getline('$')
+--       local last_line_number = vim.fn.line('$')
+--       -- Insert a newline at the end of the file if it doesn't exist
+--       if last_line ~= "" then
+--          vim.fn.append(last_line_number, "")
+--       end
+--    end,
+-- })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
    group = vim.api.nvim_create_augroup("RetabOnSave", {clear = true}),
@@ -38,6 +38,13 @@ vim.api.nvim_create_autocmd("Filetype", {
    end
 })
 
+vim.api.nvim_create_autocmd('FileType', {
+   group = vim.api.nvim_create_augroup('LuaTest', {clear = true}),
+   pattern = 'lua',
+   callback = function()
+      vim.keymap.set('n', '<leader>tf', '<cmd>write<cr><cmd>PlenaryBustedFile %<cr>', { noremap = true, desc = 'Run tests' })
+   end
+})
 
 vim.api.nvim_create_autocmd("TermOpen", {
    group = vim.api.nvim_create_augroup("TermConfig", {clear = true}),

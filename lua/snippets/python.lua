@@ -6,6 +6,7 @@ local i = ls.insert_node
 local d = ls.dynamic_node
 local t = ls.text_node
 local f = ls.function_node
+
 local fmt = require 'luasnip.extras.fmt'.fmt
 local snippets = require 'functions.snippets'
 local ts_utils = require 'nvim-treesitter.ts_utils'
@@ -80,3 +81,4 @@ ls.add_snippets("python", {
       t('print("\\n--------------------------------------------\\n")')
    ),
 })
+

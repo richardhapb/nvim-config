@@ -39,4 +39,3 @@ vim.api.nvim_create_user_command(
    { desc = 'Set current working directory' }
 )
 
-

@@ -11,7 +11,7 @@ M.extract_args_from_func = function(cursor_pos, ts_query)
    end
 
    local bufnr = vim.api.nvim_get_current_buf()
-   local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+   local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
    local parser = vim.treesitter.get_parser(bufnr, filetype)
 
    if not parser then
@@ -53,3 +53,4 @@ M.extract_args_from_func = function(cursor_pos, ts_query)
 end
 
 return M
+
