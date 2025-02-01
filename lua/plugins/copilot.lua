@@ -17,7 +17,7 @@ local prompts = {
    CreateAPost = "Please provide documentation for the following code to post it in social media, like Linkedin, it has be deep, well explained and easy to understand. Also do it in a fun and engaging way.",
    SwaggerApiDocs = "Please provide documentation for the following API using Swagger.",
    Summarize = "Please summarize the following text.",
-   Spelling = "Please correct any grammar and spelling errors in the following text.",
+   Spelling = "Please correct any grammar and spelling errors in the following text. Focus on readability and clarity in a straightforward manner.",
    TranslateToEnglish = "Please translate the following text to English.",
    TranslateToSpanish = "Please translate the following text to Spanish.",
    Wording = "Please improve the grammar and wording of the following text.",
@@ -63,6 +63,7 @@ return {
          auto_follow_cursor = false,
          show_help = false,
          show_auto_complete = true,
+         show_diff = true,
          mappings = {
             complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
             close = { normal = "q", insert = "<C-c>" },

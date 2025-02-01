@@ -1,0 +1,5 @@
+[MESSAGE CONTROL]
+disable=
+    line-too-long,
+    import-error,
+    missing-module-docstring

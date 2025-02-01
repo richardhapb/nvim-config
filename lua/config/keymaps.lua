@@ -22,7 +22,7 @@ keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 
 -- Edit
 keymap('n', 'db', '"_dbx', { silent = true })
-keymap('n', '<leader>ca', 'ggVG', { silent = true, desc = 'Select all' })
+keymap('n', '<leader>sa', 'ggVG', { silent = true, desc = 'Select all' })
 keymap('n', 'D', '"_d$', { silent = true })
 keymap('x', 'p', '"_dP', { silent = true })
 keymap('v', 'J', ':m \'>+1<CR>gv=gv', { silent = true })

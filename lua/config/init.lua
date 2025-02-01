@@ -82,6 +82,14 @@ if vim.fn.has("win32") then
    require("config.windows")
 end
 
+-- Load environment variables
+package.path = package.path .. ";" .. vim.fs.joinpath(vim.fn.stdpath("config"), ".env.lua")
+local ok, env = pcall(require, "env")
+
+if ok then
+  env.setup()
+end
+
 require("config.lazy")
 require("config.autocommands")
 require("config.usercommands")

@@ -8,6 +8,8 @@ return {
          lua = { 'luacheck' },
       }
 
+      vim.fn.setenv('PYLINTRC', vim.fs.joinpath(vim.fn.stdpath('config'), '.pylintrc'))
+
       lint.linters.luacheck.args = { '--globals vim' }
 
       local binaries = { "cspell", "pylint", "luacheck" }
