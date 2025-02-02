@@ -8,7 +8,7 @@ return {
     "williamboman/mason-lspconfig.nvim",
     {
       "folke/lazydev.nvim",
-      ft = "lua",    -- only load on lua files
+      ft = "lua", -- only load on lua files
       opts = {
         library = {
           { path = "${3rd}/luv/library", words = { "vim%.uv" } },
@@ -345,6 +345,7 @@ return {
       { name = "markdown_oxide" },
       { name = "texlab" },
       { name = "bashls" },
+      { name = "rust_analyzer" }
     }
 
     local mason_lsp = require("mason-lspconfig")

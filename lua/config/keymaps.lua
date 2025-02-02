@@ -24,7 +24,7 @@ keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 keymap('n', 'db', '"_dbx', { silent = true })
 keymap('n', '<leader>sa', 'ggVG', { silent = true, desc = 'Select all' })
 keymap('n', 'D', '"_d$', { silent = true })
-keymap('x', 'p', '"_dP', { silent = true })
+keymap('x', 'p', '"_xP', { silent = true })
 keymap('v', 'J', ':m \'>+1<CR>gv=gv', { silent = true })
 keymap('v', 'K', ':m \'<-2<CR>gv=gv', { silent = true })
 keymap('n', '*', '*N', { noremap = true, silent = true })
@@ -209,6 +209,8 @@ keymap('n', '<leader>rp', ':!python %<CR>', { silent = true, desc = 'Run python'
 keymap('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, desc = 'Undo tree' })
 
 -- Terminal
+keymap('t', '<esc><esc>', "<C-\\><C-n>", { silent = true, desc = 'Normal mode in terminal' })
+
 keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, desc = 'Open terminal' })
 keymap('n', '<leader>cb', function()
    vim.cmd.vnew()
