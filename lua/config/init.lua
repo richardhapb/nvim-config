@@ -3,6 +3,7 @@ vim.opt.relativenumber = true
 
 vim.opt.swapfile = false
 vim.opt.undofile = true
+vim.opt.undodir = vim.fn.stdpath("data") .. "/undo"
 
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
