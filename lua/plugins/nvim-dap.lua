@@ -22,7 +22,7 @@ return {
             request = 'attach',
             pathMappings = {
                {
-                  localRoot = '${workspaceFolder}',
+                  localRoot = '${workspaceFolder}/app',
                   remoteRoot = '/usr/src/app',
                },
             },

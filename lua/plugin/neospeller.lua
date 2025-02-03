@@ -30,39 +30,43 @@ local function check_spell(range)
       decoded = decoded.choices[1].message.content
       decoded = vim.json.decode(decoded)
 
-      for lineno, comment in pairs(decoded.comments) do
-        lineno = tonumber(lineno)
-        local current_line = full_text[lineno]
-        local col = current_line:find("#") or 1
-        col = col + 1
+      if decoded.comments then
+        for lineno, comment in pairs(decoded.comments) do
+          lineno = tonumber(lineno)
+          local current_line = full_text[lineno]
+          local col = current_line:find("#") or 1
+          col = col + 1
 
-        lineno = lineno - 1
+          lineno = lineno - 1
 
-        vim.api.nvim_buf_set_text(buffer, offset + lineno, col, offset +lineno, -1, { comment })
+          vim.api.nvim_buf_set_text(buffer, offset + lineno, col, offset + lineno, -1, { comment })
+        end
       end
 
-      local last = { lineno = -1, indent = "" }
-      for lineno, ml_comment in pairs(decoded.ml_comments) do
-        lineno = tonumber(lineno) - 1
-        local indent = ""
-        if last.lineno == lineno + 1 then
-          indent = last.indent
-        else
-          indent = full_text[lineno + 1]:match('^%s*')
-        end
+      if decoded.ml_comments then
+        local last = { lineno = -1, indent = "" }
+        for lineno, ml_comment in pairs(decoded.ml_comments) do
+          lineno = tonumber(lineno) - 1
+          local indent = ""
+          if last.lineno == lineno + 1 then
+            indent = last.indent
+          else
+            indent = full_text[lineno + 1]:match('^%s*')
+          end
 
-        last = { lineno = lineno, indent = indent }
+          last = { lineno = lineno, indent = indent }
 
-        if full_text[lineno + 1]:find('^%s*""".*"""$') then
-          ml_comment = '"""' .. ml_comment .. '"""'
-        end
+          if full_text[lineno + 1]:find('^%s*""".*"""$') then
+            ml_comment = '"""' .. ml_comment .. '"""'
+          end
 
-        -- If the next line is a closing triple quote, add a new line
-        local next_line = lineno + 1
-        if full_text[lineno + 1]:find('^%s*"""$') then
-          next_line = lineno
+          -- If the next line is a closing triple quote, add a new line
+          local next_line = lineno + 1
+          if full_text[lineno + 1]:find('^%s*"""$') then
+            next_line = lineno
+          end
+          vim.api.nvim_buf_set_lines(buffer, offset + lineno, offset + next_line, false, { indent .. ml_comment })
         end
-        vim.api.nvim_buf_set_lines(buffer, offset + lineno, offset + next_line, false, { indent .. ml_comment })
       end
     end,
   })
@@ -77,9 +81,8 @@ M.setup = function()
   vim.api.nvim_create_user_command('CheckSpell', function(range)
     check_spell(range)
   end, {
-      range = 1,
-    })
+    range = 1,
+  })
 end
 
 return M
-
