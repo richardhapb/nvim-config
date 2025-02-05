@@ -23,6 +23,9 @@ copilot.complete = function(self, _, callback)
     return
   end
   vim.fn['copilot#Complete'](function(result)
+    if not result then
+      return
+    end
     callback({
       isIncomplete = true,
       items = vim.tbl_map(function(item)
