@@ -39,8 +39,8 @@ local function check_spell(range)
 
           -- If the line is not a comment, add a new line
           -- TODO: if has text before the comment, append the comment to the last comment
-          if not current_line:find('^[^#]+$') then
-            local indent = full_text[lineno - 1]:match('^%s*')
+          if current_line:find('^[^#]+$') then
+            local indent = full_text[lineno]:match('^%s*')
             vim.api.nvim_buf_set_lines(buffer, offset + lineno, offset + lineno, false, { indent .. '# ' .. comment })
           else
             vim.api.nvim_buf_set_text(buffer, offset + lineno, col, offset + lineno, -1, { comment })
