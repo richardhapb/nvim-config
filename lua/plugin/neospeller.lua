@@ -31,25 +31,17 @@ local function check_spell(range)
       decoded = vim.json.decode(decoded)
 
       if decoded.comments then
-        local to_append = ""
         for lineno, comment in pairs(decoded.comments) do
           lineno = tonumber(lineno) - 1
           local current_line = full_text[lineno + 1]
           local col = current_line:find("#") or 0
           col = col + 1
 
-          if to_append ~= "" then
-            comment = comment .. " " .. to_append
-            to_append = ""
-          end
-
           -- If the line is not a comment, add a new line
-          -- if has text before the comment, append the comment to the last comment
-          if not current_line:find('^%s*#.*$') then
+          -- TODO: if has text before the comment, append the comment to the last comment
+          if not current_line:find('^[^#]+$') then
             local indent = full_text[lineno - 1]:match('^%s*')
             vim.api.nvim_buf_set_lines(buffer, offset + lineno, offset + lineno, false, { indent .. '# ' .. comment })
-          elseif current_line:find('^[^%s]+#.*$') then
-            to_append = comment
           else
             vim.api.nvim_buf_set_text(buffer, offset + lineno, col, offset + lineno, -1, { comment })
           end
