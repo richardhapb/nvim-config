@@ -22,8 +22,7 @@ class TestProfileViews(TestCase):
             subprocess.run(['python', 'manage.py', 'create_more_new_profiles.py'], stdout=subprocess.PIPE, check=False)  # noqa: S603, S607
 
     def setUp(self):
-        self.client.login(username='syzlab', password='djangoforlife')  # noqa: S106
-        self.profile = Profile.objects.get(user__username='syzlab')
+        pass
 
     @patch('users.views.profile_viewing.Profile.get_online_profiles_ids')
     def test_get_profiles_sorting_with_filter_mixed(self, mock_get_online_profiles_ids: MagicMock):  # noqa: PLR0914
