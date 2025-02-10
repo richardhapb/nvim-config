@@ -23,7 +23,10 @@ vim.opt.ignorecase = true
 
 vim.opt.splitbelow = true
 vim.opt.linebreak = true
-vim.opt.completeopt = { "menuone", "noselect", "popup", "noinsert", "fuzzy" }
+
+if vim.fn.has('nvim-0.11') == 1 then
+  vim.opt.completeopt = { "menuone", "noselect", "popup", "noinsert", "fuzzy" }
+end
 
 vim.opt.wrap = false
 vim.g.mapleader = " "

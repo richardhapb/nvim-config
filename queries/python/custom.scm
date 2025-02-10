@@ -25,4 +25,5 @@
     value: (list) @nested_list))
 
 (function_definition) @function
+(class_definition) @class
 

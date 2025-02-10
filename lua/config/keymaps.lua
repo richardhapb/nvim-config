@@ -4,13 +4,13 @@ local keymap = vim.keymap.set
 local k = vim.keycode
 
 local function _verify_tmux()
-   local tmux_running = false
-   if vim.fn.executable 'tmux' == 1 then
-      vim.cmd('silent !tmux info')
-      tmux_running = vim.v.shell_error == 0
-   end
+  local tmux_running = false
+  if vim.fn.executable 'tmux' == 1 then
+    vim.cmd('silent !tmux info')
+    tmux_running = vim.v.shell_error == 0
+  end
 
-   return tmux_running
+  return tmux_running
 end
 
 -- Usercommands
@@ -21,7 +21,10 @@ keymap('n', '<C-s>', '<cmd>source %<CR>', { noremap = true, desc = 'Source file'
 keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 
 -- Edit
-keymap('n', 'db', '"_dbx', { silent = true })
+keymap('n', '-', '<cmd>edit %:p:h<cr>', { silent = true })
+keymap('n', 'db', '"_db', { silent = true })
+keymap('n', 'de', '"_de', { silent = true })
+keymap('n', 'dw', '"_dw', { silent = true })
 keymap('n', '<leader>sa', 'ggVG', { silent = true, desc = 'Select all' })
 keymap('n', 'D', '"_d$', { silent = true })
 keymap('x', 'p', '"_xP', { silent = true })
@@ -36,12 +39,12 @@ keymap('n', 'N', 'Nzzzv')
 keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment number' })
 -- Remove search highlight if is active
 keymap('n', '<Esc>', function()
-   if vim.v.hlsearch == 1 then
-      vim.cmd.nohl()
-      return ''
-   else
-      return k '<Esc>'
-   end
+  if vim.v.hlsearch == 1 then
+    vim.cmd.nohl()
+    return ''
+  else
+    return k '<Esc>'
+  end
 end, { expr = true })
 
 
@@ -53,7 +56,6 @@ keymap('n', '<C-bp>', '<CMD>bprevious<CR>', { silent = true, noremap = true })
 keymap('n', '<C-bn>', '<CMD>bnext<CR>', { silent = true, noremap = true })
 
 -- Explorer
-keymap('n', '-', function() require('oil').open() end, { desc = 'Open parent directory' })
 keymap('n', '<leader>\\c', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<leader>\\n', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
 keymap('n', '<leader>\\p', ':tabprevious<CR>', { silent = true, desc = 'Previous tab' })
@@ -66,70 +68,70 @@ keymap('n', '<leader>bd', ':bd!<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<leader>.', '<cmd>e tags<cr>', { silent = true, desc = 'Open tags' })
 
 if not _verify_tmux() then
-   keymap('n', '<C-h>', '<C-w>h', { silent = true })
-   keymap('n', '<C-j>', '<C-w>j', { silent = true })
-   keymap('n', '<C-k>', '<C-w>k', { silent = true })
-   keymap('n', '<C-l>', '<C-w>l', { silent = true })
+  keymap('n', '<C-h>', '<C-w>h', { silent = true })
+  keymap('n', '<C-j>', '<C-w>j', { silent = true })
+  keymap('n', '<C-k>', '<C-w>k', { silent = true })
+  keymap('n', '<C-l>', '<C-w>l', { silent = true })
 end
 
 keymap('x', '<leader>o', function()
-   local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
-   local input = utils.get_visual_selection()
-   input = input:gsub('\n', '')
-   if input == '' then
-      return
-   end
+  local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
+  local input = utils.get_visual_selection()
+  input = input:gsub('\n', '')
+  if input == '' then
+    return
+  end
 
-   local file_dir = vim.fn.expand('%:p:h')
-   local path = vim.fs.joinpath(file_dir, input)
-   local args
+  local file_dir = vim.fn.expand('%:p:h')
+  local path = vim.fs.joinpath(file_dir, input)
+  local args
 
-   if vim.fn.filereadable(path) == 1 then
-      args = path
-   elseif input:find 'http' or input:find 'www' then
-      args = input
-   end
+  if vim.fn.filereadable(path) == 1 then
+    args = path
+  elseif input:find 'http' or input:find 'www' then
+    args = input
+  end
 
-   if args == nil then
-      return
-   end
+  if args == nil then
+    return
+  end
 
-   vim.fn.jobstart({ cmd, args }, { detach = true })
+  vim.fn.jobstart({ cmd, args }, { detach = true })
 end, { desc = 'Open current selection' })
 
 --- @param note string
 local create_note = function(note)
-   if note == '' then
-      return
-   end
-   local path = vim.fs.joinpath(vim.fn.expand('$NOTES'), 'inbox', note .. '.md')
+  if note == '' then
+    return
+  end
+  local path = vim.fs.joinpath(vim.fn.expand('$NOTES'), 'inbox', note .. '.md')
 
-   vim.cmd('edit ' .. path)
-   vim.notify('Note ' .. path .. ' loaded successfully', vim.log.levels.INFO)
+  vim.cmd('edit ' .. path)
+  vim.notify('Note ' .. path .. ' loaded successfully', vim.log.levels.INFO)
 end
 
 keymap('n', '<leader>nn', function()
-   local note = vim.fn.input('Note: ')
-   create_note(note)
+  local note = vim.fn.input('Note: ')
+  create_note(note)
 end, { silent = true, desc = 'Create a new note' })
 
 keymap('n', '<leader>nb', function()
-   local repository = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
-   local branch = vim.fn.system('git branch --show-current')
-   branch = vim.fn.trim(branch)
+  local repository = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
+  local branch = vim.fn.system('git branch --show-current')
+  branch = vim.fn.trim(branch)
 
-   if branch == '' then
-      vim.notify('Not in a git repository', vim.log.levels.ERROR)
-      return
-   end
+  if branch == '' then
+    vim.notify('Not in a git repository', vim.log.levels.ERROR)
+    return
+  end
 
-   -- If branch has a slash, get the last part
-   if string.find(branch, '/') then
-      local branch_sections = vim.fn.split(branch, '/')
-      branch = branch_sections[#branch_sections]
-   end
+  -- If branch has a slash, get the last part
+  if string.find(branch, '/') then
+    local branch_sections = vim.fn.split(branch, '/')
+    branch = branch_sections[#branch_sections]
+  end
 
-   create_note(repository .. '-' .. branch)
+  create_note(repository .. '-' .. branch)
 end, { silent = true, desc = 'Create a new note for branch' })
 
 -- Git
@@ -151,32 +153,33 @@ keymap({ 'n', 'x' }, '<leader>ghp', ':Gitsigns prev_hunk<CR>', { silent = true, 
 keymap({ 'n', 'x' }, '<leader>ghn', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
 keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
 keymap('n', '<leader>g+', function()
-   local feature = vim.fn.input('Feature: ')
-   local branch_name = 'feature/richard/' .. os.date('%Y-%m-%d') .. '-' .. feature
-   vim.notify('Creating branch ' .. branch_name, vim.log.levels.INFO)
+  local feature = vim.fn.input('Feature: ')
+  local branch_name = 'feature/richard/' .. os.date('%y-%m-%d') .. '-' .. feature
+  branch_name = string.gsub(branch_name, '%s+', '-')
+  vim.notify('Creating branch ' .. branch_name, vim.log.levels.INFO)
 
-   vim.fn.system('git switch -c ' .. branch_name)
-   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
+  vim.fn.system('git switch -c ' .. branch_name)
+  vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 
-   local upstream = vim.fn.input('You want to set upstream? [y/n]: ')
-   if upstream == 'y' then
-      vim.fn.system('git push -u origin ' .. branch_name)
-      vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
-   end
+  local upstream = vim.fn.input('You want to set upstream? [y/n]: ')
+  if upstream == 'y' then
+    vim.fn.system('git push -u origin ' .. branch_name)
+    vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
+  end
 end, { silent = true, desc = 'Git add a branch and switch' })
 
 keymap('n', '<leader>gu', function()
-   local branch_name = vim.fn.system('git branch --show-current')
-   local upstream = vim.fn.input('You want to set upstream to ' .. branch_name .. '? [y/n]: ')
-   if upstream == 'y' then
-      vim.fn.system('git push -u origin ' .. branch_name)
-      vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
-   end
+  local branch_name = vim.fn.system('git branch --show-current')
+  local upstream = vim.fn.input('You want to set upstream to ' .. branch_name .. '? [y/n]: ')
+  if upstream == 'y' then
+    vim.fn.system('git push -u origin ' .. branch_name)
+    vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
+  end
 end, { silent = true, desc = 'Git set upstream' })
 
 keymap('n', '<leader>gda', function()
-   utils.git_diff_name_only('HEAD')
-   utils.close_all_buffers_but_current()
+  utils.git_diff_name_only('HEAD')
+  utils.close_all_buffers_but_current()
 end, { silent = true, desc = 'Git diff HEAD --name-only' })
 
 keymap('n', 'gh', '<CMD>diffget //2<CR>', { silent = true, desc = 'Git diff get left' })
@@ -205,6 +208,11 @@ keymap('i', '<A-1>', '¡', { silent = true })
 -- Python
 keymap('n', '<leader>rp', ':!python %<CR>', { silent = true, desc = 'Run python' })
 
+-- Rust
+keymap('n', '<leader>rr', ':!cargo run<CR>', { silent = true, desc = 'Run cargo' })
+keymap('n', '<leader>rc', ':!cargo check<CR>', { silent = true, desc = 'Check cargo' })
+keymap('n', '<leader>rt', ':!cargo test<CR>', { silent = true, desc = 'Test cargo' })
+
 -- Misc
 keymap('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, desc = 'Undo tree' })
 
@@ -213,12 +221,9 @@ keymap('t', '<esc><esc>', "<C-\\><C-n>", { silent = true, desc = 'Normal mode in
 
 keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, desc = 'Open terminal' })
 keymap('n', '<leader>cb', function()
-   vim.cmd.vnew()
-   vim.cmd.term()
-   vim.cmd.wincmd 'J'
-   vim.api.nvim_win_set_height(0, 10)
-   vim.cmd.startinsert()
+  vim.cmd.vnew()
+  vim.cmd.term()
+  vim.cmd.wincmd 'J'
+  vim.api.nvim_win_set_height(0, 10)
+  vim.cmd.startinsert()
 end, { silent = true, desc = 'Open terminal on bottom' })
-
-
-

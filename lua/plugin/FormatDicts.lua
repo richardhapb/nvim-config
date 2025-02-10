@@ -1,6 +1,9 @@
 -- Python dict order
 
-local ts_utils = require("nvim-treesitter.ts_utils")
+local ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
+if not ok then
+  return {setup = function() end}
+end
 
 local function max_key_length(lines)
    local max_length = 0
