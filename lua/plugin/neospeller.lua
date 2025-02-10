@@ -146,7 +146,9 @@ local function check_spell(range)
     return
   end
 
-  local command = {"neospeller", "--lang", "python"}
+  local language = vim.api.nvim_get_option_value('filetype', {buf = status.buffer})
+
+  local command = {"neospeller", "--lang", language}
 
   local job = vim.fn.jobstart( command , {
     stdout_buffered = true,

@@ -16,8 +16,8 @@ return {
          keymap('n', '<leader>' .. number, function() harpoon:list():select(i) end, { noremap = true, desc = "Harpoon " .. number })
       end
 
-      keymap('n', '<C-p>', function() harpoon:list():prev() end, { noremap = true, desc = "Harpoon Prev" })
-      keymap('n', '<C-n>', function() harpoon:list():next() end, { noremap = true, desc = "Harpoon Next" })
+      keymap('n', '<leader>hp', function() harpoon:list():prev() end, { noremap = true, desc = "Harpoon Prev" })
+      keymap('n', '<leader>hn', function() harpoon:list():next() end, { noremap = true, desc = "Harpoon Next" })
    end,
 }
 

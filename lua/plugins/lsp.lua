@@ -1,3 +1,19 @@
+local function search_python_path()
+  local files = { "requirements.txt", "pyproject.toml", ".env", "manage.py", "Pipfile", "setup.py", ".editorconfig" }
+  local directories = { "app", "src", "main" }
+
+  for _, file in ipairs(files) do
+    for _, directory in ipairs(directories) do
+      local path = vim.fn.getcwd() .. "/" .. directory .. "/" .. file
+      if vim.fn.filereadable(path) == 1 then
+        return path
+      end
+    end
+  end
+
+  return vim.fn.getcwd()
+end
+
 return {
   "neovim/nvim-lspconfig",
   dependencies = {
@@ -298,7 +314,8 @@ return {
                 useLibraryCodeForTypes = true,
                 diagnosticMode = "workspace",
                 typeCheckingMode = "standard",
-              }
+              },
+              pythonPath = search_python_path(),
             }
           }
         }
@@ -333,7 +350,7 @@ return {
           }
         }
       },
-      { name = "htmx",                           config = { filetypes = { 'html' } } },
+      { name = "htmx", config = { filetypes = { 'html' } } },
       { name = "eslint" },
       { name = "ts_ls" },
       { name = "yamlls" },
