@@ -5,6 +5,9 @@ return {
   },
   build = ':TSUpdate',
   main = 'nvim-treesitter.configs',
+  config = function()
+    vim.treesitter.language.register('markdown', 'octo')
+  end,
   opts = {
     ensure_installed = {
       "lua",

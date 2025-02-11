@@ -14,6 +14,7 @@ return {
     require 'octo'.setup {
       ssh_aliases = { ["github.com-syzlab"] = "github.com" },
       github_hostname = "github.com",
+      users = "assignable"
     }
   end
 }
