@@ -11,6 +11,8 @@ return {
       vim.cmd('MasonInstall gh')
     end
 
+    vim.treesitter.language.register('markdown', 'octo')
+
     require 'octo'.setup {
       ssh_aliases = { ["github.com-syzlab"] = "github.com" },
       github_hostname = "github.com",
