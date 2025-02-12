@@ -6,8 +6,16 @@ local state = {
   buffer = nil,
 }
 
--- Execute multiple SQL queries and show output in a single Floaterm window
-M.sql_query = function()
+---Return the output of the queries in a buffer
+---@param conf_filename? string The name of the file with the database configuration
+---@param line1? number The first line of the visual selection
+---@param line2? number The last line of the visual selection
+M.sql_query = function(conf_filename, line1, line2)
+
+  if not conf_filename or conf_filename == '' then
+    conf_filename = "sql.json"
+  end
+
   -- Diferents directories for find config files
   local parent_directory = vim.fn.expand("%:p:h")
   local root_directory = vim.fn.getcwd()
@@ -18,7 +26,7 @@ M.sql_query = function()
 
   for _, dir in ipairs(directories) do
     if dir then
-      sql_conf = io.open(dir .. "/sql.json", "r")
+      sql_conf = io.open(dir .. "/" .. conf_filename, "r")
       if sql_conf then
         break     -- Found it
       end
@@ -26,14 +34,20 @@ M.sql_query = function()
   end
 
   if not sql_conf then
-    print("Can't find the file sql.json.")
+    print("Can't find the file " .. conf_filename)
   else
     local db_conf = sql_conf:read("*a")
     sql_conf:close()
 
     if db_conf then
       local db = vim.fn.json_decode(db_conf)
-      local sql_query = utils.get_visual_selection()
+      local sql_query
+      if line1 then
+        sql_query = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)
+        sql_query = table.concat(sql_query, " ")
+      else
+        sql_query = utils.get_visual_selection()
+      end
       local queries = vim.split(sql_query, ";")
 
       local full_output = {}
