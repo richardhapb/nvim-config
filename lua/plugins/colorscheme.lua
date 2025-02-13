@@ -46,9 +46,9 @@ local function custom_hl()
       hl(0, 'DiagnosticError', { fg = "#CC0000", bg = nil })
       hl(0, 'DiagnosticWarn', { fg = "#FFFF00", bg = nil })
       hl(0, 'DiagnosticInfo', { fg = "#00FFFF", bg = nil })
-      hl(0, 'DiagnosticVirtualTextHint', { fg = "#00FFCC", bg = nil })
+      hl(0, 'DiagnosticVirtualTextHint', { fg = "#CC0000", bg = nil })
       hl(0, 'DiagnosticVirtualTextWarn', { fg = "#FFFF00", bg = nil })
-      hl(0, 'DiagnosticVirtualTextError', { fg = "#FF8800", bg = nil })
+      hl(0, 'DiagnosticVirtualTextError', { fg = "#00FFFF", bg = nil })
     end
   })
 end
@@ -73,12 +73,25 @@ return {
     end,
   },
   {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+    config = function()
+      require 'catppuccin'.setup({
+        flavour = 'macchiato',
+        transparent_background = true,
+        telescope = true
+      })
+    end,
+    -- vim.cmd.colorscheme('catppuccin')
+  },
+  {
     "Shatur/neovim-ayu",
     lazy = false,
     priority = 1000,
     opts = {},
     config = function()
-      -- vim.cmd([[colorscheme ayu-dark]])
+      -- vim.cmd.colorscheme('ayu-dark')
     end,
   },
 }

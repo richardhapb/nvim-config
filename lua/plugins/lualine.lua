@@ -1,5 +1,10 @@
 local function relative_from_cwd()
-   return vim.fn.expand('%:.')
+   local path = vim.fn.expand('%:.')
+  if path == '' then
+    path = vim.fn.getcwd()
+  end
+
+  return path
 end
 
 local function lsp_clients()
