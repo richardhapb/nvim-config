@@ -45,10 +45,12 @@ local function custom_hl()
       -- Diagnostics
       hl(0, 'DiagnosticError', { fg = "#CC0000", bg = nil })
       hl(0, 'DiagnosticWarn', { fg = "#FFFF00", bg = nil })
-      hl(0, 'DiagnosticInfo', { fg = "#00FFFF", bg = nil })
-      hl(0, 'DiagnosticVirtualTextHint', { fg = "#CC0000", bg = nil })
+      hl(0, 'DiagnosticHint', { fg = "#00FFFF", bg = nil })
+      hl(0, 'DiagnosticInfo', { fg = "#AAAAAA", bg = nil })
+      hl(0, 'DiagnosticVirtualTextError', { fg = "#CC0000", bg = nil })
       hl(0, 'DiagnosticVirtualTextWarn', { fg = "#FFFF00", bg = nil })
-      hl(0, 'DiagnosticVirtualTextError', { fg = "#00FFFF", bg = nil })
+      hl(0, 'DiagnosticVirtualTextHint', { fg = "#00FFFF", bg = nil })
+      hl(0, 'DiagnosticVirtualTextInfo', { fg = "#AAAAAA", bg = nil })
     end
   })
 end

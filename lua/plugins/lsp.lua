@@ -1,3 +1,4 @@
+---@diagnostic disable: inject-field
 local function search_python_path()
   local files = { "requirements.txt", "pyproject.toml", ".env", "manage.py", "Pipfile", "setup.py", ".editorconfig" }
   local directories = { "app", "src", "main" }
@@ -42,6 +43,10 @@ return {
       end
 
       local _border = "single"
+      local _virtual_text = {
+        spacing = 4,
+        prefix = "",
+      }
 
       vim.diagnostic.config({
         underline = true,
@@ -49,11 +54,9 @@ return {
         float = {
           border = _border,
         },
+        virtual_lines = false,
         update_in_insert = false,
-        virtual_text = {
-          spacing = 4,
-          prefix = "",
-        },
+        virtual_text = _virtual_text
       })
 
       require 'lspconfig.ui.windows'.default_options = {
@@ -127,12 +130,10 @@ return {
             "LtexToggleCheck",
             function()
               if ltex_config.ltex.enabled == nil or #ltex_config.ltex.enabled == 0 then
-                ---@diagnostic disable-next-line: inject-field
                 ltex_config.ltex.enabled = vim.g.ltex_enabled
                 vim.notify("Enabled ltex diagnostics check", vim.log.levels.INFO)
               else
                 vim.g.ltex_enabled = ltex_config.ltex.enabled
-                ---@diagnostic disable-next-line: inject-field
                 ltex_config.ltex.enabled = {}
                 vim.notify("Disabled ltex diagnostics check", vim.log.levels.INFO)
               end
@@ -178,7 +179,6 @@ return {
             end
 
             if not ltex_config.ltex.dictionary then
-              ---@diagnostic disable-next-line: inject-field
               ltex_config.ltex.dictionary = {}
               ltex_config.ltex.dictionary[language] = current_words
             end
@@ -241,6 +241,16 @@ return {
       keymap('n', 'gt', vim.lsp.buf.type_definition, opts("Go to type definition"))
       keymap('n', 'gn', vim.lsp.buf.rename, opts("Rename symbol"))
       keymap('n', 'ga', vim.lsp.buf.code_action, opts("Code action"))
+      keymap('n', 'gk', function()
+        local vl_new_config = not vim.diagnostic.config().virtual_lines
+        local vt_new_config
+        if type(vim.diagnostic.config().virtual_text) == 'table' then
+          vt_new_config = false
+        else
+          vt_new_config = _virtual_text
+        end
+        vim.diagnostic.config({ virtual_lines = vl_new_config, virtual_text = vt_new_config })
+      end, { desc = "Toggle Virtual Lines" })
       keymap('n', 'K', function() vim.lsp.buf.hover { border = _border } end, opts("Show hover"))
       keymap('n', '<C-e>', function() vim.lsp.buf.signature_help { border = _border } end, opts("Show signature help"))
       keymap('n', 'gs', require 'telescope.builtin'.lsp_document_symbols, opts("Show document symbols"))
@@ -350,7 +360,7 @@ return {
           }
         }
       },
-      { name = "htmx", config = { filetypes = { 'html' } } },
+      { name = "htmx",                           config = { filetypes = { 'html' } } },
       { name = "eslint" },
       { name = "ts_ls" },
       { name = "yamlls" },
