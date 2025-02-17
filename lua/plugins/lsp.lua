@@ -241,7 +241,7 @@ return {
       keymap('n', 'gt', vim.lsp.buf.type_definition, opts("Go to type definition"))
       keymap('n', 'gn', vim.lsp.buf.rename, opts("Rename symbol"))
       keymap('n', 'ga', vim.lsp.buf.code_action, opts("Code action"))
-      keymap('n', 'gk', function()
+      keymap('n', 'gK', function()
         local vl_new_config = not vim.diagnostic.config().virtual_lines
         local vt_new_config
         if type(vim.diagnostic.config().virtual_text) == 'table' then

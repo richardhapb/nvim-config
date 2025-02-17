@@ -12,7 +12,7 @@ return {
          desc = "Diagnostics (Trouble)",
       },
       {
-         "<leader>tx",
+         "<leader>tb",
          function()
             local trouble = require("trouble")
             trouble.toggle({ filter = {buf = 0}, mode = "diagnostics", win = {type = "split", position = "bottom", size = {height = 15} }} )
