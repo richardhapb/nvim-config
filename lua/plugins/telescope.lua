@@ -156,7 +156,14 @@ return {
     { '<leader>fd',       function() require 'plugin.telescope-pickers.docker'.docker_containers({ tmux = true }) end, desc = 'Tel docker containers' },
     { '<leader>fw',       function() require('telescope').extensions.git_worktree.git_worktrees() end,                 desc = 'Tel git worktrees' },
     { '<leader>f;',       function() require('telescope.builtin').lsp_dynamic_workspace_symbols() end,                 desc = 'Tel git worktrees' },
-    { '<leader>fz',        function() require'telescope.builtin'.grep_string { shorten_path = true, word_match = "-w", only_sort_text = true, search = '' } end, desc = "Tel String Fuzzy Finder"}
+    {
+      '<leader>fz',
+      function()
+        require 'telescope.builtin'.grep_string { shorten_path = true, word_match = "-w", only_sort_text = true, search = '', file_ignore_patterns = vim.tbl_extend('force', require 'telescope.config'.values.file_ignore_patterns,
+          { '^tags$' }) }
+      end,
+      desc = "Tel String Fuzzy Finder"
+    }
 
   },
   opts = {
