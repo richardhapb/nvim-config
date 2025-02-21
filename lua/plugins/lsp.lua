@@ -372,7 +372,8 @@ return {
       { name = "markdown_oxide" },
       { name = "texlab" },
       { name = "bashls" },
-      { name = "rust_analyzer" }
+      { name = "rust_analyzer" },
+      { name = "jsonls" }
     }
 
     local mason_lsp = require("mason-lspconfig")
