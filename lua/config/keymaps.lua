@@ -143,22 +143,33 @@ keymap('n', '<leader>gp', ':G pull<CR>', { silent = true, desc = 'Git pull' })
 keymap('n', '<leader>gS', ':G stash<CR>', { silent = true, desc = 'Git stash' })
 keymap('n', '<leader>gA', ':G add .<CR>', { silent = true, desc = 'Git add .' })
 keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
-keymap('n', '<leader>gf', ':G fetch<CR>', { silent = true, desc = 'Git fetch' })
+keymap('n', '<leader>gf', ':G fetch --all<CR>', { silent = true, desc = 'Git fetch' })
 keymap('n', '<leader>gb', ':G blame<CR>', { silent = true, desc = 'Git blame' })
 keymap('n', '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
 keymap('n', '<leader>gdv', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
 keymap('n', '<leader>gds', ':Gdiffsplit<CR>', { silent = true, desc = 'Git horizontal diff split' })
 keymap({ 'n', 'x' }, '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
-keymap({ 'n', 'x' }, '<leader>ghp', ':Gitsigns prev_hunk<CR>', { silent = true, desc = 'Git previous hunk' })
-keymap({ 'n', 'x' }, '<leader>ghn', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
+keymap({ 'n', 'x' }, '[g', ':Gitsigns prev_hunk<CR>', { silent = true, desc = 'Git previous hunk' })
+keymap({ 'n', 'x' }, ']g', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
 keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
+
+keymap('n', '<leader>gw', function()
+  local name = vim.fn.input('Worktree name: ')
+  require'git-worktree'.create_worktree(name, name)
+end, { silent = true, desc = 'Git worktree' })
+
+
 keymap('n', '<leader>g+', function()
   local feature = vim.fn.input('Feature: ')
+  local worktree_name = vim.fn.input('Worktree name: ')
+
   local branch_name = 'feature/richard/' .. os.date('%y-%m-%d') .. '-' .. feature
   branch_name = string.gsub(branch_name, '%s+', '-')
   vim.notify('Creating branch ' .. branch_name, vim.log.levels.INFO)
+  vim.fn.system('git branch ' .. branch_name)
 
-  vim.fn.system('git switch -c ' .. branch_name)
+  require'git-worktree'.create_worktree(worktree_name, branch_name)
+
   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 
   local upstream = vim.fn.input('You want to set upstream? [y/n]: ')

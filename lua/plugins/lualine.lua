@@ -46,7 +46,7 @@ return {
          },
          inactive_sections = {
             lualine_a = { { relative_from_cwd, color = 'StatusLineNC' } },
-            lualine_b = {},
+            lualine_b = { 'branch' },
             lualine_c = {},
             lualine_x = {},
             lualine_y = {},
