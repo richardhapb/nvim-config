@@ -166,7 +166,9 @@ keymap('n', '<leader>g+', function()
   local branch_name = 'feature/richard/' .. os.date('%y-%m-%d') .. '-' .. feature
   branch_name = string.gsub(branch_name, '%s+', '-')
   vim.notify('Creating branch ' .. branch_name, vim.log.levels.INFO)
-  vim.fn.system('git branch ' .. branch_name)
+  vim.fn.system('git fetch origin')
+  vim.fn.system('git update-ref refs/heads/development origin/development')
+  vim.fn.system('git branch ' .. branch_name .. ' development')
 
   require'git-worktree'.create_worktree(worktree_name, branch_name)
 
