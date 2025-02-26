@@ -74,15 +74,36 @@ if not _verify_tmux() then
   keymap('n', '<C-l>', '<C-w>l', { silent = true })
 end
 
-keymap('x', '<leader>o', function()
+
+-- Open the current selection, can be a file or a link, if it is a oil buffer, open the file selected.
+keymap({ 'x', 'n' }, '<leader>o', function()
   local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
   local input = utils.get_visual_selection()
   input = input:gsub('\n', '')
+
+  -- If there is not selection, get the word under the cursor
   if input == '' then
+    vim.cmd('normal! "xyiW')
+    input = vim.fn.getreg 'x'
+  end
+
+  local file_dir
+  -- If the filetype is oil, get the current directory and line
+  if vim.api.nvim_get_option_value('filetype', { buf = 0 }) == 'oil' then
+    local ok, oil = pcall(require, 'oil')
+    if ok then
+      file_dir = oil.get_current_dir()
+      -- Oil lines have the form "line icon file"
+      input = vim.fn.getline('.'):gsub('^.*%s.*%s', '')
+    end
+  else
+    file_dir = vim.fn.expand('%:p:h')
+  end
+
+  if not file_dir or not input or input == '' then
     return
   end
 
-  local file_dir = vim.fn.expand('%:p:h')
   local path = vim.fs.joinpath(file_dir, input)
   local args
 
@@ -92,7 +113,7 @@ keymap('x', '<leader>o', function()
     args = input
   end
 
-  if args == nil then
+  if not args then
     return
   end
 
@@ -153,12 +174,16 @@ keymap({ 'n', 'x' }, '[g', ':Gitsigns prev_hunk<CR>', { silent = true, desc = 'G
 keymap({ 'n', 'x' }, ']g', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
 keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
 
+-- New worktree with branch name
 keymap('n', '<leader>gw', function()
   local name = vim.fn.input('Worktree name: ')
-  require'git-worktree'.create_worktree(name, name)
+  require 'git-worktree'.create_worktree(name, name)
 end, { silent = true, desc = 'Git worktree' })
 
 
+-- Work's standard branch naming convention
+-- feature/richard/yy-mm-dd-feature-name
+-- combined with worktree workflow
 keymap('n', '<leader>g+', function()
   local feature = vim.fn.input('Feature: ')
   local worktree_name = vim.fn.input('Worktree name: ')
@@ -170,7 +195,7 @@ keymap('n', '<leader>g+', function()
   vim.fn.system('git update-ref refs/heads/development origin/development')
   vim.fn.system('git branch ' .. branch_name .. ' development')
 
-  require'git-worktree'.create_worktree(worktree_name, branch_name)
+  require 'git-worktree'.create_worktree(worktree_name, branch_name)
 
   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 
@@ -181,6 +206,7 @@ keymap('n', '<leader>g+', function()
   end
 end, { silent = true, desc = 'Git add a branch and switch' })
 
+-- Set upstream
 keymap('n', '<leader>gu', function()
   local branch_name = vim.fn.system('git branch --show-current')
   local upstream = vim.fn.input('You want to set upstream to ' .. branch_name .. '? [y/n]: ')
@@ -190,6 +216,7 @@ keymap('n', '<leader>gu', function()
   end
 end, { silent = true, desc = 'Git set upstream' })
 
+-- Git diff for file name only
 keymap('n', '<leader>gda', function()
   utils.git_diff_name_only('HEAD')
   utils.close_all_buffers_but_current()

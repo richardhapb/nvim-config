@@ -49,7 +49,6 @@ local git_diff_name_only = function(prompt_bufnr)
 
    vim.keymap.set('n', '<CR>', function() lutils.git_curr_line_diff_split(branch, buffer) end, { buffer = buffer })
    vim.keymap.set('n', 'R', function() lutils.git_restore_curr_line(branch) end, { buffer = buffer })
-   vim.keymap.set('n', 'G', ':G<CR>', { buffer = buffer })
 end
 
 M.git_branches_diff = function(opts)
