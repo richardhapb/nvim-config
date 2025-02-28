@@ -195,15 +195,15 @@ keymap('n', '<leader>g+', function()
   vim.fn.system('git update-ref refs/heads/development origin/development')
   vim.fn.system('git branch ' .. branch_name .. ' development')
 
-  require 'git-worktree'.create_worktree(worktree_name, branch_name)
-
-  vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
-
   local upstream = vim.fn.input('You want to set upstream? [y/n]: ')
   if upstream == 'y' then
     vim.fn.system('git push -u origin ' .. branch_name)
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
   end
+
+  require'git-worktree'.create_worktree(worktree_name, branch_name)
+
+  vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 end, { silent = true, desc = 'Git add a branch and switch' })
 
 -- Set upstream
