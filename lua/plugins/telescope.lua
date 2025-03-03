@@ -22,8 +22,15 @@ return {
           previewer = false,
           mappings = {
             i = { ["<c-d>"] = actions.delete_buffer },
+            n = { ["<c-d>"] = actions.delete_buffer },
           },
-        }
+        },
+        git_branches = {
+          mappings = {
+            i = { ["<c-b>"] = actions.git_create_branch },
+            n = { ["<c-b>"] = actions.git_create_branch },
+          }
+        },
       },
       defaults = {
         file_ignore_patterns = { "%.git/.*", "node_modules/.*", "build/.*", "dist/.*", "%.DS_Store/.*", "%.cache/.*", "__pycache__/.*", "%.pytest_cache/.*", "%.vscode/.*", "%.idea/.*", "%.clangd/.*", "yarn%.lock$", "package-lock%.json$", ".venv/.*" },
