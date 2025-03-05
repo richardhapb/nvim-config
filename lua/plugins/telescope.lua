@@ -1,4 +1,18 @@
 local actions = require('telescope.actions')
+local previewers = require('telescope.previewers')
+
+local ui_select_previewer = previewers.new_buffer_previewer({
+  define_preview = function(self, entry)
+    vim.api.nvim_set_option_value('wrap', true, { win = self.state.winid })
+    vim.api.nvim_buf_set_lines(
+      self.state.bufnr,
+      0,
+      -1,
+      false,
+      vim.split(vim.inspect(entry.value), "\n")
+    )
+  end,
+})
 
 return {
   'nvim-telescope/telescope.nvim',
@@ -6,7 +20,8 @@ return {
   dependencies = {
     'nvim-lua/plenary.nvim',
     "nvim-telescope/telescope-file-browser.nvim",
-    { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' }
+    { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+    "nvim-telescope/telescope-ui-select.nvim"
   },
   config = function()
     require("telescope").setup({
@@ -49,18 +64,32 @@ return {
               width = 0.55,
             }
           },
-          fzf = {
-            fuzzy = true,
-            override_generic_sorter = true,
-            override_file_sorter = true,
-            case_mode = "smart_case",
-          }
+        },
+        fzf = {
+          fuzzy = true,
+          override_generic_sorter = true,
+          override_file_sorter = true,
+          case_mode = "smart_case",
+        },
+        ["ui-select"] = {
+          winblend = 10,
+          border = true,
+          previewer = ui_select_previewer,
+          sorting_strategy = "ascending",
+          layout_strategy = "center",
+          results_title = false,
+          layout_config = {
+            preview_cutoff = 1,
+            width = 0.6,
+            height = 0.3,
+          },
         }
       }
     })
     require("telescope").load_extension "file_browser"
     require("telescope").load_extension("git_worktree")
     require("telescope").load_extension("fzf")
+    require("telescope").load_extension("ui-select")
   end,
   keys = {
     {
