@@ -30,12 +30,12 @@ local prompts = {
 -- This table contains the configuration for various plugins used in Neovim.
 return {
   -- GitHub Copilot plugin
-  { "github/copilot.vim" },  -- Load the GitHub Copilot plugin
+  { "github/copilot.vim" }, -- Load the GitHub Copilot plugin
 
   -- Which-key plugin configuration
   {
-    "folke/which-key.nvim",   -- Load the which-key plugin
-    optional = true,          -- This plugin is optional
+    "folke/which-key.nvim", -- Load the which-key plugin
+    optional = true,        -- This plugin is optional
     opts = {
       spec = {
         { "<leader>a", group = "ai" },
@@ -58,9 +58,9 @@ return {
       { "nvim-lua/plenary.nvim" },
     },
     opts = {
-      question_header = "## User ",     -- Header for user questions
-      answer_header = "## Copilot ",    -- Header for Copilot answers
-      error_header = "## Error ",       -- Header for errors
+      question_header = "## User ",  -- Header for user questions
+      answer_header = "## Copilot ", -- Header for Copilot answers
+      error_header = "## Error ",    -- Header for errors
       prompts = prompts,
       auto_follow_cursor = false,
       show_help = false,
@@ -71,7 +71,7 @@ return {
         complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
         close = { normal = "q", insert = "<C-c>" },
         reset = { normal = "<C-x>", insert = "<C-x>" },
-        submit_prompt = { normal = "<CR>", insert = "<C-CR>" },
+        submit_prompt = { normal = "<CR>", insert = "<C-z>" },
         accept_diff = { normal = "<C-y>", insert = "<C-y>" },
         yank_diff = { normal = "gmy" },
         show_diff = { normal = "gmd" },
@@ -86,9 +86,6 @@ return {
     config = function(_, opts)
       local chat = require("CopilotChat")
       local select = require("CopilotChat.select")
-
-      -- Set default selection method
-      opts.selection = select.unnamed
 
       -- Define custom prompts for commit messages
       opts.prompts.Commit = {
@@ -146,9 +143,7 @@ return {
       {
         "<leader>ap",
         mode = { "n", "v" },
-        function()
-          require("CopilotChat").select_prompt()
-        end,
+        ":CopilotChatPrompt<cr>",
         desc = "CopilotChat - Prompt actions",
       },
       { "<leader>ae", "<cmd>CopilotChatExplain<cr>",       desc = "CopilotChat - Explain code" },
@@ -156,7 +151,7 @@ return {
       { "<leader>ar", "<cmd>CopilotChatReview<cr>",        desc = "CopilotChat - Review code" },
       { "<leader>aR", "<cmd>CopilotChatRefactor<cr>",      desc = "CopilotChat - Refactor code" },
       { "<leader>an", "<cmd>CopilotChatBetterNamings<cr>", desc = "CopilotChat - Better Naming" },
-      { "<leader>av", ":CopilotChatVisual<cr>",                mode = "x",                           desc = "CopilotChat - Open in vertical split" },
+      { "<leader>av", ":CopilotChatVisual ",            mode = "x",                           desc = "CopilotChat - Open in vertical split" },
       { "<leader>ax", ":CopilotChatInline<cr>",            mode = "x",                           desc = "CopilotChat - Inline chat" },
       {
         "<leader>ai",
