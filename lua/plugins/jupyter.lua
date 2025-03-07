@@ -157,7 +157,7 @@ return {
       -- Autocmd to set cell markers
       vim.api.nvim_create_autocmd({ "BufEnter" }, { -- "BufWriteCmd"
         group = vim.api.nvim_create_augroup("au_show_cell_markers", { clear = true }),
-        pattern = { "*.py", "*.ipynb", "*.r", "*.jl", "*.scala" },
+        pattern = { "*.ipynb", "*.r", "*.jl", "*.scala" },
         callback = function()
           vim.schedule(show_cell_markers)
         end,
@@ -165,7 +165,7 @@ return {
 
       vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
         group = vim.api.nvim_create_augroup("au_check_cell_marker", { clear = true }),
-        pattern = { "*.py", "*.ipynb", "*.r", "*.jl", "*.scala" },
+        pattern = { "*.ipynb", "*.r", "*.jl", "*.scala" },
         callback = function()
           vim.schedule(show_cell_marker)
         end,

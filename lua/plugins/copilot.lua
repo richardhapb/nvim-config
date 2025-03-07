@@ -67,6 +67,7 @@ return {
       show_auto_complete = true,
       show_diff = true,
       model = 'claude-3.7-sonnet',
+      context = nil,
       mappings = {
         complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
         close = { normal = "q", insert = "<C-c>" },

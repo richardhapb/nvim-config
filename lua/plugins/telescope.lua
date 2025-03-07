@@ -200,16 +200,5 @@ return {
       end,
       desc = "Tel String Fuzzy Finder"
     }
-
   },
-  opts = {
-    extensions = {
-      theme = "ivy",
-      hijack_netrw = true,
-      mappings = {
-        ["i"] = {},
-        ["n"] = {}
-      }
-    }
-  }
 }

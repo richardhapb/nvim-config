@@ -1,18 +1,5 @@
----@diagnostic disable: inject-field
 local function search_python_path()
-  local files = { "requirements.txt", "pyproject.toml", ".env", "manage.py", "Pipfile", "setup.py", ".editorconfig" }
-  local directories = { "app", "src", "main" }
-
-  for _, file in ipairs(files) do
-    for _, directory in ipairs(directories) do
-      local path = vim.fn.getcwd() .. "/" .. directory .. "/" .. file
-      if vim.fn.filereadable(path) == 1 then
-        return path
-      end
-    end
-  end
-
-  return vim.fn.getcwd()
+  return vim.system({"which", "python3"}):wait() or vim.system({"which", "python"}):wait()
 end
 
 return {

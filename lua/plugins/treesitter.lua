@@ -8,6 +8,7 @@ return {
   opts = {
     ensure_installed = {
       "lua",
+      "diff",
       "bash",
       "query",
       "regex",
