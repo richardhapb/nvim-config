@@ -81,9 +81,9 @@ return {
         show_help = { normal = "gmh" },
       },
       window = {
-        layout = "float",
-        width = 0.8,
-        height = 0.8,
+        layout = "horizontal",
+        width = 1,
+        height = 0.5,
       }
     },
     config = function(_, opts)
