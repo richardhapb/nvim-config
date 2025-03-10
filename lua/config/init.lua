@@ -43,6 +43,7 @@ vim.opt.cursorline = true
 vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
 
 vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
+vim.g.copilot_enabled = 0
 vim.g.copilot_no_tab_map = true
 
 -- Disable automatic commenting for next line
