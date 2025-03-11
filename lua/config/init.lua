@@ -32,6 +32,7 @@ vim.opt.wrap = false
 vim.g.mapleader = " "
 
 vim.opt.termguicolors = true
+vim.opt.conceallevel = 1
 
 vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
