@@ -360,7 +360,8 @@ return {
       { name = "texlab" },
       { name = "bashls" },
       { name = "rust_analyzer" },
-      { name = "jsonls" }
+      { name = "jsonls" },
+      { name = "clangd" },
     }
 
     local mason_lsp = require("mason-lspconfig")
