@@ -25,6 +25,89 @@ local prompts = {
   Concise = "Please rewrite the following text to make it more concise.",
 }
 
+---Ask to copilot with custom context, and use callback if it is provided
+---@param callback function?
+local function custom_visual_context(callback)
+  local utils = require 'functions.utils'
+  local cutils = require 'CopilotChat.utils'
+  local bufnr = vim.api.nvim_get_current_buf()
+  local visual_selection = utils.get_visual_selection()
+  local start_line, _, end_line = unpack(utils.get_text_range(bufnr, visual_selection))
+
+  local config = {
+    selection = function()
+      return {
+        content = visual_selection,
+        filename = cutils.filepath(vim.api.nvim_buf_get_name(bufnr)),
+        start_line = start_line,
+        end_line = end_line,
+        bufnr = bufnr,
+        diagnostics = cutils.diagnostics(bufnr, start_line, end_line)
+      }
+    end,
+    highlight_selection = true
+  }
+
+  ---Ask to copilot with additional text
+  ---@param additional_prompt string?
+  local ask_to_copilot = function(additional_prompt)
+    vim.print(additional_prompt)
+    if additional_prompt then
+      require 'CopilotChat'.ask(additional_prompt, config)
+    else
+      require 'CopilotChat'.select_prompt(config)
+    end
+  end
+
+  if callback then
+    callback(ask_to_copilot)
+  else
+    ask_to_copilot()
+  end
+end
+
+---Custom prompt in a floating window with context
+---@param ask_to_copilot function
+local function temp_float_ask_buffer(ask_to_copilot)
+  local buf = vim.api.nvim_create_buf(false, true)
+
+  local width = math.floor(vim.o.columns * 0.6)
+  local height = math.floor(vim.o.lines * 0.2)
+
+  local row = -height - 2
+  local col = 0
+
+  local win_config = {
+    relative = 'cursor',
+    border = 'rounded',
+    focusable = true,
+    row = row,
+    col = col,
+    width = width,
+    height = height,
+    style = 'minimal'
+  }
+
+  local win = vim.api.nvim_open_win(buf, true, win_config)
+
+  vim.wo[win].wrap = true
+  vim.cmd 'startinsert'
+
+  local function send_prompt()
+    local add_prompt = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), '\n')
+    vim.cmd 'stopinsert'
+    vim.cmd 'q!'
+    if add_prompt and add_prompt ~= '' then
+      ask_to_copilot(add_prompt)
+    end
+  end
+
+  vim.keymap.set('n', '<CR>', send_prompt, { buffer = buf })
+  vim.keymap.set('i', '<C-s>', send_prompt, { buffer = buf })
+
+  vim.keymap.set('n', 'q', "<CMD>q!<CR>", { buffer = buf, silent = true })
+end
+
 -- Plugin configuration
 -- This table contains the configuration for various plugins used in Neovim.
 return {
@@ -72,7 +155,7 @@ return {
         complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
         close = { normal = "q", insert = "<C-c>" },
         reset = { normal = "<C-x>", insert = "<C-x>" },
-        submit_prompt = { normal = "<CR>", insert = "<C-b>" },
+        submit_prompt = { normal = "<CR>", insert = "<C-s>" },
         accept_diff = { normal = "<C-y>", insert = "<C-y>" },
         yank_diff = { normal = "gmy" },
         show_diff = { normal = "gmd" },
@@ -146,16 +229,16 @@ return {
       {
         "<leader>ap",
         mode = { "n", "v" },
-        ":CopilotChatPrompt<cr>",
+        custom_visual_context,
         desc = "CopilotChat - Prompt actions",
       },
-      { "<leader>ae", "<cmd>CopilotChatExplain<cr>",       desc = "CopilotChat - Explain code" },
-      { "<leader>at", "<cmd>CopilotChatTests<cr>",         desc = "CopilotChat - Generate tests" },
-      { "<leader>ar", "<cmd>CopilotChatReview<cr>",        desc = "CopilotChat - Review code" },
-      { "<leader>aR", "<cmd>CopilotChatRefactor<cr>",      desc = "CopilotChat - Refactor code" },
-      { "<leader>an", "<cmd>CopilotChatBetterNamings<cr>", desc = "CopilotChat - Better Naming" },
-      { "<leader>av", ":CopilotChatVisual ",               mode = "x",                           desc = "CopilotChat - Open in vertical split" },
-      { "<leader>ax", ":CopilotChatInline<cr>",            mode = "x",                           desc = "CopilotChat - Inline chat" },
+      { "<leader>ae", "<cmd>CopilotChatExplain<cr>",                               desc = "CopilotChat - Explain code" },
+      { "<leader>at", "<cmd>CopilotChatTests<cr>",                                 desc = "CopilotChat - Generate tests" },
+      { "<leader>ar", "<cmd>CopilotChatReview<cr>",                                desc = "CopilotChat - Review code" },
+      { "<leader>aR", "<cmd>CopilotChatRefactor<cr>",                              desc = "CopilotChat - Refactor code" },
+      { "<leader>an", "<cmd>CopilotChatBetterNamings<cr>",                         desc = "CopilotChat - Better Naming" },
+      { "<leader>av", function() custom_visual_context(temp_float_ask_buffer) end, mode = "v",                           desc = "CopilotChat - Vertical chat" },
+      { "<leader>ax", ":CopilotChatInline ",                                       mode = "x",                           desc = "CopilotChat - Inline chat" },
       {
         "<leader>ai",
         function()

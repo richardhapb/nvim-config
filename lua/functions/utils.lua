@@ -22,6 +22,40 @@ M.get_git_cwd = function()
   return git_cwd.stdout:gsub('\n', '')
 end
 
+---Get the range of a text in buffer
+---@param bufnr integer
+---@param text string
+---@return integer[] | nil
+M.get_text_range = function(bufnr, text)
+  local buf_text = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local text_lines = vim.split(text:gsub('\n$', ''), '\n', { plain = true })
+  local nlines = #text_lines
+  local index = 1
+  local start_line = 1
+
+  for i, line in ipairs(buf_text) do
+    local start, finish = line:find(text_lines[index], 1, true)
+
+    if start then
+      if nlines == 1 then
+        return { i, start, i, finish or start }
+      end
+      if start_line == 1 then
+        start_line = i
+      end
+
+      index = index + 1
+      if index > nlines then
+        return { start_line, start, i, finish or start }
+      end
+    else
+      index = 1
+      start_line = 1
+    end
+  end
+  return nil
+end
+
 -- Get the text selected
 M.get_visual_selection = function()
   vim.cmd('silent normal! "xy')

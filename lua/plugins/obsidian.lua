@@ -339,7 +339,7 @@ return {
         end
         return require("obsidian").get_client():command("ObsidianNew", { args = note })
       end,
-      { buffer = true, desc = 'Create a new note' }
+      { desc = 'Create a new note' }
     )
   end
 }

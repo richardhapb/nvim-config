@@ -51,9 +51,6 @@ end, { expr = true })
 -- UI
 keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
 keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
-keymap('n', '<C-q>', ':q<CR>', { silent = true })
-keymap('n', '<C-bp>', '<CMD>bprevious<CR>', { silent = true, noremap = true })
-keymap('n', '<C-bn>', '<CMD>bnext<CR>', { silent = true, noremap = true })
 
 -- Explorer
 keymap('n', '<leader>\\', ':tabnew<CR>', { silent = true, desc = 'New tab' })
