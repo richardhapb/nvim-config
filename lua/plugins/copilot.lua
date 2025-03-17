@@ -8,7 +8,7 @@ local prompts = {
   Tests = "Generate unit tests for this code, focus in elegance and safety.",
   Refactor = "Please refactor the following code to improve its performance, elegance and readability.",
   FixCode = "Please fix the following code to make it work as intended.",
-  FixError = "Please explain the error in the following text and provide a solution.",
+  FixError = "Please explain the error in the following code and provide a solution.",
   BetterNamings = "Please provide better names for the following code.",
   Documentation = "Please provide documentation for the following code.",
   Docs = "Please provide documentation for the following code in the language's style.",
@@ -42,6 +42,7 @@ local function custom_visual_context(callback)
         start_line = start_line,
         end_line = end_line,
         bufnr = bufnr,
+        context = "buffer",
         diagnostics = cutils.diagnostics(bufnr, start_line, end_line)
       }
     end,
@@ -149,6 +150,7 @@ return {
       show_diff = true,
       model = 'claude-3.5-sonnet',
       context = nil,
+      selection = nil,
       stick = "Any code that you generate should be elegant, performatic and rustacean.", -- Follow-Rust good practices
       mappings = {
         complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },

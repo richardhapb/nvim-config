@@ -42,3 +42,20 @@ vim.api.nvim_create_autocmd("TermOpen", {
    end
 })
 
+-- Avoid jsonls attached in a new jupyter notebook
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("JupyterConfig", {clear = true}),
+  callback = function(args)
+    if args.file:find('%.ipynb$') then
+      vim.bo[args.buf].filetype = "python"
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(client_data)
+          local client = vim.lsp.get_client_by_id(client_data.data.client_id)
+          if client and client.name == 'jsonls' then
+            client.stop(true)
+          end
+        end
+      })
+    end
+  end
+})
