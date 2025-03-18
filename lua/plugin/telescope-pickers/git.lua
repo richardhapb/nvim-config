@@ -23,7 +23,7 @@ local git_diff_name_only = function(prompt_bufnr)
   local branch = selection.value
 
   actions.close(prompt_bufnr)
-  local res, ret, _ = utils.get_os_command_output({ "git", "diff", branch, "--name-only" }, cwd)
+  local res, ret, _ = utils.get_os_command_output({ "git", "diff", "--word-diff", branch, "--name-only" }, cwd)
 
   if ret == 0 then
     vim.notify("Git diff made successfully", vim.log.levels.INFO)
@@ -156,7 +156,7 @@ M.git_branches_diff = function(opts)
       map({ "i", "n" }, "<c-r>", actions.git_rebase_branch)
       map({ "i", "n" }, "<c-a>", actions.git_create_branch)
       map({ "i", "n" }, "<c-s>", actions.git_switch_branch)
-      map({ "i", "n" }, "<c-d>", actions.git_delete_branch)
+      map({ "i", "n" }, "<c-k>", actions.git_delete_branch)
       map({ "i", "n" }, "<c-y>", actions.git_merge_branch)
       return true
     end,
