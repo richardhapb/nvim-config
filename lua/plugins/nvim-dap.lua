@@ -2,7 +2,6 @@ return {
   'mfussenegger/nvim-dap',
   dependencies = {
     'mfussenegger/nvim-dap-python',
-    "leoluz/nvim-dap-go",
     "rcarriga/nvim-dap-ui",
     'nvim-neotest/nvim-nio',
     'williamboman/mason.nvim',
@@ -15,8 +14,7 @@ return {
     local dap_python = require('dap-python')
 
     dap_ui.setup()
-    require('dap-go').setup()
-    require('nvim-dap-virtual-text').setup()
+    require('nvim-dap-virtual-text').setup({})
 
     dap.configurations.python = {
       {
@@ -33,6 +31,27 @@ return {
         host = '127.0.0.1',
         django = true,
       },
+      {
+        name = 'Launch Django debugging staging',
+        type = 'debugpy',
+        request = 'attach',
+        pathMappings = {
+          {
+            localRoot = '${workspaceFolder}/app',
+            remoteRoot = '/home/app/web/',
+          },
+        },
+        port = 5678,
+        host = os.getenv("HOST_STAGING"),
+        django = true,
+        justMyCode = false,
+        subProcess = true,
+        env = {
+          PYDEVD_DISABLE_FILE_VALIDATION = "1",
+          ALLOWED_HOSTS = "*",
+          DJANGO_DEBUG = "True",
+        }
+      },
     }
     dap_python.setup(vim.fs.joinpath(vim.fn.stdpath('config'), '.venv', 'bin', 'python'), { include_configs = true })
 
@@ -44,9 +63,11 @@ return {
       }
     }
 
-    dap.adapters.nlua = function(callback, config)
+    dap.adapters.nlua = function(callback, _)
       callback({ type = 'server', host = '127.0.0.1', port = 8086 })
     end
+
+    dap.set_log_level("DEBUG")
 
     -- Keymaps
     local keymap = vim.keymap.set
@@ -58,7 +79,7 @@ return {
     keymap('n', '<F5>', dap.continue, { silent = true, desc = 'Continue' })
     keymap('n', '<F6>', dap.step_out, { silent = true, desc = 'Step out' })
     keymap('n', '<F12>', dap.restart, { silent = true, desc = 'Restart' })
-    keymap('n', '<leader>dl', dap.run_last, { silent = true, desc = 'Run last' })
+    keymap('n', '<leader>d0', dap.run_last, { silent = true, desc = 'Run last' })
 
     vim.keymap.set('n', '<leader>dl', function()
       require "osv".launch({ port = 8086 })
@@ -86,15 +107,19 @@ return {
 
     dap.listeners.before.attach.dapui_config = function()
       dap_ui.open()
+      print("Connecting to debugger...")
     end
     dap.listeners.before.launch.dapui_config = function()
       dap_ui.open()
+      print("Launching debugger...")
     end
     dap.listeners.before.event_terminated.dapui_config = function()
       dap_ui.close()
+      print("Debugger terminated")
     end
     dap.listeners.before.event_exited.dapui_config = function()
       dap_ui.close()
+      print("Debugger exited")
     end
   end,
 }

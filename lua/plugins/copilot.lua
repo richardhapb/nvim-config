@@ -167,7 +167,7 @@ return {
       window = {
         layout = "horizontal",
         width = 1,
-        height = 0.5,
+        height = 0.35,
       }
     },
     config = function(_, opts)
@@ -238,7 +238,7 @@ return {
       { "<leader>ar", "<cmd>CopilotChatReview<cr>",                                desc = "CopilotChat - Review code" },
       { "<leader>aR", "<cmd>CopilotChatRefactor<cr>",                              desc = "CopilotChat - Refactor code" },
       { "<leader>an", "<cmd>CopilotChatBetterNamings<cr>",                         desc = "CopilotChat - Better Naming" },
-      { "<leader>av", function() custom_visual_context(temp_float_ask_buffer) end, mode = "x",                           desc = "CopilotChat - Vertical chat" },
+      { "<leader>av", function() custom_visual_context(temp_float_ask_buffer) end, mode = "x",                           desc = "CopilotChat - Horizontal chat" },
       { "<leader>ax", ":CopilotChatInline ",                                       mode = "x",                           desc = "CopilotChat - Inline chat" },
       {
         "<leader>ai",
