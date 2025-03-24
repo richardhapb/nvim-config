@@ -11,6 +11,17 @@ end
 
 local M = {}
 
+
+---Match the last dir of cwd
+---@return string 
+M.get_root_cwd_dir = function()
+  local cwd = vim.fn.getcwd()
+
+  return cwd:match(".*/(.*)$")
+end
+
+---Get the git root
+---@return string | nil
 M.get_git_cwd = function()
   local git_cwd = vim.system({ 'git', 'rev-parse', '--show-toplevel' }):wait()
 
@@ -19,7 +30,7 @@ M.get_git_cwd = function()
     return
   end
 
-  return git_cwd.stdout:gsub('\n', '')
+  return (git_cwd.stdout:gsub('\n', ''))
 end
 
 ---Get the range of a text in buffer
