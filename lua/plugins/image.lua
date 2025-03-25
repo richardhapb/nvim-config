@@ -46,5 +46,5 @@ return {
       })
     end,
   },
-  { "3rd/diagram.nvim", dependencies = { "image.nvim" }, enabled = false, opts = {} },
+  { "3rd/diagram.nvim", dependencies = { "image.nvim" }, opts = {} },
 }

@@ -53,7 +53,11 @@ return {
         }
       },
     }
-    dap_python.setup(vim.fs.joinpath(vim.fn.stdpath('config'), '.venv', 'bin', 'python'), { include_configs = true })
+
+    dap_python.test_runner = "pytest"
+    dap_python.resolve_python = require 'functions.lsp'.search_python_path
+
+    dap_python.setup(vim.fs.joinpath(vim.fn.stdpath('config'), '.venv', 'bin', 'python'), {})
 
     dap.configurations.lua = {
       {
@@ -109,23 +113,19 @@ return {
 
     -- Python specific
     keymap('n', '<leader>dt', dap_python.test_method, { silent = true, desc = 'Test method' })
-    keymap('n', '<leader>df', dap_python.test_class, { silent = true, desc = 'Test class' })
+    keymap('n', '<leader>dc', dap_python.test_class, { silent = true, desc = 'Test class' })
 
     dap.listeners.before.attach.dapui_config = function()
       dap_ui.open()
-      print("Connecting to debugger...")
     end
     dap.listeners.before.launch.dapui_config = function()
       dap_ui.open()
-      print("Launching debugger...")
     end
-    dap.listeners.before.event_terminated.dapui_config = function()
-      dap_ui.close()
-      print("Debugger terminated")
-    end
-    dap.listeners.before.event_exited.dapui_config = function()
-      dap_ui.close()
-      print("Debugger exited")
-    end
+    -- dap.listeners.before.event_terminated.dapui_config = function()
+    --   dap_ui.close()
+    -- end
+    -- dap.listeners.before.event_exited.dapui_config = function()
+    --   dap_ui.close()
+    -- end
   end,
 }
