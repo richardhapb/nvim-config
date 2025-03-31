@@ -18,8 +18,17 @@ return {
 
     dap.configurations.python = {
       {
+        name = 'Project',
+        request = 'launch',
+        type = 'debugpy',
+        program = "${workspaceFolder}/main.py",
+        cwd = "${workspaceFolder}",
+        python = require'functions.lsp'.search_python_path,
+        justMyCode = true,
+      },
+      {
         name = 'Launch Django debugging in Docker',
-        type = 'python',
+        type = 'debugpy',
         request = 'attach',
         pathMappings = {
           {
@@ -70,6 +79,35 @@ return {
     dap.adapters.nlua = function(callback, _)
       callback({ type = 'server', host = '127.0.0.1', port = 8086 })
     end
+
+    local dap_utils = require 'dap.utils'
+
+    local BASH_DEBUG_ADAPTER_BIN = "/Users/richard/.local/share/nvim/mason/bin/bash-debug-adapter"
+    local BASHDB_DIR = "/Users/richard/.local/share/nvim/mason/packages/bash-debug-adapter/extension/bashdb_dir"
+
+    dap.adapters.sh = {
+      type = "executable",
+      command = BASH_DEBUG_ADAPTER_BIN,
+    }
+    dap.configurations.sh = {
+      {
+        name = "Launch Bash debugger",
+        type = "sh",
+        request = "launch",
+        program = "${file}",
+        cwd = "${fileDirname}",
+        pathBashdb = BASHDB_DIR .. "/bashdb",
+        pathBashdbLib = BASHDB_DIR,
+        pathBash = "bash",
+        pathCat = "cat",
+        pathMkfifo = "mkfifo",
+        pathPkill = "pkill",
+        env = {},
+        args = {"development-db-1"},
+        -- showDebugOutput = true,
+        -- trace = true,
+      }
+    }
 
     dap.set_log_level("DEBUG")
 

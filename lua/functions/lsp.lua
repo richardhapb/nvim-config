@@ -1,7 +1,7 @@
 local M = {}
 
 M.search_python_path = function()
-  return vim.system({ "which", "python3" }):wait() or vim.system({ "which", "python" }):wait()
+  return vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '') or vim.system({ "which", "python" }):wait().stdout:gsub('\n', '')
 end
 
 local _border = "single"

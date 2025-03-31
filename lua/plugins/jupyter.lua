@@ -82,6 +82,15 @@ local function execute_cell()
   end
 end
 
+local function execute_all_cells()
+  local current_row, current_col = select_cell()
+  local lines = #vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  vim.fn.setpos("'<", { 0, 1, 0, 0 })
+  vim.fn.setpos("'>", { 0, lines, 0, 0 })
+  require("iron.core").visual_send()
+  vim.api.nvim_win_set_cursor(0, { current_row, current_col })
+end
+
 local function delete_cell()
   local _, _, start_line, end_line = select_cell()
   if start_line and end_line then
@@ -203,6 +212,7 @@ return {
       { "<leader>x",      desc = "+REPL" },
       { "<leader>xm",     desc = "+Mark" },
       { "<localleader>x", execute_cell,                                                   desc = "Execute Cell" },
+      { "<localleader>X", execute_all_cells,                                              desc = "Execute All Cells" },
       { "<localleader>i", insert_code_cell,                                               desc = "Insert Code Cell" },
       { "<localleader>m", insert_markdown_cell,                                           desc = "Insert Markdown Cell" },
       { "<localleader>d", delete_cell,                                                    desc = "Delete Cell" },
