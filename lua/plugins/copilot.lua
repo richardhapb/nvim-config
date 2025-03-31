@@ -38,14 +38,15 @@ local function custom_visual_context(callback)
     selection = function()
       return {
         content = visual_selection,
-        filename = cutils.filepath(vim.api.nvim_buf_get_name(bufnr)),
         start_line = start_line,
         end_line = end_line,
+        filename = cutils.filepath(vim.api.nvim_buf_get_name(bufnr)),
+        filetype = vim.api.nvim_get_option_value('filetype', { buf = bufnr }),
         bufnr = bufnr,
-        context = "buffer",
         diagnostics = cutils.diagnostics(bufnr, start_line, end_line)
       }
     end,
+    context = "buffer",
     highlight_selection = true
   }
 
@@ -69,7 +70,20 @@ end
 ---Custom prompt in a floating window with context
 ---@param ask_to_copilot function
 local function temp_float_ask_buffer(ask_to_copilot)
+  local ch = require 'CopilotChat'
   local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_set_option_value("filetype", "copilot-chat", { buf = buf })
+
+  -- Enable the completion for context and model selection
+  -- in the floating window
+  vim.api.nvim_create_autocmd("CursorMovedI", {
+    group = vim.api.nvim_create_augroup("CopilotComplete", { clear = true }),
+    buffer = buf,
+    callback = function()
+      ch.trigger_complete(false)
+    end
+  })
+
 
   local width = math.floor(vim.o.columns * 0.6)
   local height = math.floor(vim.o.lines * 0.2)
@@ -85,7 +99,8 @@ local function temp_float_ask_buffer(ask_to_copilot)
     col = col,
     width = width,
     height = height,
-    style = 'minimal'
+    style = 'minimal',
+    title = "Custom prompt"
   }
 
   local win = vim.api.nvim_open_win(buf, true, win_config)

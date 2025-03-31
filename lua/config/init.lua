@@ -47,16 +47,6 @@ vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
 vim.g.copilot_enabled = 0
 vim.g.copilot_no_tab_map = true
 
--- Disable automatic commenting for next line
-vim.api.nvim_create_autocmd("FileType", {
-   pattern = "*",
-   group = vim.api.nvim_create_augroup("Basics", { clear = true }),
-   callback = function()
-      vim.opt.formatoptions:remove { "c", "r", "o" }
-   end,
-   desc = "Disable New Line Comment",
-})
-
 -- Formatting and break lines
 vim.opt.display = vim.o.display .. ",lastline"
 vim.opt.listchars = vim.o.listchars .. ",eol:↲"
