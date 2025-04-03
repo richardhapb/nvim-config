@@ -39,7 +39,7 @@ end
 ---@return integer[] | nil
 M.get_text_range = function(bufnr, text)
   local buf_text = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  local text_lines = vim.split(text:gsub('\n$', ''):gsub('^\n', ''), '\n', { plain = true })
+  local text_lines = vim.split(text:gsub('\n*$', ''):gsub('^\n*', ''), '\n', { plain = true })
   local nlines = #text_lines
   local index = 1
   local start_line = 1
