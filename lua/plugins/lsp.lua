@@ -202,6 +202,7 @@ return {
       { name = "jsonls" },
       { name = "clangd" },
       { name = "astro" },
+      { name = "vuels" },
     }
 
     local mason_lsp = require("mason-lspconfig")

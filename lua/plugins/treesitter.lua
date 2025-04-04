@@ -28,7 +28,9 @@ return {
       "json",
       "gitignore",
       "dockerfile",
-      "rust"
+      "rust",
+      "c",
+      "vue"
     },
     highlight = {
       enable = true,

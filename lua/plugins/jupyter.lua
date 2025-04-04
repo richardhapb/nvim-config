@@ -1,4 +1,4 @@
-local CELL_MARKER_COLOR = "#C5C5C5"
+local CELL_MARKER_COLOR = "#A5A5A5"
 local CELL_FG_COLOR = "#000000"
 local CELL_MARKER = "^# %%%%"
 local CELL_MARKER_SIGN = "cell_marker_sign"
