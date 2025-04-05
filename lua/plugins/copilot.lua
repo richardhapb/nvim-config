@@ -34,7 +34,10 @@ local function custom_visual_context(callback, opts)
   local cutils = require 'CopilotChat.utils'
   local bufnr = vim.api.nvim_get_current_buf()
   local visual_selection = utils.get_visual_selection()
-  local start_line, _, end_line = unpack(utils.get_text_range(bufnr, visual_selection))
+  local start_line, end_line = 1, vim.api.nvim_buf_line_count(bufnr)
+  if visual_selection ~= "" then
+    start_line, _, end_line = unpack(utils.get_text_range(bufnr, visual_selection))
+  end
 
   local config = {
     selection = function()

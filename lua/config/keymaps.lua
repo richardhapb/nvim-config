@@ -180,21 +180,30 @@ end, { silent = true, desc = 'Git worktree' })
 keymap('n', '<leader>g+', function()
   local feature = vim.fn.input('Feature: ')
   local worktree_name = vim.fn.input('Worktree name: ')
+  if feature == '' or worktree_name == '' then
+    return
+  end
 
   local branch_name = 'feature/richard/' .. os.date('%y-%m-%d') .. '-' .. feature
   branch_name = string.gsub(branch_name, '%s+', '-')
   vim.notify('Creating branch ' .. branch_name, vim.log.levels.INFO)
-  vim.fn.system('git fetch origin')
-  vim.fn.system('git update-ref refs/heads/development origin/development')
-  vim.fn.system('git branch ' .. branch_name .. ' development')
+  vim.system({ 'git', 'fetch', 'origin' }):wait()
+
+  local dev_worktree_path = vim.fs.joinpath(vim.fn.getcwd(), "development")
+  vim.system({ 'git', 'update-ref', 'refs/heads/development', 'origin/development' }):wait()
+
+  --Update worktree asynchronously
+  vim.system({ 'git', '-C', dev_worktree_path, 'checkout', '-f', 'development' }, { detach = true })
+
+  vim.system({ 'git', 'branch', branch_name, 'development' }):wait()
 
   local upstream = vim.fn.input('You want to set upstream? [Y/n]: ')
   if upstream ~= 'n' then
-    vim.fn.system('git push -u origin ' .. branch_name)
+    vim.system({ 'git', 'push', '-u', 'origin', branch_name }):wait()
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
   end
 
-  require'git-worktree'.create_worktree(worktree_name, branch_name)
+  require 'git-worktree'.create_worktree(worktree_name, branch_name)
 
   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 end, { silent = true, desc = 'Git add a branch and switch' })

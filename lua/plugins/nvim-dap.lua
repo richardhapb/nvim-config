@@ -1,3 +1,5 @@
+local lsp_utils = require'functions.lsp'
+
 return {
   'mfussenegger/nvim-dap',
   dependencies = {
@@ -23,7 +25,7 @@ return {
         type = 'debugpy',
         program = "${workspaceFolder}/main.py",
         cwd = "${workspaceFolder}",
-        python = require'functions.lsp'.search_python_path,
+        python = lsp_utils.search_python_path,
         justMyCode = true,
       },
       {
@@ -64,7 +66,7 @@ return {
     }
 
     dap_python.test_runner = "pytest"
-    dap_python.resolve_python = require 'functions.lsp'.search_python_path
+    dap_python.resolve_python = lsp_utils.search_python_path
 
     dap_python.setup(vim.fs.joinpath(vim.fn.stdpath('config'), '.venv', 'bin', 'python'), {})
 
@@ -80,10 +82,9 @@ return {
       callback({ type = 'server', host = '127.0.0.1', port = 8086 })
     end
 
-    local dap_utils = require 'dap.utils'
-
-    local BASH_DEBUG_ADAPTER_BIN = "/Users/richard/.local/share/nvim/mason/bin/bash-debug-adapter"
-    local BASHDB_DIR = "/Users/richard/.local/share/nvim/mason/packages/bash-debug-adapter/extension/bashdb_dir"
+    local BASH_DEBUG_ADAPTER_BIN = vim.fs.joinpath(vim.fn.stdpath('data'), "mason", "bin", "bash-debug-adapter")
+    local BASHDB_DIR = vim.fs.joinpath(vim.fn.stdpath("data"), "mason", "packages", "bash-debug-adapter", "extension",
+      "bashdb_dir")
 
     dap.adapters.sh = {
       type = "executable",
@@ -103,7 +104,7 @@ return {
         pathMkfifo = "mkfifo",
         pathPkill = "pkill",
         env = {},
-        args = {"development-db-1"},
+        args = {},
         -- showDebugOutput = true,
         -- trace = true,
       }

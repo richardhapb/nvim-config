@@ -17,7 +17,7 @@ local M = {}
 M.get_root_cwd_dir = function()
   local cwd = vim.fn.getcwd()
 
-  return cwd:match(".*/(.*)$")
+  return cwd:match(".*/(.-)$")
 end
 
 ---Get the git root
@@ -69,6 +69,13 @@ end
 
 -- Get the text selected
 M.get_visual_selection = function()
+  local mode = vim.api.nvim_get_mode().mode
+
+  -- In insert and normal mode return empty string
+  if mode == "n" or mode == 'i' then
+    return ""
+  end
+
   vim.cmd('silent normal! "xy')
   return vim.fn.getreg('x')
 end
