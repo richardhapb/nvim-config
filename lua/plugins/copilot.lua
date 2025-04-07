@@ -51,7 +51,7 @@ local function custom_visual_context(callback, opts)
         diagnostics = cutils.diagnostics(bufnr, start_line, end_line)
       }
     end,
-    context = "buffer",
+    context = "file:" .. vim.fn.expand("%:p:."),
     highlight_selection = true
   }
 

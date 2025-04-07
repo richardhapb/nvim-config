@@ -53,7 +53,7 @@ return {
           },
         },
         port = 5678,
-        host = os.getenv("HOST_STAGING"),
+        host = vim.env.HOST_STAGING,
         django = true,
         justMyCode = false,
         subProcess = true,

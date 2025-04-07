@@ -30,7 +30,8 @@ return {
       "dockerfile",
       "rust",
       "c",
-      "vue"
+      "vue",
+      "asm"
     },
     highlight = {
       enable = true,
