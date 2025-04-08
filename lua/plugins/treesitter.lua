@@ -31,7 +31,8 @@ return {
       "rust",
       "c",
       "vue",
-      "asm"
+      "asm",
+      "xml"
     },
     highlight = {
       enable = true,

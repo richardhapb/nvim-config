@@ -203,6 +203,7 @@ return {
       { name = "clangd" },
       { name = "astro" },
       { name = "vuels" },
+      { name = "lemminx" },
     }
 
     local mason_lsp = require("mason-lspconfig")

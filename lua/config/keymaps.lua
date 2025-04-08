@@ -75,7 +75,7 @@ end
 
 -- Open the current selection, can be a file or a link, if it is a oil buffer, open the file selected.
 keymap({ 'x', 'n' }, '<leader>o', function()
-  local cmd = vim.fn.has "win32" == 1 and "explorer.exe" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
+  local cmd = vim.fn.has "mac" == 1 and "open" or "xdg-open"
   local input = utils.get_visual_selection()
   input = input:gsub('\n', '')
 
