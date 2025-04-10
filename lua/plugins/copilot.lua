@@ -23,6 +23,58 @@ local prompts = {
   TranslateToEnglish = "Please translate the following text to English.",
   TranslateToSpanish = "Please translate the following text to Spanish.",
   Concise = "Please rewrite the following text to make it more concise.",
+  Optimize =
+  "Analyze this code for performance bottlenecks and suggest optimizations with explanations of the improvements.",
+  Security = "Review this code for security vulnerabilities and suggest fixes with explanations.",
+  AlternativeApproach = "Suggest alternative implementations for this code with pros and cons of each approach.",
+  DesignPatterns =
+  "Identify which design patterns could be applied to improve this code and show examples of implementation.",
+  ExplainToJunior = "Explain this code as if teaching it to a junior developer who's new to this language.",
+  ExplainToExpert = "Explain the nuances and advanced concepts in this code as you would to a senior developer.",
+  TimeComplexity = "Analyze the time and space complexity of this code and suggest optimizations.",
+  TechDebt = "Identify technical debt in this code and suggest a refactoring plan with priorities.",
+  TestCoverage = "Analyze what test coverage is missing and generate comprehensive tests focusing on edge cases.",
+}
+
+local copilot_opts = {
+  question_header = "## Richard ", -- Header for user questions
+  answer_header = "## Copilot ",   -- Header for Copilot answers
+  error_header = "## Error ",      -- Header for errors
+  prompts = prompts,
+  auto_follow_cursor = false,
+  show_help = true,
+  show_auto_complete = true,
+  show_diff = true,
+  model = 'claude-3.7-sonnet',
+  context = nil,
+  selection = nil,
+  sticky =
+  "Always focus on the main concepts while providing practical, real-world examples. Prioritize understanding and explain technical concepts with analogies when appropriate. Suggest best practices and identify potential edge cases in code.",
+  mappings = {
+    complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
+    close = { normal = "q", insert = "<C-c>" },
+    reset = { normal = "<C-x>", insert = "<C-x>" },
+    submit_prompt = { normal = "<CR>", insert = "<C-s>" },
+    accept_diff = { normal = "<C-y>", insert = "<C-y>" },
+    yank_diff = { normal = "gy" },
+    show_diff = { normal = "gd" },
+    show_info = { normal = "gp" },
+    show_context = { normal = "gs" },
+    show_help = { normal = "gh" },
+  },
+  window = {
+    layout = "horizontal",
+    width = 1,
+    height = 0.35,
+  }
+}
+
+local filetype_configs = {
+  ["rust"] = { model = "claude-3.7-sonnet", sticky = "Focus on Rust idioms and safety features." },
+  ["python"] = { model = "claude-3.7-sonnet", sticky = "Focus on Pythonic approaches and readability." },
+  ["bash"] = { model = "gpt-4o", sticky = "Focus on simplicity and elegance; bash must be concise." },
+  ["typescript"] = { model = "claude-3.5-sonnet", sticky = "Emphasize TypeScript type safety and modern ES features." },
+  ["javascript"] = { model = "claude-3.5-sonnet", sticky = "Emphasize type safety and modern ES features like TypeScript." },
 }
 
 ---Ask to copilot with custom context, and use callback if it is provided
@@ -39,6 +91,9 @@ local function custom_visual_context(callback, opts)
     start_line, _, end_line = unpack(utils.get_text_range(bufnr, visual_selection))
   end
 
+  local filetype = vim.api.nvim_get_option_value('filetype', { buf = bufnr })
+
+  ---@type CopilotChat.config.shared
   local config = {
     selection = function()
       return {
@@ -46,15 +101,17 @@ local function custom_visual_context(callback, opts)
         start_line = start_line,
         end_line = end_line,
         filename = cutils.filepath(vim.api.nvim_buf_get_name(bufnr)),
-        filetype = vim.api.nvim_get_option_value('filetype', { buf = bufnr }),
+        filetype = filetype,
         bufnr = bufnr,
         diagnostics = cutils.diagnostics(bufnr, start_line, end_line)
       }
     end,
+    sticky = copilot_opts.sticky,
     context = "file:" .. vim.fn.expand("%:p:."),
     highlight_selection = true
   }
 
+  config = vim.tbl_deep_extend("force", config, filetype_configs[filetype] or {})
   config = vim.tbl_deep_extend("force", config, opts)
 
   ---Ask to copilot with additional text
@@ -141,55 +198,25 @@ return {
     opts = {
       spec = {
         { "<leader>a", group = "ai" },
-        { "gm",        group = "+Copilot chat" },
-        { "gmh",       desc = "Show help" },
-        { "gmd",       desc = "Show diff" },
-        { "gmp",       desc = "Show system prompt" },
-        { "gms",       desc = "Show selection" },
-        { "gmy",       desc = "Yank diff" },
+        { "g",         group = "+Copilot chat" },
+        { "gh",        desc = "Show help" },
+        { "gd",        desc = "Show diff" },
+        { "gp",        desc = "Show system prompt" },
+        { "gs",        desc = "Show selection" },
+        { "gy",        desc = "Yank diff" },
       },
     },
   },
 
   -- Copilot Chat plugin configuration
   {
-    "CopilotC-Nvim/CopilotChat.nvim",
-    branch = "main",
+    dir = "~/plugins/CopilotChat.nvim",
     dependencies = {
       { "nvim-telescope/telescope.nvim" },
       { "nvim-lua/plenary.nvim" },
     },
-    opts = {
-      question_header = "## Richard ", -- Header for user questions
-      answer_header = "## Copilot ",   -- Header for Copilot answers
-      error_header = "## Error ",      -- Header for errors
-      prompts = prompts,
-      auto_follow_cursor = false,
-      show_help = false,
-      show_auto_complete = true,
-      show_diff = true,
-      model = 'claude-3.7-sonnet',
-      context = nil,
-      selection = nil,
-      stick = "Any code that you generate should be elegant, performatic and idiomatic.",
-      mappings = {
-        complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
-        close = { normal = "q", insert = "<C-c>" },
-        reset = { normal = "<C-x>", insert = "<C-x>" },
-        submit_prompt = { normal = "<CR>", insert = "<C-s>" },
-        accept_diff = { normal = "<C-y>", insert = "<C-y>" },
-        yank_diff = { normal = "gmy" },
-        show_diff = { normal = "gmd" },
-        show_info = { normal = "gmp" },
-        show_context = { normal = "gms" },
-        show_help = { normal = "gmh" },
-      },
-      window = {
-        layout = "horizontal",
-        width = 1,
-        height = 0.35,
-      }
-    },
+    build = "make tiktoken",
+    opts = copilot_opts,
     config = function(_, opts)
       local chat = require("CopilotChat")
       chat.setup(opts)
@@ -242,11 +269,20 @@ return {
       {
         "<leader>ai",
         function()
-          temp_float_ask_buffer(function (prompt) require'CopilotChat'.ask(prompt, { context = nil }) end)
+          temp_float_ask_buffer(function(prompt) require 'CopilotChat'.ask(prompt, { context = nil }) end)
         end,
         desc = "CopilotChat - Ask input",
       },
-      { "<leader>am", "<cmd>CopilotChatCommit<cr>",        desc = "CopilotChat - Generate commit message for all changes" },
+      {
+        "<leader>am",
+        function()
+          local args = require 'CopilotChat.config.prompts'.Commit
+          custom_visual_context(function(ask)
+            ask(args.prompt)
+          end, { context = args.context,  model = "gpt-4o" })
+        end,
+        desc = "CopilotChat - Generate commit message for all changes"
+      },
       { "<leader>ad", "<cmd>CopilotChatDebugInfo<cr>",     desc = "CopilotChat - Debug Info" },
       { "<leader>af", "<cmd>CopilotChatFixDiagnostic<cr>", desc = "CopilotChat - Fix Diagnostic" },
       { "<leader>al", "<cmd>CopilotChatReset<cr>",         desc = "CopilotChat - Clear buffer and chat history" },
