@@ -45,7 +45,7 @@ local copilot_opts = {
   show_help = true,
   show_auto_complete = true,
   show_diff = true,
-  model = 'claude-3.7-sonnet',
+  model = 'claude-3.5-sonnet',
   context = nil,
   selection = nil,
   sticky =
@@ -276,10 +276,13 @@ return {
       {
         "<leader>am",
         function()
+          -- Clear chat
+          require 'CopilotChat'.chat:clear()
+
           local args = require 'CopilotChat.config.prompts'.Commit
           custom_visual_context(function(ask)
             ask(args.prompt)
-          end, { context = args.context,  model = "gpt-4o" })
+          end, { context = args.context, model = "gpt-4o" })
         end,
         desc = "CopilotChat - Generate commit message for all changes"
       },
