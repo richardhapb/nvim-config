@@ -9,12 +9,10 @@ local function close_diff_buffers(main_buffer)
   end
 end
 
-local M = {}
-
 
 ---Match the last dir of cwd
----@return string 
-M.get_root_cwd_dir = function()
+---@return string
+local function get_root_cwd_dir()
   local cwd = vim.fn.getcwd()
 
   return cwd:match(".*/(.-)$")
@@ -22,7 +20,7 @@ end
 
 ---Get the git root
 ---@return string | nil
-M.get_git_cwd = function()
+local function get_git_cwd()
   local git_cwd = vim.system({ 'git', 'rev-parse', '--show-toplevel' }):wait()
 
   if git_cwd.stderr ~= '' then
@@ -37,7 +35,7 @@ end
 ---@param bufnr integer
 ---@param text string
 ---@return integer[] | nil
-M.get_text_range = function(bufnr, text)
+local function get_text_range(bufnr, text)
   local buf_text = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local text_lines = vim.split(text:gsub('\n*$', ''):gsub('^\n*', ''), '\n', { plain = true })
   local nlines = #text_lines
@@ -68,7 +66,7 @@ M.get_text_range = function(bufnr, text)
 end
 
 -- Get the text selected
-M.get_visual_selection = function()
+local function get_visual_selection()
   local mode = vim.api.nvim_get_mode().mode
 
   -- In insert and normal mode return empty string
@@ -80,7 +78,7 @@ M.get_visual_selection = function()
   return vim.fn.getreg('x')
 end
 
-M.diff_buffers = function(buffer1, buffer2, buffer1_name, buffer2_name)
+local function diff_buffers(buffer1, buffer2, buffer1_name, buffer2_name)
   if buffer1 == nil or not vim.api.nvim_buf_is_valid(buffer1) then
     buffer1 = vim.api.nvim_get_current_buf()
   end
@@ -111,11 +109,11 @@ M.diff_buffers = function(buffer1, buffer2, buffer1_name, buffer2_name)
   vim.cmd('diffthis')
 end
 
-M.git_diff_name_only = function(branch_name)
+local function git_diff_name_only(branch_name)
   vim.cmd('G diff ' .. branch_name .. ' --name-only')
 end
 
-M.git_curr_line_diff_split = function(branch_name, main_buffer)
+local function git_curr_line_diff_split(branch_name, main_buffer)
   if main_buffer == nil or not vim.api.nvim_buf_is_valid(main_buffer) then
     main_buffer = vim.api.nvim_get_current_buf()
   else
@@ -152,7 +150,7 @@ M.git_curr_line_diff_split = function(branch_name, main_buffer)
   end
 end
 
-M.git_restore_curr_line = function(branch_name)
+local function git_restore_curr_line(branch_name)
   local main_buffer = vim.api.nvim_get_current_buf()
   local current_line_text = vim.fn.getline('.')
 
@@ -181,7 +179,7 @@ M.git_restore_curr_line = function(branch_name)
   vim.notify(success_message, vim.log.levels.INFO, { title = 'Git Restore' })
 end
 
-M.buf_delete_line = function(buffer, line)
+local function buf_delete_line(buffer, line)
   local lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
   table.remove(lines, line)
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
@@ -191,7 +189,7 @@ end
 --- @param split_type? string: split type to open the buffer 'split'/'vsplit' (default: 'split')
 --- @param buf? integer: buffer number to write the lines
 --- @return integer: buffer number
-M.buffer_log = function(lines, split_type, buf)
+local function buffer_log(lines, split_type, buf)
   assert(type(lines) == 'table', 'lines must be a table')
 
   if split_type == nil then
@@ -229,4 +227,25 @@ M.buffer_log = function(lines, split_type, buf)
   return buffer
 end
 
-return M
+local function is_raspberry_pi()
+  local cpuinfo = vim.fn.readfile("/proc/cpuinfo")
+  for _, line in ipairs(cpuinfo) do
+    if line:match("Raspberry Pi") then
+      return true
+    end
+  end
+  return false
+end
+
+return {
+  get_root_cwd_dir = get_root_cwd_dir,
+  get_git_cwd = get_git_cwd,
+  get_text_range = get_text_range,
+  get_visual_selection = get_visual_selection,
+  diff_buffers = diff_buffers,
+  git_diff_name_only = git_diff_name_only,
+  git_restore_curr_line = git_restore_curr_line,
+  buf_delete_line = buf_delete_line,
+  buffer_log = buffer_log,
+  is_raspberry_pi = is_raspberry_pi,
+}

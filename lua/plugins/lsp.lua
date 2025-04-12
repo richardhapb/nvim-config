@@ -1,4 +1,5 @@
 local lsp_utils = require 'functions.lsp'
+local utils = require 'functions.utils'
 
 return {
   "neovim/nvim-lspconfig",
@@ -194,18 +195,23 @@ return {
       { name = "yamlls" },
       { name = "dockerls" },
       { name = "docker_compose_language_service" },
-      { name = 'gopls' },
       { name = "sqlls" },
       { name = "vimls" },
       { name = "markdown_oxide" },
       { name = "texlab" },
       { name = "bashls" },
       { name = "jsonls" },
-      { name = "clangd" },
-      { name = "astro" },
-      { name = "vuels" },
-      { name = "lemminx" },
     }
+
+    if not utils.is_raspberry_pi() then
+      vim.tbl_extend(lsp_elements, {
+        { name = 'gopls' },
+        { name = "clangd" },
+        { name = "astro" },
+        { name = "vuels" },
+        { name = "lemminx" },
+      })
+    end
 
     local mason_lsp = require("mason-lspconfig")
     local ensure = {}
