@@ -204,7 +204,7 @@ return {
     }
 
     if not utils.is_raspberry_pi() then
-      vim.tbl_extend(lsp_elements, {
+      vim.list_extend(lsp_elements, {
         { name = 'gopls' },
         { name = "clangd" },
         { name = "astro" },

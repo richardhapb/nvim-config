@@ -228,12 +228,17 @@ local function buffer_log(lines, split_type, buf)
 end
 
 local function is_raspberry_pi()
-  local cpuinfo = vim.fn.readfile("/proc/cpuinfo")
+  local ok, cpuinfo = pcall(vim.fn.readfile, "/proc/cpuinfo")
+  if not ok then
+    return false
+  end
+
   for _, line in ipairs(cpuinfo) do
     if line:match("Raspberry Pi") then
       return true
     end
   end
+
   return false
 end
 
