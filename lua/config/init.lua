@@ -20,8 +20,10 @@ vim.opt.signcolumn = "yes:1"
 vim.opt.inccommand = "split"
 vim.opt.smartcase = true
 vim.opt.ignorecase = true
+vim.opt.guicursor = ""
 
 vim.opt.splitbelow = true
+vim.opt.splitright = true
 vim.opt.linebreak = true
 
 if vim.fn.has('nvim-0.11') == 1 then

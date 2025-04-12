@@ -276,9 +276,6 @@ return {
       {
         "<leader>am",
         function()
-          -- Clear chat
-          require 'CopilotChat'.chat:clear()
-
           local args = require 'CopilotChat.config.prompts'.Commit
           custom_visual_context(function(ask)
             ask(args.prompt)

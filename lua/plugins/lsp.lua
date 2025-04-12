@@ -64,7 +64,7 @@ return {
       end
 
       -- Latex config
-      local spelling_fts = { 'markdown', 'tex', 'plaintex', 'ltex', 'txt', 'gitcommit' }
+      local spelling_fts = { 'markdown', 'tex', 'plaintext', 'ltex', 'text', 'gitcommit' }
 
       if vim.tbl_contains(spelling_fts, ft) then
         lsp_utils.setup_ltex(bufnr)
