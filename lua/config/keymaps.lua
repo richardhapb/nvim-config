@@ -65,7 +65,7 @@ keymap('n', '<C-w><down>', '5<C-w>-')
 keymap('n', '<leader>bd', ':bd!<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<leader>.', '<cmd>e tags<cr>', { silent = true, desc = 'Open tags' })
 
-if not _verify_tmux() then
+if not _verify_tmux() or utils.is_ssh() then
   keymap('n', '<C-h>', '<C-w>h', { silent = true })
   keymap('n', '<C-j>', '<C-w>j', { silent = true })
   keymap('n', '<C-k>', '<C-w>k', { silent = true })

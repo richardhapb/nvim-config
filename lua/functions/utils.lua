@@ -227,6 +227,10 @@ local function buffer_log(lines, split_type, buf)
   return buffer
 end
 
+local function is_ssh()
+  return vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil
+end
+
 local function is_raspberry_pi()
   local ok, cpuinfo = pcall(vim.fn.readfile, "/proc/cpuinfo")
   if not ok then
@@ -253,4 +257,5 @@ return {
   buf_delete_line = buf_delete_line,
   buffer_log = buffer_log,
   is_raspberry_pi = is_raspberry_pi,
+  is_ssh = is_ssh,
 }
