@@ -1,4 +1,4 @@
-local lsp_utils = require'functions.lsp'
+local lsp_utils = require 'functions.lsp'
 
 return {
   'mfussenegger/nvim-dap',
@@ -152,7 +152,8 @@ return {
 
     -- Python specific
     keymap('n', '<leader>dt', dap_python.test_method, { silent = true, desc = 'Test method' })
-    keymap('n', '<leader>dc', dap_python.test_class, { silent = true, desc = 'Test class' })
+    keymap('n', '<leader>dc', function() dap_python.test_class { config = { justMyCode = false } } end,
+      { silent = true, desc = 'Test class' })
 
     dap.listeners.before.attach.dapui_config = function()
       dap_ui.open()

@@ -5,7 +5,9 @@ return {
   config = function()
     require 'pytest'.setup {
       docker = {
-        enabled = true,
+        enabled = function()
+          return vim.fn.getcwd():find("ddirt") ~= nil
+        end,
         container = function()
           local parent_dir = utils.get_root_cwd_dir()
           return parent_dir .. "-web-1"
