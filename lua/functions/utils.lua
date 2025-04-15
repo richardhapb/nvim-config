@@ -125,7 +125,7 @@ local function git_curr_line_diff_split(branch_name, main_buffer)
   if current_line_text ~= nil then
     close_diff_buffers(main_buffer)
 
-    local git_cwd = M.get_git_cwd()
+    local git_cwd = get_git_cwd()
 
     vim.cmd('new ' .. vim.fs.joinpath(git_cwd, current_line_text))
     local current_buffer = vim.api.nvim_get_current_buf()
@@ -144,7 +144,7 @@ local function git_curr_line_diff_split(branch_name, main_buffer)
     end
 
     vim.api.nvim_buf_set_lines(branch_buffer, 0, -1, false, vim.split(branch_file_content.stdout, '\n'))
-    M.diff_buffers(current_buffer, branch_buffer, nil, branch_name .. ':' .. filename)
+    diff_buffers(current_buffer, branch_buffer, nil, branch_name .. ':' .. filename)
 
     vim.api.nvim_buf_set_var(main_buffer, 'diff_buffers', { current_buffer, branch_buffer })
   end
@@ -159,9 +159,9 @@ local function git_restore_curr_line(branch_name)
   end
 
   local cursor_line = vim.fn.line('.')
-  M.buf_delete_line(main_buffer, cursor_line)
+  buf_delete_line(main_buffer, cursor_line)
 
-  local git_cwd = M.get_git_cwd()
+  local git_cwd = get_git_cwd()
 
   vim.system({
     'git',
@@ -253,6 +253,7 @@ return {
   get_visual_selection = get_visual_selection,
   diff_buffers = diff_buffers,
   git_diff_name_only = git_diff_name_only,
+  git_curr_line_diff_split = git_curr_line_diff_split,
   git_restore_curr_line = git_restore_curr_line,
   buf_delete_line = buf_delete_line,
   buffer_log = buffer_log,
