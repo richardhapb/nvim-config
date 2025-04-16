@@ -32,7 +32,8 @@ return {
       "c",
       "vue",
       "asm",
-      "xml"
+      "xml",
+      "go"
     },
     highlight = {
       enable = true,

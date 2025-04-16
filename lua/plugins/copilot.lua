@@ -72,6 +72,7 @@ local copilot_opts = {
 local filetype_configs = {
   ["rust"] = { model = "claude-3.7-sonnet", sticky = "Focus on Rust idioms and safety features." },
   ["python"] = { model = "claude-3.7-sonnet", sticky = "Focus on Pythonic approaches and readability." },
+  ["go"] = { model = "claude-3.5-sonnet", sticky = "Use Go idioms and emphasize efficiency and elegance" },
   ["bash"] = { model = "gpt-4o", sticky = "Focus on simplicity and elegance; bash must be concise." },
   ["typescript"] = { model = "claude-3.5-sonnet", sticky = "Emphasize TypeScript type safety and modern ES features." },
   ["javascript"] = { model = "claude-3.5-sonnet", sticky = "Emphasize type safety and modern ES features like TypeScript." },
@@ -136,18 +137,8 @@ end
 local function temp_float_ask_buffer(ask_to_copilot)
   local ch = require 'CopilotChat'
   local buf = vim.api.nvim_create_buf(false, true)
+  local chutils = require('CopilotChat.utils')
   vim.api.nvim_set_option_value("filetype", "copilot-chat", { buf = buf })
-
-  -- Enable the completion for context and model selection
-  -- in the floating window
-  vim.api.nvim_create_autocmd("CursorMovedI", {
-    group = vim.api.nvim_create_augroup("CopilotComplete", { clear = true }),
-    buffer = buf,
-    callback = function()
-      ch.trigger_complete(false)
-    end
-  })
-
 
   local width = math.floor(vim.o.columns * 0.6)
   local height = math.floor(vim.o.lines * 0.2)
@@ -169,6 +160,22 @@ local function temp_float_ask_buffer(ask_to_copilot)
 
   local win = vim.api.nvim_open_win(buf, true, win_config)
 
+  vim.api.nvim_create_autocmd('TextChangedI', {
+    buffer = buf,
+    callback = function()
+      local line = vim.api.nvim_get_current_line()
+      local cursor = vim.api.nvim_win_get_cursor(0)
+      local c_col = cursor[2]
+      local char = line:sub(c_col, c_col)
+
+      if vim.tbl_contains(ch.complete_info().triggers, char) then
+        chutils.debounce('complete', function()
+          ch.trigger_complete(true)
+        end, 100)
+      end
+    end
+  })
+
   vim.wo[win].wrap = true
   vim.cmd 'startinsert'
 
@@ -183,6 +190,7 @@ local function temp_float_ask_buffer(ask_to_copilot)
 
   vim.keymap.set('n', '<CR>', send_prompt, { buffer = buf })
   vim.keymap.set('i', '<C-s>', send_prompt, { buffer = buf })
+  vim.keymap.set('i', '<C-z>', ch.trigger_complete, { buffer = buf })
 
   vim.keymap.set('n', 'q', "<CMD>q!<CR>", { buffer = buf, silent = true })
 end

@@ -4,6 +4,11 @@ return {
   lazy = false,
   config = function()
     require 'oil'.setup {
+      columns = {
+        "icon",
+        "permissions",
+        "size",
+      },
       keymaps = {
         ["g?"] = { "actions.show_help", mode = "n" },
         ["<CR>"] = "actions.select",
