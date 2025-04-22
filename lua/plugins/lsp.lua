@@ -201,14 +201,14 @@ return {
       { name = "texlab" },
       { name = "bashls" },
       { name = "jsonls" },
+      { name = 'gopls' },
+      { name = "astro" },
+      { name = "vuels" },
     }
 
     if not utils.is_raspberry_pi() then
       vim.list_extend(lsp_elements, {
-        { name = 'gopls' },
         { name = "clangd" },
-        { name = "astro" },
-        { name = "vuels" },
         { name = "lemminx" },
       })
     end
