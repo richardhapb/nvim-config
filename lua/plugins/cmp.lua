@@ -77,6 +77,8 @@ return {
     "hrsh7th/cmp-cmdline",
     "L3MON4D3/LuaSnip",
     "saadparwaiz1/cmp_luasnip",
+    "tailwind-tools",
+    "onsails/lspkind-nvim",
     { "windwp/nvim-autopairs", opts = { check_ts = true } }
   },
 
@@ -163,6 +165,9 @@ return {
       ---@diagnostic disable-next-line: missing-fields
       formatting = {
         format = function(_, vim_item)
+          require("lspkind").cmp_format({
+            before = require("tailwind-tools.cmp").lspkind_format
+          })
           local kind_icon = icons[vim_item.kind] or ""
           vim_item.kind = string.format("%s %s", kind_icon, vim_item.kind)
           return vim_item

@@ -269,3 +269,8 @@ keymap('n', '<leader>cb', function()
   vim.api.nvim_win_set_height(0, 10)
   vim.cmd.startinsert()
 end, { silent = true, desc = 'Open terminal on bottom' })
+
+-- Copilot
+keymap('i', '<C-z>', 'copilot#Accept()',
+   { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })
+

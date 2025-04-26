@@ -94,7 +94,7 @@ return {
   keys = {
     {
       '<leader><leader>',
-      function() require('telescope.builtin').find_files({ hidden = true }) end,
+      require('telescope.builtin').find_files,
       desc = 'Telescope find files'
     },
     {
@@ -169,7 +169,6 @@ return {
       '<leader>fg',
       function()
         require('telescope.builtin').live_grep({
-          hidden = true,
           file_ignore_patterns = vim.tbl_extend('force', require 'telescope.config'.values.file_ignore_patterns,
             { '^tags$' }),
         })

@@ -191,7 +191,7 @@ return {
       { name = "htmx",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "html",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "eslint" },
-      { name = "ts_ls",                          config = { filetypes = { "html", "htmldjango", "javascript", "typescript", "astro", "vue", "javascriptreact", "javascript.jsx", "typescriptreact", "typescript.jsx" } } },
+      { name = "ts_ls" },
       { name = "yamlls" },
       { name = "dockerls" },
       { name = "docker_compose_language_service" },
