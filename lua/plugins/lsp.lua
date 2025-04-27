@@ -178,16 +178,16 @@ return {
           provideFormatter = true
         }
       },
-      {
-        name = "ltex",
-        config = {
-          settings = {
-            ltex = {
-              language = "en-US",
-            }
-          }
-        }
-      },
+      -- {
+      --   name = "ltex",
+      --   config = {
+      --     settings = {
+      --       ltex = {
+      --         language = "en-US",
+      --       }
+      --     }
+      --   }
+      -- },
       { name = "htmx",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "html",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "eslint" },
