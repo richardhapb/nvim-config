@@ -11,3 +11,4 @@ vim
 Pyright
 Lspconfig
 neovim
+globals
