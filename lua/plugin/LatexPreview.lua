@@ -16,32 +16,42 @@ M.setup = function()
     -- Verify if some .bib file exists in the same directory
     local biblio = vim.fn.glob(vim.fn.expand('%:p:h') .. '/*.bib')
 
-    local command = string.format(
-      'rm -rf %s/* && ' .. -- Clean build directory
-      'xelatex -output-directory=%s -interaction=nonstopmode -halt-on-error %s && ' ..
-      'biber %s/%s && ' ..
-      'xelatex -output-directory=%s -interaction=nonstopmode -halt-on-error %s && ' ..
-      'xelatex -output-directory=%s -interaction=nonstopmode -halt-on-error %s',
-      build_dir,
-      build_dir, file_path,
-      build_dir, vim.fn.expand('%:t:r'),
-      build_dir, file_path,
-      build_dir, file_path
-    )
-
-    -- If a .bib file exists, run biber and rebuild the pdf
-    if biblio ~= '' then
-      command = command .. ' && biber ' .. build_dir .. '/' .. vim.fn.expand('%:t:r') .. ' && ' .. command
+    local function run_command(cmd)
+      local current_dir = vim.fn.expand('%:p:h')
+      -- Use vim.fn.system to run commands in shell context
+      return vim.fn.system('cd ' .. vim.fn.shellescape(current_dir) .. ' && ' .. cmd)
     end
 
-    local results = vim.fn.system(command)
+    local build_command = string.format('xelatex -output-directory=%s -interaction=nonstopmode -halt-on-error %s',
+      vim.fn.shellescape(build_dir),
+      vim.fn.shellescape(file_path)
+    )
+
+    -- Initial latex compilation
+    local results = run_command(build_command)
+
+    -- If a .bib file exists, run biber and rebuild
+    if vim.fn.filereadable(biblio) == 1 then
+      -- Run biber
+      local basename = vim.fn.fnamemodify(file_path, ':t:r')
+      results = results .. "\n" .. run_command('biber ' .. build_dir .. '/' .. basename)
+
+      -- Run latex again twice after bibliography processing
+      for _ = 1, 2 do
+        results = results .. "\n" .. run_command(build_command)
+      end
+    else
+      -- If no bibliography, run latex one more time for cross-references
+      results = results .. "\n" .. run_command(build_command)
+    end
+
     local buffer = utils.buffer_log(vim.split(results, '\n'))
 
     -- Open the pdf file after the build
     vim.api.nvim_create_autocmd('BufUnload', {
       buffer = buffer,
       callback = function()
-        vim.fn.system('open ' .. build_dir .. '/' .. vim.fn.expand('%:t:r') .. '.pdf')
+        vim.system({ 'open', build_dir .. '/' .. vim.fn.expand('%:t:r') .. '.pdf' })
       end
     })
 

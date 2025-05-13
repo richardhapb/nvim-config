@@ -234,7 +234,7 @@ return {
       config = vim.tbl_deep_extend("force", config, type(lsp_element.config) == "table" and lsp_element.config or {})
 
       if lc[name] then
-        lc[name].setup(config)
+        vim.lsp.config(name, config)
       else
         vim.notify("LSP server not found: " .. name, vim.log.levels.WARN)
       end
