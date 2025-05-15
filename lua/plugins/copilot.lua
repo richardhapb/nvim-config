@@ -49,7 +49,7 @@ local copilot_opts = {
   context = nil,
   selection = nil,
   sticky =
-  "Always focus on the main concepts while providing practical, real-world examples. Prioritize understanding and explain technical concepts with analogies when appropriate. Suggest best practices and identify potential edge cases in code.",
+  "Always focus on the main concepts, i want to understand how things work under the hood. Suggest best practices and identify potential edge cases in code.",
   mappings = {
     complete = { detail = "Use @<C-z> or /<C-z> for options.", insert = "<C-z>" },
     close = { normal = "q", insert = "<C-c>" },

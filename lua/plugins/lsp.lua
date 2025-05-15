@@ -109,10 +109,11 @@ return {
               },
               workspace = {
                 library = {
+                  unpack(vim.api.nvim_get_runtime_file("", true)),
                   '${3rd}/luv/library',
                   "${3rd}/busted/library",
+                  vim.fn.expand("$HOME/.hammerspoon/Spoons/EmmyLua.spoon/annotations"),
                   vim.fn.expand("$VIMRUNTIME/lua"),
-                  unpack(vim.api.nvim_get_runtime_file("", true))
                 },
                 checkThirdParty = false
               },
