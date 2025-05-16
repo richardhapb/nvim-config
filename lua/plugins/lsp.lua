@@ -196,7 +196,6 @@ return {
       { name = "yamlls" },
       { name = "dockerls" },
       { name = "docker_compose_language_service" },
-      { name = "sqlls" },
       { name = "vimls" },
       { name = "markdown_oxide" },
       { name = "texlab" },
@@ -205,6 +204,7 @@ return {
       { name = 'gopls' },
       { name = "astro" },
       { name = "vuels" },
+      { name = "postgres_lsp" }
     }
 
     if not utils.is_raspberry_pi() then
