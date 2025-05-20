@@ -1,7 +1,8 @@
 local M = {}
 
 M.search_python_path = function()
-  return vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '') or vim.system({ "which", "python" }):wait().stdout:gsub('\n', '')
+  return vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '') or
+      vim.system({ "which", "python" }):wait().stdout:gsub('\n', '')
 end
 
 local _border = "single"
@@ -57,6 +58,33 @@ end
 
 
 M.setup_ltex = function(bufnr)
+  -- Latex config
+  local spelling_fts = { 'markdown', 'tex', 'plaintext', 'ltex', 'text', 'gitcommit' }
+  local ft = vim.api.nvim_get_option_value('filetype', { buf = bufnr })
+
+  if not vim.tbl_contains(spelling_fts, ft) then
+    return
+  end
+
+  -- Git commit messages should not have uppercase sentence start
+  if ft == 'gitcommit' then
+    local ltex_config = vim.lsp.get_clients({ name = "ltex" })[1].config.settings
+    if ltex_config == nil then
+      vim.notify("ltex config not found", vim.log.levels.INFO)
+      return
+    end
+    ---@diagnostic disable-next-line: inject-field
+    ltex_config.ltex.disabledRules = {
+      ["en-US"] = {
+        "UPPERCASE_SENTENCE_START",
+      },
+      ["es"] = {
+        "UPPERCASE_SENTENCE_START",
+      }
+    }
+  end
+
+
   local ok, ltex = pcall(vim.lsp.get_clients, { name = "ltex" })
   local ltex_config
 

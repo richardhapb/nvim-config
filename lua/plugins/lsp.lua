@@ -8,7 +8,6 @@ return {
     "williamboman/mason-lspconfig.nvim",
     'github/copilot.vim',
     'ray-x/lsp_signature.nvim',
-    "williamboman/mason-lspconfig.nvim",
     {
       "folke/lazydev.nvim",
       ft = "lua", -- only load on lua files
@@ -28,7 +27,6 @@ return {
         vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
       end
 
-      local ft = vim.api.nvim_get_option_value('filetype', { buf = bufnr })
 
       vim.diagnostic.config({
         underline = true,
@@ -46,30 +44,7 @@ return {
         focusable = true,
       }
 
-      -- Git commit messages should not have uppercase sentence start
-      if ft == 'gitcommit' then
-        local ltex_config = vim.lsp.get_clients({ name = "ltex" })[1].config.settings
-        if ltex_config == nil then
-          vim.notify("ltex config not found", vim.log.levels.INFO)
-          return
-        end
-        ---@diagnostic disable-next-line: inject-field
-        ltex_config.ltex.disabledRules = {
-          ["en-US"] = {
-            "UPPERCASE_SENTENCE_START",
-          },
-          ["es"] = {
-            "UPPERCASE_SENTENCE_START",
-          }
-        }
-      end
-
-      -- Latex config
-      local spelling_fts = { 'markdown', 'tex', 'plaintext', 'ltex', 'text', 'gitcommit' }
-
-      if vim.tbl_contains(spelling_fts, ft) then
-        lsp_utils.setup_ltex(bufnr)
-      end
+      lsp_utils.setup_ltex(bufnr)
 
       local e, lsp_signature = pcall(require, 'lsp_signature')
 
