@@ -197,7 +197,12 @@ return {
     end
 
     mason_lsp.setup {
-      ensure_installed = ensure
+      ensure_installed = ensure,
+      automatic_enable = {
+        exclude = {
+          "pyright"
+        }
+      }
     }
 
     for _, lsp_element in ipairs(lsp_elements) do
