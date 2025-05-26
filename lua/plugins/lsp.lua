@@ -179,7 +179,8 @@ return {
       { name = 'gopls' },
       { name = "astro" },
       { name = "vuels" },
-      { name = "postgres_lsp" }
+      { name = "postgres_lsp" },
+      { name = "rust_analyzer" }
     }
 
     if not utils.is_raspberry_pi() then
@@ -198,11 +199,6 @@ return {
 
     mason_lsp.setup {
       ensure_installed = ensure,
-      automatic_enable = {
-        exclude = {
-          "pyright"
-        }
-      }
     }
 
     for _, lsp_element in ipairs(lsp_elements) do
