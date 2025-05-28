@@ -4,16 +4,34 @@ local M = {}
 
 local state = {
   buffer = nil,
+  conf_filename = nil,
+  expanded = false
 }
+
+--- Update the config filename into cache
+---@param conf_filename string
+M.update_conf_filename = function(conf_filename)
+  state.conf_filename = conf_filename
+end
+
+--- Update the expanded config as a parameter in psql
+---@param expanded string
+M.update_expanded = function(expanded)
+  state.expanded = expanded == 'true'
+end
+
 
 ---Return the output of the queries in a buffer
 ---@param conf_filename? string The name of the file with the database configuration
 ---@param line1? number The first line of the visual selection
 ---@param line2? number The last line of the visual selection
 M.sql_query = function(conf_filename, line1, line2)
-
   if not conf_filename or conf_filename == '' then
-    conf_filename = "sql.json"
+    if state.conf_filename then
+      conf_filename = state.conf_filename
+    else
+      conf_filename = "sql.json"
+    end
   end
 
   -- Diferents directories for find config files
@@ -28,7 +46,7 @@ M.sql_query = function(conf_filename, line1, line2)
     if dir then
       sql_conf = io.open(dir .. "/" .. conf_filename, "r")
       if sql_conf then
-        break     -- Found it
+        break -- Found it
       end
     end
   end
@@ -57,7 +75,7 @@ M.sql_query = function(conf_filename, line1, line2)
           -- Replace line break with spaces
           query = query:gsub("%s+", " ")
 
-          local port = 5432      -- Default port
+          local port = 5432 -- Default port
           if db.port then
             port = db.port
           end
@@ -67,7 +85,15 @@ M.sql_query = function(conf_filename, line1, line2)
               db.password ..
               '" psql -h ' ..
               db.host ..
-              ' -p ' .. port .. ' -U ' .. db.user .. ' -d ' .. db.database .. ' -c ' .. vim.fn.shellescape(query)
+              (state.expanded and ' --expanded ' or '') ..
+              ' -p ' ..
+              port ..
+              ' -U ' ..
+              db.user ..
+              ' -d ' ..
+              db.database ..
+              ' -c ' ..
+              vim.fn.shellescape(query)
           local output = vim.fn.systemlist(command)
 
           if output then
