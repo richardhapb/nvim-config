@@ -197,7 +197,7 @@ keymap('n', '<leader>g+', function()
 
   vim.system({ 'git', 'branch', branch_name, 'development' }):wait()
 
-  local upstream = vim.fn.input('You want to set upstream? [Y/n]: ')
+  local upstream = vim.fn.input('Do you want to set upstream? [Y/n]: ')
   if upstream ~= 'n' then
     vim.system({ 'git', 'push', '-u', 'origin', branch_name }):wait()
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
@@ -211,7 +211,7 @@ end, { silent = true, desc = 'Git add a branch and switch' })
 -- Set upstream
 keymap('n', '<leader>gu', function()
   local branch_name = vim.fn.system('git branch --show-current')
-  local upstream = vim.fn.input('You want to set upstream to ' .. branch_name .. '? [y/n]: ')
+  local upstream = vim.fn.input('Do you want to set upstream to ' .. branch_name .. '? [y/n]: ')
   if upstream == 'y' then
     vim.fn.system('git push -u origin ' .. branch_name)
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
