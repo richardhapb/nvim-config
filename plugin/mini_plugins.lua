@@ -1,4 +1,4 @@
-local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery' }
+local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher' }
 
 for _, plugin in ipairs(plugins) do
    require('plugin.' .. plugin).setup()
