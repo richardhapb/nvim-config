@@ -204,8 +204,18 @@ M.docker_containers = function(opts)
           preview = vim.iter(vim.split(vim.inspect(entry.value), '\n')):flatten():totable()
         else
           -- Logs
-          local logs = vim.fn.systemlist({ 'docker', 'logs', entry.value.ID, '--tail', "50" })
-          preview = logs
+          preview = vim.fn.systemlist({ 'docker', 'logs', entry.value.ID, '--tail', "50" })
+
+          -- Clean ANSI sequences if present (only if first line contains them)
+          -- This works for logs like tracing crate in Rust
+          for i, line in ipairs(preview) do
+            -- Remove all ANSI color and formatting codes
+            preview[i] = line:gsub("%[%d+m", "") -- Remove color codes
+                :gsub("%[%d+;%d+m", "") -- Remove complex color codes
+                :gsub("%[%d+;%d+;%d+m", "") -- Remove extended color codes
+                :gsub("%[%dm", "")   -- Remove simple formatting
+                :gsub("[%z\1-\31\127]", "") -- Remove control characters
+          end
         end
 
         -- Sometimes telescope's buffer is not available when the window is too small
