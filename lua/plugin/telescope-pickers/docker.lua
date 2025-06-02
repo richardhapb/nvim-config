@@ -314,6 +314,8 @@ M.docker_containers = function(opts)
         local command = {
           'docker',
           'logs',
+          '--tail',
+          '500',
           container_id,
           '-f'
         }
