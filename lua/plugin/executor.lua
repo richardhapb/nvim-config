@@ -43,6 +43,15 @@ local function use_interpreter(ft)
   return nil
 end
 
+---Append lines to buffer
+---@param buf integer
+---@param lines string[]
+local function append_to_buffer(buf, lines)
+  vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
+  vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
+  vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
+end
+
 ---Execute code lines
 ---@param code string[]
 ---@param args string?
@@ -67,21 +76,24 @@ local function execute_code(code, args)
     cwd = vim.fn.getcwd(),
     on_stdout = function(_, stdout)
       if stdout and #stdout > 0 then
+        if stdout[#stdout] == "" then
+          stdout = vim.split(vim.trim(table.concat(stdout, "\n")), "\n", { plain = true })
+        end
         vim.schedule(function()
-          vim.api.nvim_buf_set_lines(float_buf, -1, -1, false, stdout)
+          append_to_buffer(float_buf, stdout)
         end)
       end
     end,
     on_stderr = function(_, stderr)
       if stderr and #stderr > 0 then
         vim.schedule(function()
-          vim.api.nvim_buf_set_lines(float_buf, -1, -1, false, stderr)
+          append_to_buffer(float_buf, stderr)
         end)
       end
     end,
     on_exit = function(_, _)
       vim.schedule(function()
-        vim.api.nvim_buf_set_lines(float_buf, -1, -1, false, { "[Process completed]" })
+        append_to_buffer(float_buf, { "[Process completed]" })
       end)
     end,
   })
