@@ -11,7 +11,7 @@ local SUPPORTED_LANGUGES = { "python", "lua", "rust", "bash", "go" }
 local function get_binary_cmd(ft)
   local paths = {
     lua = { "lua" },
-    python = { ft == "python" and lsputils.search_python_path() }, -- The condition avoids looking for the path unnecessarily
+    python = { ft == "python" and lsputils.search_python_path(), "-u" }, -- The condition avoids looking for the path unnecessarily, -u flag forces the unbuffered output
     bash = { "bash" },
     rust = { "cargo", "run" },
     go = { "go", "run", "." }
@@ -79,6 +79,11 @@ local function execute_code(code, args)
         end)
       end
     end,
+    on_exit = function(_, _)
+      vim.schedule(function()
+        vim.api.nvim_buf_set_lines(float_buf, -1, -1, false, { "[Process completed]" })
+      end)
+    end,
   })
 
   if use_interpreter(ft) then
@@ -89,9 +94,10 @@ end
 
 M.setup = function()
   vim.api.nvim_create_user_command("ExecuteCode", function(args)
-      local line1 = args.line1
-      local line2 = args.line1
+      local line1 = 1
+      local line2 = -1
       if args.range ~= 0 then
+        line1 = args.line1
         line2 = args.line2
       end
 
@@ -108,7 +114,9 @@ M.setup = function()
     group = vim.api.nvim_create_augroup("CodeExecutor", { clear = true }),
     pattern = SUPPORTED_LANGUGES,
     callback = function(args)
-      vim.keymap.set({ 'x', 'n' }, '<leader>=', '<ESC><CMD>\'<,\'>ExecuteCode<CR>',
+      vim.keymap.set({ 'x' }, '<leader>=', '<ESC><CMD>\'<,\'>ExecuteCode<CR>',
+        { noremap = true, buffer = args.buf, silent = true, desc = 'Execute SQL query' })
+      vim.keymap.set({ 'n' }, '<leader>=', '<CMD>ExecuteCode<CR>',
         { noremap = true, buffer = args.buf, silent = true, desc = 'Execute SQL query' })
     end
   })
