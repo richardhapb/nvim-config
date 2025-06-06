@@ -11,7 +11,7 @@ M.setup = function()
     "Filetype",
     {
       pattern = "sql",
-      callback = function()
+      callback = function(callback_args)
         vim.api.nvim_create_user_command('SqlQuery',
           function(args)
             M.sql_query(args.args, args.line1, args.line2)
@@ -34,13 +34,13 @@ M.setup = function()
             M.update_expanded(args.args)
           end, {
             nargs = 1,
-            complete = function ()
+            complete = function()
               return { 'true', 'false' }
             end,
           })
 
         vim.keymap.set('x', '<leader>=', '<ESC><CMD>\'<,\'>SqlQuery<CR>',
-          { noremap = true, silent = true, desc = 'Execute SQL query' })
+          { noremap = true, buffer = callback_args.buf, silent = true, desc = 'Execute SQL query' })
       end
     })
 end

@@ -1,0 +1,117 @@
+local lsputils           = require 'functions.lsp'
+local utils              = require 'functions.utils'
+
+local M                  = {}
+
+local SUPPORTED_LANGUGES = { "python", "lua", "rust", "bash", "go" }
+
+---Get the binary command depending of filetype
+---@param ft string
+---@return string[]?
+local function get_binary_cmd(ft)
+  local paths = {
+    lua = { "lua" },
+    python = { ft == "python" and lsputils.search_python_path() }, -- The condition avoids looking for the path unnecessarily
+    bash = { "bash" },
+    rust = { "cargo", "run" },
+    go = { "go", "run", "." }
+  }
+
+  if paths[ft] then
+    return paths[ft]
+  end
+
+  return nil
+end
+
+---Check if a language use an interpreter, return True if it is
+---@param ft string
+---@return boolean?
+local function use_interpreter(ft)
+  local uses = {
+    lua = true,
+    python = true,
+    bash = true,
+    rust = false,
+    go = false,
+  }
+
+  if uses[ft] then
+    return uses[ft]
+  end
+
+  return nil
+end
+
+---Execute code lines
+---@param code string[]
+---@param args string?
+local function execute_code(code, args)
+  local ft = vim.api.nvim_get_option_value("filetype", { buf = 0 })
+  local bin = get_binary_cmd(ft)
+  if not bin then
+    vim.notify("Language not supported: " .. ft, vim.log.levels.ERROR)
+  end
+
+  local job
+
+  local float_buf = utils.buffer_log({}, { float = true, on_exit = function() if job then vim.fn.jobstop(job) end end })
+
+  args = args or ""
+  if args ~= "" then
+    args = "- " .. args
+    vim.list_extend(bin, vim.split(args, " ", { plain = true }))
+  end
+
+  job = vim.fn.jobstart(bin, {
+    cwd = vim.fn.getcwd(),
+    on_stdout = function(_, stdout)
+      if stdout and #stdout > 0 then
+        vim.schedule(function()
+          vim.api.nvim_buf_set_lines(float_buf, -1, -1, false, stdout)
+        end)
+      end
+    end,
+    on_stderr = function(_, stderr)
+      if stderr and #stderr > 0 then
+        vim.schedule(function()
+          vim.api.nvim_buf_set_lines(float_buf, -1, -1, false, stderr)
+        end)
+      end
+    end,
+  })
+
+  if use_interpreter(ft) then
+    vim.fn.chansend(job, code)
+    vim.fn.chanclose(job, "stdin")
+  end
+end
+
+M.setup = function()
+  vim.api.nvim_create_user_command("ExecuteCode", function(args)
+      local line1 = args.line1
+      local line2 = args.line1
+      if args.range ~= 0 then
+        line2 = args.line2
+      end
+
+      local lines = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)
+      execute_code(lines, args.args)
+    end,
+    {
+      nargs = '?',
+      complete = 'file',
+      range = 1
+    })
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("CodeExecutor", { clear = true }),
+    pattern = SUPPORTED_LANGUGES,
+    callback = function(args)
+      vim.keymap.set({ 'x', 'n' }, '<leader>=', '<ESC><CMD>\'<,\'>ExecuteCode<CR>',
+        { noremap = true, buffer = args.buf, silent = true, desc = 'Execute SQL query' })
+    end
+  })
+end
+
+return M

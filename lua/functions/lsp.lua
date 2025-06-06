@@ -1,8 +1,8 @@
 local M = {}
 
 M.search_python_path = function()
-  return vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '') or
-      vim.system({ "which", "python" }):wait().stdout:gsub('\n', '')
+  return vim.system({ "which", "python" }):wait().stdout:gsub('\n', '') or
+      vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '')
 end
 
 local _border = "single"
@@ -208,6 +208,54 @@ M.setup_ltex = function(bufnr)
       vim.lsp.buf_notify(0, "workspace/didChangeConfiguration", { settings = ltex_config })
     end, { desc = "󰓆 Add Word", buffer = true })
   end
+end
+
+M.on_attach = function(client, bufnr)
+  if client == nil then
+    return
+  end
+  if client.server_capabilities.completionProvider then
+    vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+  end
+
+
+  vim.diagnostic.config({
+    underline = true,
+    signs = true,
+    float = {
+      border = _border,
+    },
+    virtual_lines = false,
+    update_in_insert = false,
+    virtual_text = M.virtual_text
+  })
+
+  require 'lspconfig.ui.windows'.default_options = {
+    border = M.border,
+    focusable = true,
+  }
+
+  M.setup_ltex(bufnr)
+
+  local e, lsp_signature = pcall(require, 'lsp_signature')
+
+  if e then
+    lsp_signature.on_attach({
+      bind = true,
+      handler_opts = {
+        border = _border,
+      },
+      hint_enable = false,
+      hint_prefix = " ",
+      hint_scheme = "String",
+      hi_parameter = "LspSignatureActiveParameter",
+      max_height = 12,
+      zindex = 200,
+      transpancy = 90,
+    })
+  end
+
+  M.set_keymaps(bufnr)
 end
 
 M.border = _border

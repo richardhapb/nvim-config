@@ -150,6 +150,12 @@ local function git_curr_line_diff_split(branch_name, main_buffer)
   end
 end
 
+local function buf_delete_line(buffer, line)
+  local lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
+  table.remove(lines, line)
+  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+end
+
 local function git_restore_curr_line(branch_name)
   local main_buffer = vim.api.nvim_get_current_buf()
   local current_line_text = vim.fn.getline('.')
@@ -179,26 +185,29 @@ local function git_restore_curr_line(branch_name)
   vim.notify(success_message, vim.log.levels.INFO, { title = 'Git Restore' })
 end
 
-local function buf_delete_line(buffer, line)
-  local lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
-  table.remove(lines, line)
-  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
-end
+--- @class BufferLogOptions
+--- @field float? boolean: split type to open the buffer 'split'/'vsplit' (default: 'split')
+--- @field split_type? string: split type to open the buffer 'split'/'vsplit' (default: 'split')
+--- @field buf? integer: buffer number to write the lines
+--- @field on_exit? function(integer?): buffer number to write the lines
 
 --- @param lines table: list of strings to write in the buffer
---- @param split_type? string: split type to open the buffer 'split'/'vsplit' (default: 'split')
---- @param buf? integer: buffer number to write the lines
---- @return integer: buffer number
-local function buffer_log(lines, split_type, buf)
+--- @param opts? BufferLogOptions
+--- @return integer?: buffer number
+local function buffer_log(lines, opts)
   assert(type(lines) == 'table', 'lines must be a table')
 
-  if split_type == nil then
-    split_type = 'split'
+  opts = opts or {}
+
+  local split_type = "split"
+
+  if not opts.split_type then
+    split_type = opts.split_type
   end
 
   local buffer
-  if buf and vim.api.nvim_buf_is_valid(buf) then
-    buffer = buf
+  if opts.buf and vim.api.nvim_buf_is_valid(opts.buf) then
+    buffer = opts.buf
     for _, win in ipairs(vim.api.nvim_list_wins()) do
       if vim.api.nvim_win_get_buf(win) == buffer then
         vim.api.nvim_set_current_win(win)
@@ -206,22 +215,50 @@ local function buffer_log(lines, split_type, buf)
       end
     end
 
-    vim.cmd(split_type)
+    vim.cmd(opts.split_type)
     vim.api.nvim_set_current_buf(buffer)
 
     ::exit::
   else
     buffer = vim.api.nvim_create_buf(false, true)
-    vim.cmd(split_type)
+    local width = math.floor(vim.o.columns * 0.6)
+    local height = math.floor(vim.o.lines * 0.5)
+
+    local row = vim.o.lines / 2 - height / 2
+    local col = vim.o.columns / 2 - width / 2
+
+    if opts.float then
+      local win_config = {
+        relative = 'editor',
+        border = 'rounded',
+        focusable = true,
+        row = row,
+        col = col,
+        width = width,
+        height = height,
+        style = 'minimal',
+        title = "Executed code"
+      }
+
+      local win = vim.api.nvim_open_win(buffer, true, win_config)
+      vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buffer), 0 })
+    else
+      vim.cmd(split_type)
+      vim.api.nvim_win_set_cursor(0, { vim.api.nvim_buf_line_count(buffer), 0 })
+    end
     vim.api.nvim_set_current_buf(buffer)
-    vim.api.nvim_win_set_cursor(0, { vim.api.nvim_buf_line_count(buffer), 0 })
   end
 
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
 
   local keys = { '<CR>', '<Esc>', 'q' }
   for _, key in ipairs(keys) do
-    vim.keymap.set('n', key, '<Cmd>bd!<CR>', { noremap = true, buffer = buffer })
+    vim.keymap.set('n', key, function()
+      vim.cmd('bd!')
+      if opts.on_exit then
+        opts.on_exit(buffer)
+      end
+    end, { noremap = true, buffer = buffer })
   end
 
   return buffer

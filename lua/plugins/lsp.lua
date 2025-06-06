@@ -19,54 +19,6 @@ return {
     },
   },
   config = function()
-    local on_attach = function(client, bufnr)
-      if client == nil then
-        return
-      end
-      if client.server_capabilities.completionProvider then
-        vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
-      end
-
-
-      vim.diagnostic.config({
-        underline = true,
-        signs = true,
-        float = {
-          border = lsp_utils.border,
-        },
-        virtual_lines = false,
-        update_in_insert = false,
-        virtual_text = lsp_utils.virtual_text
-      })
-
-      require 'lspconfig.ui.windows'.default_options = {
-        border = lsp_utils.border,
-        focusable = true,
-      }
-
-      lsp_utils.setup_ltex(bufnr)
-
-      local e, lsp_signature = pcall(require, 'lsp_signature')
-
-      if e then
-        lsp_signature.on_attach({
-          bind = true,
-          handler_opts = {
-            border = lsp_utils.border,
-          },
-          hint_enable = false,
-          hint_prefix = " ",
-          hint_scheme = "String",
-          hi_parameter = "LspSignatureActiveParameter",
-          max_height = 12,
-          zindex = 200,
-          transpancy = 90,
-        })
-      end
-
-      lsp_utils.set_keymaps(bufnr)
-    end
-
     -- Capabilities, make client capabilities is ran in neovim core
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
@@ -199,12 +151,17 @@ return {
 
     mason_lsp.setup {
       ensure_installed = ensure,
+      automatic_enable = {
+        exclude = {
+            "pyright"
+        }
+    }
     }
 
     for _, lsp_element in ipairs(lsp_elements) do
       local name = lsp_element.name
       local config = {
-        on_attach = on_attach,
+        on_attach = lsp_utils.on_attach,
         capabilities = capabilities,
       }
 

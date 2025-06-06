@@ -108,9 +108,9 @@ M.sql_query = function(conf_filename, line1, line2)
       end
 
       if full_output then
-        state.buffer = utils.buffer_log(full_output, "split", state.buffer)
+        state.buffer = utils.buffer_log(full_output, { split_type = "split", buf = state.buffer })
       else
-        state.buffer = utils.buffer_log({ "No output" }, "vsplit", state.buffer)
+        state.buffer = utils.buffer_log({ "No output" }, { split_type = "vsplit", buf = state.buffer })
       end
     end
   end
