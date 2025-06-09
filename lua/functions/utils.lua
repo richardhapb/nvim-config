@@ -241,6 +241,7 @@ local function buffer_log(lines, opts)
       }
 
       local win = vim.api.nvim_open_win(buffer, true, win_config)
+      vim.api.nvim_set_option_value("wrap", true, { win = 0 })
       vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buffer), 0 })
     else
       vim.cmd(split_type)

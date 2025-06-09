@@ -5,8 +5,10 @@
 --       name = "lsproxy",
 --       cmd = { "/Users/richard/proj/lsproxy/target/debug/lsproxy" },
 --       on_attach = require 'functions.lsp'.on_attach,
---       cmd_env = { RUST_LOG = "trace" }
+--       cmd_env = { RUST_LOG = "debug" }
 --     }
+--
+--     vim.lsp.set_log_level("TRACE")
 --
 --     if not client then
 --       vim.notify("Something was wrong with lsproxy")

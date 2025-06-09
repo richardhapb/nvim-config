@@ -38,6 +38,8 @@ keymap('n', '<C-u>', '<C-u>zz')
 keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
 keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment number' })
+
+
 -- Remove search highlight if is active
 keymap('n', '<Esc>', function()
   if vim.v.hlsearch == 1 then
@@ -272,5 +274,4 @@ end, { silent = true, desc = 'Open terminal on bottom' })
 
 -- Copilot
 keymap('i', '<C-z>', 'copilot#Accept()',
-   { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })
-
+  { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })

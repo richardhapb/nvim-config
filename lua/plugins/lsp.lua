@@ -153,7 +153,8 @@ return {
       ensure_installed = ensure,
       automatic_enable = {
         exclude = {
-            -- "pyright"
+          --   "pyright",
+          -- "ruff"
         }
     }
     }
