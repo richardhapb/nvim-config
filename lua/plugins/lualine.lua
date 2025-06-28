@@ -25,7 +25,6 @@ return {
    'nvim-lualine/lualine.nvim',
    dependencies = {
       { 'nvim-tree/nvim-web-devicons' },
-      { "ofseed/copilot-status.nvim" }
    },
    config = function()
       require('lualine').setup {
@@ -39,7 +38,7 @@ return {
             lualine_b = { 'branch' },
             lualine_c = { 'diff' },
             lualine_x = {
-              lsp_clients, 'copilot', 'fileformat', 'filetype',
+              lsp_clients, 'fileformat', 'filetype',
             },
             lualine_y = { 'progress', 'searchcount' },
             lualine_z = { 'location' },

@@ -6,7 +6,6 @@ return {
   dependencies = {
     "williamboman/mason.nvim",
     "williamboman/mason-lspconfig.nvim",
-    'github/copilot.vim',
     'ray-x/lsp_signature.nvim',
     {
       "folke/lazydev.nvim",
@@ -19,6 +18,8 @@ return {
     },
   },
   config = function()
+    vim.lsp.enable("ty")
+
     -- Capabilities, make client capabilities is ran in neovim core
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
@@ -156,7 +157,7 @@ return {
           --   "pyright",
           -- "ruff"
         }
-    }
+      }
     }
 
     for _, lsp_element in ipairs(lsp_elements) do
