@@ -272,6 +272,3 @@ keymap('n', '<leader>cb', function()
   vim.cmd.startinsert()
 end, { silent = true, desc = 'Open terminal on bottom' })
 
--- Copilot
-keymap('i', '<C-z>', 'copilot#Accept()',
-  { expr = true, silent = true, desc = 'Copilot complete', noremap = false, replace_keycodes = false })

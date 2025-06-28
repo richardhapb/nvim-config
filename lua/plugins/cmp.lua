@@ -1,72 +1,3 @@
-local copilot = {}
-
-copilot.new = function()
-  return setmetatable({
-    timer = vim.loop.new_timer()
-  }, { __index = copilot })
-end
-
-copilot.get_trigger_characters = function()
-  return { '.' }
-end
-
-copilot.get_keyword_pattern = function()
-  return '.'
-end
-
-copilot.complete = function(self, _, callback)
-  if vim.g.copilot_enabled == 0 then
-    callback({
-      isIncomplete = true,
-      items = {},
-    })
-    return
-  end
-  vim.fn['copilot#Complete'](function(result)
-    if not result then
-      return
-    end
-    callback({
-      isIncomplete = true,
-      items = vim.tbl_map(function(item)
-        local text = item.insertText
-        return {
-          label = self:deindent(text:sub(1, 50)),
-          textEdit = {
-            range = item.range,
-            newText = text,
-          },
-          cmp = {
-            kind_hl_group = "CmpItemKindCopilot",
-            kind_text = 'Copilot',
-          },
-          documentation = {
-            kind = 'markdown',
-            value = table.concat({
-              '```' .. vim.api.nvim_get_option_value('filetype', { buf = 0 }),
-              self:deindent(text),
-              '```'
-            }, '\n'),
-          },
-        }
-      end, ((result.first or {}).result or {}).items or {}),
-    })
-  end, function()
-    callback({
-      isIncomplete = true,
-      items = {},
-    })
-  end)
-end
-
-copilot.deindent = function(_, text)
-  local indent = string.match(text, '^%s*')
-  if not indent then
-    return text
-  end
-  return string.gsub(string.gsub(text, '^' .. indent, ''), '\n' .. indent, '\n')
-end
-
 return {
   "hrsh7th/nvim-cmp",
   dependencies = {
@@ -87,8 +18,6 @@ return {
     local cmp = require("cmp")
     local luasnip = require("luasnip")
     local cmp_autopairs = require "nvim-autopairs.completion.cmp"
-
-    cmp.register_source("copilot", copilot.new())
 
     local icons = {
       Text = "",
@@ -116,10 +45,7 @@ return {
       Event = "",
       Operator = "",
       TypeParameter = "T",
-      Copilot = "",
     }
-
-    vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "orange" })
 
     cmp.setup({
       snippet = {
@@ -143,7 +69,6 @@ return {
 
       sources = cmp.config.sources {
         { name = "lazydev",        group_index = 0, },
-        { name = "copilot" },
         { name = "nvim_lsp" },
         { name = "markdown-render" },
         { name = "path" },

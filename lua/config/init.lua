@@ -45,8 +45,6 @@ vim.opt.cursorline = true
 vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
 
 vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
-vim.g.copilot_enabled = 0
-vim.g.copilot_no_tab_map = true
 
 -- Enable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
@@ -60,7 +58,6 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Formatting and break lines
 vim.opt.display = vim.o.display .. ",lastline"
-vim.opt.listchars = vim.o.listchars .. ",eol:↲"
 vim.opt.list = true
 vim.opt.fileformats = { "unix", "dos", "mac" }
 vim.opt.fixeol = false
