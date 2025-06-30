@@ -14,7 +14,19 @@ local function get_copilot_buffer()
 
   local buf = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_name(buf, "copilot-chat")
+  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
   return buf
+end
+
+---Encode a string so it is safe for use as a filename
+---@param path string
+---@return string
+local function encode_path(path)
+  local encode, _ = path:gsub("[^%w]", function(c)
+    return string.format("%%%02X", string.byte(c))
+  end)
+
+  return encode
 end
 
 M.copilot_buffer = get_copilot_buffer()
@@ -73,45 +85,35 @@ M.setup = function()
     }
 
     local buf = M.copilot_buffer
-    local temp_file = "/tmp/copilot_chat.txt"
+    local cwd = vim.fn.getcwd()
 
+    local temp_file = vim.fs.joinpath(vim.fn.expand("$HOME"), ".cache", "copilot-chat", encode_path(cwd)) .. ".json"
     if vim.fn.filereadable(temp_file) == 1 then
-      local lines = vim.fn.readfile(temp_file)
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+      local raw = vim.fn.readfile(temp_file)
+      local ok, chat = pcall(vim.json.decode, table.concat(raw, "\n"))
+      if ok and chat.messages then
+        local names = { system = "COPILOT", user = "RICHARD" }
+        local lines = {}
+        for _, message in ipairs(chat.messages) do
+          table.insert(lines, "")
+          table.insert(lines, "=========== " .. (names[message.role] or "") .. " ===========")
+          table.insert(lines, "")
+          for _, line in ipairs(vim.split(message.content, "\n", { plain = true })) do
+            table.insert(lines, line)
+          end
+        end
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+      end
     end
 
     local win = vim.api.nvim_open_win(buf, true, win_config)
     vim.api.nvim_set_option_value("wrap", true, { win = 0 })
     vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buf), 0 })
 
-    local function save_and_close()
-      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-      vim.fn.writefile(lines, temp_file)
-      vim.cmd('q!')
-    end
-
-    local function save_to_file()
-      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-      vim.fn.writefile(lines, temp_file)
-      vim.notify("Chat saved to " .. temp_file, vim.log.levels.INFO)
-    end
-
-    local function remove_file()
-      if vim.fn.filereadable(temp_file) == 1 then
-        vim.fn.delete(temp_file)
-        vim.notify("Chat file removed: " .. temp_file, vim.log.levels.INFO)
-      else
-        vim.notify("No chat file to remove", vim.log.levels.WARN)
-      end
-    end
-
     local keys = { '<CR>', '<Esc>', 'q' }
     for _, key in ipairs(keys) do
-      vim.keymap.set('n', key, save_and_close, { noremap = true, buffer = buf })
+      vim.keymap.set('n', key, function() vim.cmd("q!") end, { noremap = true, buffer = buf })
     end
-
-    vim.keymap.set('n', '<C-s>', save_to_file, { noremap = true, buffer = buf })
-    vim.keymap.set('n', '<C-d>', remove_file, { noremap = true, buffer = buf })
   end, {})
 
   vim.keymap.set("n", "<leader>am", ":CopilotCommit<CR>", { silent = true })
@@ -255,7 +257,4 @@ function M.generate_diagnostics(diagnostics)
   end
   return table.concat(out, '\n')
 end
-
-M.setup()
-
 return M
