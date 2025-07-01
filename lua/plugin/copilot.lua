@@ -109,6 +109,7 @@ M.setup = function()
     local win = vim.api.nvim_open_win(buf, true, win_config)
     vim.api.nvim_set_option_value("wrap", true, { win = 0 })
     vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buf), 0 })
+    vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
 
     local keys = { '<CR>', '<Esc>', 'q' }
     for _, key in ipairs(keys) do
@@ -257,4 +258,5 @@ function M.generate_diagnostics(diagnostics)
   end
   return table.concat(out, '\n')
 end
+
 return M
