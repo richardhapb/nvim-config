@@ -18,7 +18,7 @@ return {
     },
   },
   config = function()
-    vim.lsp.enable("ty")
+    -- vim.lsp.enable("ty")
 
     -- Capabilities, make client capabilities is ran in neovim core
     local capabilities = require('cmp_nvim_lsp').default_capabilities()

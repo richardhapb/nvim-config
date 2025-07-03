@@ -6,9 +6,12 @@ return {
     require 'pytest'.setup {
       docker = {
         enabled = function()
-          return vim.fn.getcwd():find("ddirt") ~= nil
+          return vim.fn.getcwd():find("ddirt") ~= nil or vim.fn.getcwd():find("fundfridge") ~= nil
         end,
         container = function()
+          if vim.fn.getcwd():find("fundfridge") ~= nil then
+            return "fundfridge-web-1"
+          end
 
           if vim.fn.getcwd():find("ddirt") == nil then return end
 
@@ -17,6 +20,15 @@ return {
         end,
         enable_docker_compose = true,
         docker_compose_service = 'web',
+        local_path_prefix = function()
+          if vim.fn.getcwd():find("ddirt") then
+            return "app"
+          elseif vim.fn.getcwd():find("fundfridge") then
+            return "fundfridge"
+          end
+
+          return ""
+        end
       },
       django = {
         enabled = true
