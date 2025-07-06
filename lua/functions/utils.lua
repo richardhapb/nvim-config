@@ -255,7 +255,7 @@ local function buffer_log(lines, opts)
   local keys = { '<CR>', '<Esc>', 'q' }
   for _, key in ipairs(keys) do
     vim.keymap.set('n', key, function()
-      vim.cmd('bd!')
+      vim.api.nvim_buf_delete(buffer, { force = true })
       if opts.on_exit then
         opts.on_exit(buffer)
       end

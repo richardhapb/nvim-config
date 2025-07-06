@@ -1,5 +1,21 @@
 local M = {}
 
+M.copilot_handler = nil
+M.socket_chan = nil
+M.use_socket = false
+
+-- This avoids LSP attachment to the buffer, but Tree-sitter marks the syntax.
+vim.filetype.add({
+  extension = {
+    ["copilot-chat.md"] = "copilot-chat",
+  },
+  filename = {
+    [".copilot-chat"] = "copilot-chat",
+  },
+})
+vim.treesitter.language.register("markdown", "copilot-chat")
+
+
 ---Get the Copilot's buffer if it exists; otherwise, create one.
 ---@return integer
 local function get_copilot_buffer()
@@ -14,7 +30,7 @@ local function get_copilot_buffer()
 
   local buf = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_name(buf, "copilot-chat")
-  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+  vim.api.nvim_set_option_value("filetype", "copilot-chat", { buf = buf })
   return buf
 end
 
@@ -33,13 +49,16 @@ M.copilot_buffer = get_copilot_buffer()
 
 COPILOT_HEADER = {
   "",
+  "",
   "=========== COPILOT ===========",
   "",
 }
 
 M.setup = function()
+  -- Request a message commit
   vim.api.nvim_create_user_command("CopilotCommit", function()
     vim.fn.jobstart({ "copilot-chat", "commit" }, {
+      env = { ["RUST_LOG"] = "copilot_chat=debug" },
       cwd = vim.fn.getcwd(),
       stdin = "null",
       stdout_buffered = true,
@@ -57,6 +76,27 @@ M.setup = function()
     })
   end, {})
 
+  -- Clear the saved chat
+  vim.api.nvim_create_user_command("CopilotClear", function()
+    vim.fn.jobstart({ "copilot-chat", "clear" }, {
+      cwd = vim.fn.getcwd(),
+      env = { ["RUST_LOG"] = "copilot_chat=debug" },
+      stdin = "null",
+      stdout_buffered = true,
+      stderr_buffered = true,
+      on_stdout = function(_, stdout)
+        vim.schedule(function()
+          vim.api.nvim_buf_set_lines(M.copilot_buffer, 0, -1, false, {})
+          vim.notify(vim.fn.join(stdout, " "), vim.log.levels.INFO)
+        end)
+      end,
+      on_stderr = function(_, stderr)
+        vim.print(stderr)
+      end,
+    })
+  end, {})
+
+  -- Send a prompt to copilot
   vim.api.nvim_create_user_command("CopilotSend", function(args)
     if args.range > 0 then
       M.temp_float_prompt(args.line1, args.line2)
@@ -65,6 +105,15 @@ M.setup = function()
     end
   end, { range = 1 })
 
+  -- Restart the handler to open a new connection
+  vim.api.nvim_create_user_command("CopilotRestart", function()
+    if M.copilot_handler then
+      vim.fn.chanclose(M.copilot_handler, "stdin")
+      M.copilot_handler = nil
+    end
+  end, {})
+
+  -- Open the copilot's buffer
   vim.api.nvim_create_user_command("CopilotBuffer", function()
     local width = math.floor(vim.o.columns * 0.6)
     local height = math.floor(vim.o.lines * 0.5)
@@ -84,6 +133,7 @@ M.setup = function()
       title = "Copilot-Chat"
     }
 
+    M.copilot_buffer = get_copilot_buffer()
     local buf = M.copilot_buffer
     local cwd = vim.fn.getcwd()
 
@@ -95,6 +145,7 @@ M.setup = function()
         local names = { system = "COPILOT", user = "RICHARD" }
         local lines = {}
         for _, message in ipairs(chat.messages) do
+          table.insert(lines, "")
           table.insert(lines, "")
           table.insert(lines, "=========== " .. (names[message.role] or "") .. " ===========")
           table.insert(lines, "")
@@ -109,16 +160,20 @@ M.setup = function()
     local win = vim.api.nvim_open_win(buf, true, win_config)
     vim.api.nvim_set_option_value("wrap", true, { win = 0 })
     vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buf), 0 })
-    vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+    vim.api.nvim_set_option_value("filetype", "copilot-chat", { buf = buf })
 
     local keys = { '<CR>', '<Esc>', 'q' }
     for _, key in ipairs(keys) do
-      vim.keymap.set('n', key, function() vim.cmd("q!") end, { noremap = true, buffer = buf })
+      vim.keymap.set('n', key, function()
+        vim.cmd("q!")
+      end, { noremap = true, buffer = buf })
     end
   end, {})
 
   vim.keymap.set("n", "<leader>am", ":CopilotCommit<CR>", { silent = true })
   vim.keymap.set("n", "<leader>ab", ":CopilotBuffer<CR>", { silent = true })
+  vim.keymap.set("n", "<leader>ax", ":CopilotClear<CR>", { silent = true })
+  vim.keymap.set("n", "<leader>ar", ":CopilotRestart<CR>", { silent = true })
   vim.keymap.set({ "x", "n" }, "<leader>av", ":CopilotSend<CR>", { silent = true })
 end
 
@@ -163,8 +218,22 @@ function M.temp_float_prompt(start, last)
 
   vim.keymap.set('n', '<CR>', send_prompt, { buffer = buf })
   vim.keymap.set('i', '<C-s>', send_prompt, { buffer = buf })
-
   vim.keymap.set('n', 'q', "<CMD>q!<CR>", { buffer = buf, silent = true })
+end
+
+function M.handle_output(data)
+  if data and #data > 0 then
+    for _, line in ipairs(data) do
+      if line and line ~= "" then
+        vim.api.nvim_buf_set_lines(M.copilot_buffer, -1, -1, false, { line })
+        -- Auto-scroll to bottom
+        local win_ids = vim.fn.win_findbuf(M.copilot_buffer)
+        for _, win_id in ipairs(win_ids) do
+          vim.api.nvim_win_set_cursor(win_id, { vim.api.nvim_buf_line_count(M.copilot_buffer), 0 })
+        end
+      end
+    end
+  end
 end
 
 ---Send a prompt to copilot and include the context
@@ -175,33 +244,58 @@ function M.send_to_copilot(content, start, last)
   local range = ""
   local file = vim.fn.expand("%:.")
   if start and last then
-    -- Copilot expects the `file:line1-line2` format or just `file` for the full file.
     range = ":" .. tostring(start) .. "-" .. tostring(last)
   end
+  vim.cmd("CopilotBuffer")
+  local line_count = vim.api.nvim_buf_line_count(M.copilot_buffer)
+  if line_count > 0 then
+    vim.api.nvim_buf_set_lines(M.copilot_buffer, line_count, -1, false, COPILOT_HEADER)
+  else
+    vim.api.nvim_buf_set_lines(M.copilot_buffer, 0, -1, false, COPILOT_HEADER)
+  end
 
-  local job = vim.fn.jobstart({ "copilot-chat", "--files", file .. range }, {
-    stdout_buffered = true,
-    stderr_buffered = true,
-    on_stdout = vim.schedule_wrap(function(_, stdout)
-      -- TODO: Recover previous chats if exists
-      vim.api.nvim_buf_set_lines(M.copilot_buffer, -1, -1, false, COPILOT_HEADER)
-      vim.api.nvim_buf_set_lines(M.copilot_buffer, -1, -1, false, stdout)
+  local function get_transport()
+    if M.use_socket then
+      if not M.socket_chan then
+        M.socket_chan = vim.fn.sockconnect("tcp", "127.0.0.1:4000", {
+          on_data = function(_, data)
+            M.handle_output(data)
+          end,
+        })
+      end
+      return function(msg)
+        msg = file .. range .. "@" .. msg
+        vim.fn.chansend(M.socket_chan, msg)
+        vim.fn.chanclose(M.socket_chan)
+        M.socket_chan = nil
+      end
+    else
+      if not M.copilot_handler then
+        M.copilot_handler = vim.fn.jobstart({ "copilot-chat", "--model", "copilot", "--files", file .. range },
+          {
+            env = { ["RUST_LOG"] = "copilot_chat=debug" },
+            on_stdout = vim.schedule_wrap(function(_, data) M.handle_output(data) end),
+            on_stderr = function(_, err) print("STDERR:", err) end,
+          })
+      end
+      return function(msg)
+        vim.fn.chansend(M.copilot_handler, msg)
+        vim.fn.chanclose(M.copilot_handler, "stdin")
+        M.use_socket = true
+        M.copilot_handler = nil
+      end
+    end
+  end
 
-      vim.cmd("CopilotBuffer")
-    end),
-    on_stderr = vim.schedule_wrap(function(_, stderr)
-      vim.notify(vim.fn.join(stderr, "\n"), vim.log.levels.ERROR)
-    end)
-  })
 
+  -- Create a new handler only if one doesn't exist yet
   local diagnostics = M.get_diagnostics(start, last)
-
   if diagnostics and #diagnostics > 0 then
     content = content .. "\n\nThe diagnostics of the Buffer are: \n" .. M.generate_diagnostics(diagnostics)
   end
 
-  vim.fn.chansend(job, content)
-  vim.fn.chanclose(job, "stdin")
+  local transport = get_transport()
+  transport(content)
 end
 
 ---@class Diagnostic
