@@ -28,9 +28,10 @@ local function get_copilot_buffer()
     end
   end
 
-  local buf = vim.api.nvim_create_buf(true, false)
+  local buf = vim.api.nvim_create_buf(false, false)
   vim.api.nvim_buf_set_name(buf, "copilot-chat")
   vim.api.nvim_set_option_value("filetype", "copilot-chat", { buf = buf })
+  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf }) -- Automatically discard buffer on close
   return buf
 end
 
@@ -223,13 +224,25 @@ end
 
 function M.handle_output(data)
   if data and #data > 0 then
-    for _, line in ipairs(data) do
-      if line and line ~= "" then
+    for i, line in ipairs(data) do
+      local last_line = vim.api.nvim_buf_line_count(M.copilot_buffer) - 1
+      if i > 1 then
+        -- Insert new lines if exists
         vim.api.nvim_buf_set_lines(M.copilot_buffer, -1, -1, false, { line })
-        -- Auto-scroll to bottom
+      else
+        local last_line_content = vim.api.nvim_buf_get_lines(M.copilot_buffer, -2, -1, false)
+        local last_column = 0
+        if #last_line_content > 0 then
+          last_column = #last_line_content[1]
+        end
+        vim.api.nvim_buf_set_text(M.copilot_buffer, last_line, last_column, last_line, last_column, { line })
+      end
+      -- Auto-scroll to bottom if the cursor is in the last line
+      local _, curln = unpack(vim.fn.getcurpos())
+      if curln >= last_line then
         local win_ids = vim.fn.win_findbuf(M.copilot_buffer)
         for _, win_id in ipairs(win_ids) do
-          vim.api.nvim_win_set_cursor(win_id, { vim.api.nvim_buf_line_count(M.copilot_buffer), 0 })
+          vim.api.nvim_win_set_cursor(win_id, { last_line + 1, 0 })
         end
       end
     end
@@ -254,6 +267,11 @@ function M.send_to_copilot(content, start, last)
     vim.api.nvim_buf_set_lines(M.copilot_buffer, 0, -1, false, COPILOT_HEADER)
   end
 
+  local win_ids = vim.fn.win_findbuf(M.copilot_buffer)
+  for _, win_id in ipairs(win_ids) do
+    vim.api.nvim_win_set_cursor(win_id, { vim.api.nvim_buf_line_count(M.copilot_buffer), 0 })
+  end
+
   local function get_transport()
     if M.use_socket then
       if not M.socket_chan then
@@ -271,11 +289,12 @@ function M.send_to_copilot(content, start, last)
       end
     else
       if not M.copilot_handler then
-        M.copilot_handler = vim.fn.jobstart({ "copilot-chat", "--model", "copilot", "--files", file .. range },
+        M.copilot_handler = vim.fn.jobstart({ "copilot-chat", "--files", file .. range },
           {
+            cwd = vim.fn.getcwd(),
             env = { ["RUST_LOG"] = "copilot_chat=debug" },
             on_stdout = vim.schedule_wrap(function(_, data) M.handle_output(data) end),
-            on_stderr = function(_, err) print("STDERR:", err) end,
+            on_stderr = function(_, err) vim.print("STDERR:", err) end,
           })
       end
       return function(msg)

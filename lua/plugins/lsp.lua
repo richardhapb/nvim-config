@@ -18,7 +18,8 @@ return {
     },
   },
   config = function()
-    vim.lsp.enable("ty")
+    -- vim.lsp.enable("ty")
+    -- vim.lsp.enable("lsproxy")
 
     -- Capabilities, make client capabilities is ran in neovim core
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -154,7 +155,7 @@ return {
       ensure_installed = ensure,
       automatic_enable = {
         exclude = {
-            "pyright",
+          -- "pyright",
           -- "ruff"
         }
       }
