@@ -4,5 +4,22 @@ return {
   cmd = { path, '--stdio' },
   cmd_env = { RUST_LOG = "none,lsproxy=trace" },
   filetypes = { "python" },
-  root_dir = "/Users/richard/dev/ddirt/development/app"
+  root_markers = {
+    'pyproject.toml',
+    'setup.py',
+    'setup.cfg',
+    'requirements.txt',
+    'Pipfile',
+    'pyrightconfig.json',
+    '.git',
+  },
+  settings = {
+    python = {
+      analysis = {
+        autoSearchPaths = true,
+        useLibraryCodeForTypes = true,
+        diagnosticMode = 'openFilesOnly',
+      },
+    },
+  },
 }

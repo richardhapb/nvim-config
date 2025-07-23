@@ -59,7 +59,7 @@ M.setup = function()
   -- Request a message commit
   vim.api.nvim_create_user_command("CopilotCommit", function()
     vim.fn.jobstart({ "copilot-chat", "commit" }, {
-      env = { ["RUST_LOG"] = "copilot_chat=debug" },
+      env = { ["RUST_LOG"] = "copilot_chat=trace" },
       cwd = vim.fn.getcwd(),
       stdin = "null",
       stdout_buffered = true,
@@ -81,7 +81,7 @@ M.setup = function()
   vim.api.nvim_create_user_command("CopilotClear", function()
     vim.fn.jobstart({ "copilot-chat", "clear" }, {
       cwd = vim.fn.getcwd(),
-      env = { ["RUST_LOG"] = "copilot_chat=debug" },
+      env = { ["RUST_LOG"] = "copilot_chat=trace" },
       stdin = "null",
       stdout_buffered = true,
       stderr_buffered = true,
@@ -289,10 +289,10 @@ function M.send_to_copilot(content, start, last)
       end
     else
       if not M.copilot_handler then
-        M.copilot_handler = vim.fn.jobstart({ "copilot-chat", "--files", file .. range },
+        M.copilot_handler = vim.fn.jobstart({ "copilot-chat", "--model", "claude-3.7-sonnet", "--files", file .. range },
           {
             cwd = vim.fn.getcwd(),
-            env = { ["RUST_LOG"] = "copilot_chat=debug" },
+            env = { ["RUST_LOG"] = "copilot_chat=trace" },
             on_stdout = vim.schedule_wrap(function(_, data) M.handle_output(data) end),
             on_stderr = function(_, err) vim.print("STDERR:", err) end,
           })
