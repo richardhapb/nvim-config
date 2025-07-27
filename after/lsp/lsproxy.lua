@@ -1,4 +1,5 @@
-local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lsproxy", "target", "debug", "lsproxy")
+local lsp_utils = require 'functions.lsp'
+local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lsproxy", "target", "release", "lsproxy")
 
 return {
   cmd = { path, '--stdio' },
@@ -13,6 +14,7 @@ return {
     'pyrightconfig.json',
     '.git',
   },
+  on_attach = lsp_utils.on_attach,
   settings = {
     python = {
       analysis = {
