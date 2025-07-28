@@ -2,7 +2,6 @@ local M = {}
 
 M.copilot_handler = nil
 M.socket_chan = nil
-M.use_socket = false
 
 -- This avoids LSP attachment to the buffer, but Tree-sitter marks the syntax.
 vim.filetype.add({
@@ -273,39 +272,49 @@ function M.send_to_copilot(content, start, last)
   end
 
   local function get_transport()
-    if M.use_socket then
-      if not M.socket_chan then
-        M.socket_chan = vim.fn.sockconnect("tcp", "127.0.0.1:4000", {
-          on_data = function(_, data)
-            M.handle_output(data)
-          end,
+    if not M.copilot_handler then
+      -- Create a temporary server to find an available port
+      local available_port = 4000
+      local server = vim.loop.new_tcp()
+      if server then
+        server:bind('127.0.0.1', 0) -- Port 0 lets the OS assign an available port
+        available_port = server:getsockname().port
+        server:close()
+      end
+      M.copilot_handler_port = available_port
+
+      M.copilot_handler = vim.fn.jobstart(
+        { "copilot-chat", "tcp", "--port", tostring(available_port), "--model", "claude-3.7-sonnet" },
+        {
+          cwd = vim.fn.getcwd(),
+          env = { ["RUST_LOG"] = "copilot_chat=trace" },
+          on_stdout = vim.schedule_wrap(function(_, data) M.handle_output(data) end),
+          on_stderr = function(_, err) vim.print("STDERR:", err) end,
         })
-      end
-      return function(msg)
-        msg = file .. range .. "@" .. msg
-        vim.fn.chansend(M.socket_chan, msg)
-        vim.fn.chanclose(M.socket_chan)
-        M.socket_chan = nil
-      end
-    else
-      if not M.copilot_handler then
-        M.copilot_handler = vim.fn.jobstart({ "copilot-chat", "--model", "claude-3.7-sonnet", "--files", file .. range },
-          {
-            cwd = vim.fn.getcwd(),
-            env = { ["RUST_LOG"] = "copilot_chat=trace" },
-            on_stdout = vim.schedule_wrap(function(_, data) M.handle_output(data) end),
-            on_stderr = function(_, err) vim.print("STDERR:", err) end,
-          })
-      end
-      return function(msg)
-        vim.fn.chansend(M.copilot_handler, msg)
-        vim.fn.chanclose(M.copilot_handler, "stdin")
-        M.use_socket = true
-        M.copilot_handler = nil
-      end
+      vim.uv.sleep(1000) -- Ensure the server is ready
+    end
+
+    -- The key issue: We need to create a new socket connection for each message
+    -- Close the previous socket if it exists
+    if M.socket_chan then
+      vim.fn.chanclose(M.socket_chan)
+      M.socket_chan = nil
+    end
+
+    -- Create a new socket connection
+    local port = M.copilot_handler_port or 4000 -- Fallback to 4000 if not set
+    M.socket_chan = vim.fn.sockconnect("tcp", "127.0.0.1:" .. port, {
+      on_data = function(_, data)
+        M.handle_output(data)
+      end,
+    })
+
+    return function(msg)
+      msg = file .. range .. "@" .. msg
+      vim.fn.chansend(M.socket_chan, msg)
+      -- No longer close the handler - only close the socket when needed
     end
   end
-
 
   -- Create a new handler only if one doesn't exist yet
   local diagnostics = M.get_diagnostics(start, last)
