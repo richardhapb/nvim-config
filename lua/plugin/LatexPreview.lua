@@ -34,7 +34,7 @@ M.setup = function()
     if vim.fn.filereadable(biblio) == 1 then
       -- Run biber
       local basename = vim.fn.fnamemodify(file_path, ':t:r')
-      results = results .. "\n" .. run_command('biber ' .. build_dir .. '/' .. basename)
+      results = results .. "\n" .. run_command('bibtex ' .. build_dir .. '/' .. basename)
 
       -- Run latex again twice after bibliography processing
       for _ = 1, 2 do
@@ -45,7 +45,7 @@ M.setup = function()
       results = results .. "\n" .. run_command(build_command)
     end
 
-    local buffer = utils.buffer_log(vim.split(results, '\n'))
+    local buffer = utils.buffer_log(vim.split(results, '\n', { plain = true }), {})
 
     -- Open the pdf file after the build
     vim.api.nvim_create_autocmd('BufUnload', {

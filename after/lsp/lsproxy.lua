@@ -2,7 +2,7 @@ local lsp_utils = require 'functions.lsp'
 local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lsproxy", "target", "release", "lsproxy")
 
 return {
-  cmd = { path, '--stdio' },
+  cmd = { path, 'server' },
   cmd_env = { RUST_LOG = "none,lsproxy=trace" },
   filetypes = { "python" },
   root_markers = {

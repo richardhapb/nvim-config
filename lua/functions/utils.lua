@@ -201,7 +201,7 @@ local function buffer_log(lines, opts)
 
   local split_type = "split"
 
-  if not opts.split_type then
+  if opts.split_type then
     split_type = opts.split_type
   end
 
@@ -215,7 +215,7 @@ local function buffer_log(lines, opts)
       end
     end
 
-    vim.cmd(opts.split_type)
+    vim.cmd(split_type)
     vim.api.nvim_set_current_buf(buffer)
 
     ::exit::
