@@ -41,6 +41,9 @@ return {
         port = 5678,
         host = '127.0.0.1',
         django = true,
+        env = {
+          PYTHONASYNCIODEBUG = 1
+        }
       },
       {
         name = 'Launch Django debugging staging',

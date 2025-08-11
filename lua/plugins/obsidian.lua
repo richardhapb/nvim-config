@@ -26,6 +26,11 @@ return {
             path = vim.fs.joinpath(vim.fn.expand("$NOTES"), "work"),
             -- Optional, override certain settings.
           },
+          {
+            name = "blog",
+            path = vim.fs.joinpath(vim.fn.expand("$NOTES"), "blog"),
+            -- Optional, override certain settings.
+          },
         },
 
         -- Alternatively - and for backwards compatibility - you can set 'dir' to a single path instead of

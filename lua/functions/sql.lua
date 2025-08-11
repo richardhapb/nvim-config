@@ -61,8 +61,14 @@ M.sql_query = function(conf_filename, line1, line2)
       local db = vim.fn.json_decode(db_conf)
       local sql_query
       if line1 then
-        sql_query = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)
-        sql_query = table.concat(sql_query, " ")
+        local sql_query_raw = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)
+        local lines = {}
+        for _, line in ipairs(sql_query_raw) do
+          -- Remove the comments
+          line = line:gsub(".*%-%-.+$", "")
+          table.insert(lines, line)
+        end
+        sql_query = table.concat(lines, " ")
       else
         sql_query = utils.get_visual_selection()
       end

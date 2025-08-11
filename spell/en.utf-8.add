@@ -12,3 +12,4 @@ Pyright
 Lspconfig
 neovim
 globals
+WebSocket

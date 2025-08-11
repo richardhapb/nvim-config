@@ -192,7 +192,7 @@ keymap('n', '<leader>g+', function()
   vim.system({ 'git', 'fetch', 'origin' }):wait()
 
   local dev_worktree_path = vim.fs.joinpath(vim.fn.getcwd(), "development")
-  vim.system({ 'git', 'update-ref', 'refs/heads/development', 'origin/development' }):wait()
+  vim.system({ 'git', 'update-ref', 'refs/heads/development', 'refs/remotes/origin/development' }):wait()
 
   --Update worktree asynchronously
   vim.system({ 'git', '-C', dev_worktree_path, 'checkout', '-f', 'development' }, { detach = true })
