@@ -16,16 +16,16 @@ local function align(char, text)
     end
 
     table.insert(lefts, l)
-    table.insert(rights, r)
+    table.insert(rights, r or "")
   end
 
   local result = {}
 
   for i, l in ipairs(lefts) do
-    if #l < max then
-      l = string.format("%s%s", l, string.rep(" ", max - #l))
-    end
-    if rights[i] then
+    if rights[i] ~= "" then
+      if  #l < max then
+        l = string.format("%s%s", l, string.rep(" ", max - #l))
+      end
       table.insert(result, string.format("%s%s%s", l, char, rights[i]))
     else
       table.insert(result, vim.trim(l))
