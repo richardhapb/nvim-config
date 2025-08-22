@@ -1,6 +1,28 @@
 local M = {}
 
 ---@param char string
+---@param line string
+---@return string, string
+local function split_once(char, line)
+  local parts = vim.split(line, char, { plain = true })
+  local l = ""
+  local r = ""
+  for i, part in ipairs(parts) do
+    if i == 1 then
+      l = part
+    else
+      if r ~= "" then
+        r = r .. char .. part
+      else
+        r = part
+      end
+    end
+  end
+
+  return l, r
+end
+
+---@param char string
 ---@param text string[]
 ---@return string[]
 local function align(char, text)
@@ -9,21 +31,21 @@ local function align(char, text)
   local rights = {}
 
   for _, line in ipairs(text) do
-    local l, r = unpack(vim.split(line, char, { plain = true }))
+    local l, r = split_once(char, line)
 
     if #l > max then
       max = #l
     end
 
     table.insert(lefts, l)
-    table.insert(rights, r or "")
+    table.insert(rights, r)
   end
 
   local result = {}
 
   for i, l in ipairs(lefts) do
     if rights[i] ~= "" then
-      if  #l < max then
+      if #l < max then
         l = string.format("%s%s", l, string.rep(" ", max - #l))
       end
       table.insert(result, string.format("%s%s%s", l, char, rights[i]))
@@ -57,4 +79,3 @@ function M.setup()
 end
 
 return M
-
