@@ -9,12 +9,35 @@ return {
     'ray-x/lsp_signature.nvim',
     {
       "folke/lazydev.nvim",
-      ft = "lua", -- only load on lua files
-      opts = {
-        library = {
-          { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-        },
-      },
+      ft = "lua",
+      config = function()
+        -- Monkeypatch to remove a call to the deprecated `client.notify` function.
+        local config = require("lazydev.config")
+        config.have_0_11 = vim.fn.has("nvim-0.11") == 1
+
+        local lsp = require("lazydev.lsp")
+        ---@diagnostic disable-next-line: duplicate-set-field
+        lsp.update = function(client)
+          lsp.assert(client)
+          if config.have_0_11 then
+            client:notify("workspace/didChangeConfiguration", {
+              settings = { Lua = {} },
+            })
+          else
+            client.notify("workspace/didChangeConfiguration", {
+              settings = { Lua = {} },
+            })
+          end
+        end
+
+        require("lazydev").setup {
+          library = {
+            -- See the configuration section for more details
+            -- Load luvit types when the `vim.uv` word is found
+            { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+          },
+        }
+      end,
     },
   },
   config = function()
