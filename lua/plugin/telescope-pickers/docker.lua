@@ -155,7 +155,7 @@ end
 ---Make the display for the container
 ---@param entry table Telescope entry object
 ---@returns Formatted entry
----@return string
+---@return string, table
 local make_display = function(entry)
   return displayer {
     { entry.value.Names },
