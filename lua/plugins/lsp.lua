@@ -132,7 +132,7 @@ return {
         }
       },
       {
-        name = "ltex",
+        name = "ltex_plus",
         config = {
           settings = {
             ltex = {

@@ -68,7 +68,7 @@ M.setup_ltex = function(bufnr)
 
   -- Git commit messages should not have uppercase sentence start
   if ft == 'gitcommit' then
-    local ltex_config = vim.lsp.get_clients({ name = "ltex" })[1].config.settings
+    local ltex_config = vim.lsp.get_clients({ name = "ltex_plus" })[1].config.settings
     if ltex_config == nil then
       vim.notify("ltex config not found", vim.log.levels.INFO)
       return
@@ -85,7 +85,7 @@ M.setup_ltex = function(bufnr)
   end
 
 
-  local ok, ltex = pcall(vim.lsp.get_clients, { name = "ltex" })
+  local ok, ltex = pcall(vim.lsp.get_clients, { name = "ltex_plus" })
   local ltex_config
 
   if ok and ltex[1] then
