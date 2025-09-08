@@ -42,7 +42,8 @@ return {
   },
   config = function()
     -- vim.lsp.enable("ty")
-    vim.lsp.enable("lsproxy")
+    vim.lsp.enable("lspdock")
+    vim.lsp.enable("lspdock_ruff")
 
     -- Capabilities, make client capabilities is ran in neovim core
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -179,7 +180,7 @@ return {
       automatic_enable = {
         exclude = {
           "pyright",
-          -- "ruff"
+          "ruff"
         }
       }
     }

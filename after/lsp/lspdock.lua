@@ -1,9 +1,9 @@
 local lsp_utils = require 'functions.lsp'
-local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lsproxy", "target", "release", "lsproxy")
+local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lspdock", "target", "release", "lspdock")
 
 return {
-  cmd = { path, '--stdio' },
-  cmd_env = { RUST_LOG = "none,lsproxy=trace" },
+  cmd = { path, "--exec", "pyright-langserver", '--stdio' },
+  cmd_env = { RUST_LOG = "none,lsdock=trace" },
   filetypes = { "python" },
   root_markers = {
     'pyproject.toml',
