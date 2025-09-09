@@ -4,5 +4,11 @@ return {
   cmd = { path, "server" },
   filetypes = { "python" },
   -- root_dir = vim.fs.root(0, { ".git/", "pyproject.toml" }),
-  root_dir = vim.fs.joinpath(vim.fn.getcwd(), "app")
+  root_dir = vim.fs.joinpath(vim.fn.getcwd(), "app"),
+  globalSettings = {
+    experimental = {
+      auto_import = true,
+      rename = true
+    }
+  }
 }
