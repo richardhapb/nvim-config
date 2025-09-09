@@ -42,7 +42,7 @@ return {
   },
   config = function()
     -- vim.lsp.enable("ty")
-    vim.lsp.enable("lspdock")
+    vim.lsp.enable("lspdock_pyright")
     vim.lsp.enable("lspdock_ruff")
 
     -- Capabilities, make client capabilities is ran in neovim core
@@ -186,8 +186,8 @@ return {
     }
 
     -------------------------------------------------------- Temporary ----------------------------------------------------------
-    -- Patch lsproxy instead of pyright because I am handling pyright trought it
-    vim.lsp.config("lsproxy", {
+    -- Patch lspdock instead of pyright because I am handling pyright trought it
+    vim.lsp.config("lspdock_pyright", {
       handlers = {
         -- Override the default rename handler to remove the `annotationId` from edits.
         --

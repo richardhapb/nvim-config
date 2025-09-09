@@ -18,5 +18,23 @@ return {
   },
   on_attach = lsp_utils.on_attach,
   single_file_support = true,
-  settings = {},
+  settings = {
+    trace = "messages",
+  },
+  init_options = {
+    settings = {
+      configuration = vim.fn.getcwd() .. "/pyproject.toml",
+      configurationPreference = 'filesystemFirst',
+      exclude = { "node_modules", ".git", ".venv" },
+      lineLength = 100,
+      lint = {
+        enabled = true,
+        preview = true,
+      },
+      format = {
+        enabled = true,
+        preview = true,
+      },
+    },
+  }
 }
