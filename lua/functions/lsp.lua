@@ -235,7 +235,9 @@ M.on_attach = function(client, bufnr)
     focusable = true,
   }
 
-  M.setup_ltex(bufnr)
+  if client.name and client.name:find("^ltex") then
+    M.setup_ltex(bufnr)
+  end
 
   local e, lsp_signature = pcall(require, 'lsp_signature')
 

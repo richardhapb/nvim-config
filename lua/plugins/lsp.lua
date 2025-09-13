@@ -142,6 +142,7 @@ return {
           }
         }
       },
+      { name = "harper_ls" },
       { name = "htmx",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "html",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "eslint" },

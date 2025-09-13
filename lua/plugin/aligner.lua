@@ -57,6 +57,55 @@ local function align(char, text)
   return result
 end
 
+--- Convert to multiline string
+---@param lines string[]
+---@param max_length integer
+---@return string[]
+local function to_multiline(lines, max_length)
+  local result = {}
+
+  for _, line in ipairs(lines) do
+    local new_line = ""
+    local indentation = line:match("^%s+") or ""
+
+    line = vim.trim(line)
+
+    for i = 1, #line do
+      -- If it does not have space, insert the full word or text
+      if not line:find(" ", i, true) and #new_line + #line - i >= max_length then
+        table.insert(result, indentation .. new_line .. line:sub(i, #line + 1))
+        new_line = ""
+        break
+      end
+
+      local b = string.byte(line, i)
+      local c = string.char(b)
+      if #new_line >= max_length then
+        local chunks = vim.split(new_line, " ", { plain = true })
+        local last_chunk = table.remove(chunks, #chunks)
+
+        -- It is possible that there is only one chunk; if so, the last chunk is the only
+        -- one. I need to avoid inserting an empty line.
+        if #chunks > 0 then
+          table.insert(result, indentation .. vim.fn.join(chunks, " "))
+        else
+          table.insert(result, indentation .. last_chunk)
+          last_chunk = ""
+        end
+        new_line = last_chunk
+      end
+      new_line = new_line .. c
+    end
+
+    -- Insert the residual text
+    if #new_line > 0 then
+      table.insert(result, indentation .. new_line)
+    end
+  end
+
+  return result
+end
+
 function M.setup()
   vim.api.nvim_create_user_command('Align',
     function(args)
@@ -74,6 +123,31 @@ function M.setup()
       vim.api.nvim_buf_set_lines(0, line1 - 1, line2, false, new_text)
     end, {
       nargs = 1,
+      range = 1
+    })
+
+  vim.api.nvim_create_user_command('Mult',
+    function(args)
+      local line1 = 1
+      local line2 = -1
+      if args.range == 0 then
+        return
+      end
+
+      line1 = args.line1
+      line2 = args.line2
+
+      local max_length = 90
+      if #args.args > 0 then
+        local maybe_int = tonumber(vim.trim(args.args))
+        max_length = maybe_int or max_length
+      end
+
+      local lines = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)
+      local new_text = to_multiline(lines, max_length)
+      vim.api.nvim_buf_set_lines(0, line1 - 1, line2, false, new_text)
+    end, {
+      nargs = '?',
       range = 1
     })
 end
