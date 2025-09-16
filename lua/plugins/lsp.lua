@@ -157,7 +157,7 @@ return {
       { name = "jsonls" },
       { name = 'gopls' },
       { name = "astro" },
-      { name = "vuels" },
+      { name = "vuels",                          config = { cmd = { "vls" }, filetypes = { "vue" } } },
       { name = "postgres_lsp" },
       { name = "rust_analyzer" }
     }
