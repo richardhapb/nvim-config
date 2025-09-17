@@ -142,11 +142,27 @@ return {
           }
         }
       },
+      {
+        name = "ts_ls",
+        config = {
+          root_dir = function(bufnr, on_dir)
+            local markers = { 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', 'bun.lock', 'deno.lock',
+              ".git", ".gitignore", ".editorconfig" }
+            vim.fs.root(bufnr, markers)
+
+            local project_root = vim.fs.root(bufnr, markers)
+            if not project_root then
+              return
+            end
+
+            on_dir(project_root)
+          end
+        }
+      },
       { name = "harper_ls" },
       { name = "htmx",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "html",                           config = { filetypes = { 'html', "htmldjango" } } },
       { name = "eslint" },
-      { name = "ts_ls" },
       { name = "yamlls" },
       { name = "dockerls" },
       { name = "docker_compose_language_service" },
