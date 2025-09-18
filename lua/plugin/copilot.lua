@@ -224,6 +224,9 @@ end
 function M.handle_output(data)
   if data and #data > 0 then
     for i, line in ipairs(data) do
+      if not vim.api.nvim_buf_is_valid(M.copilot_buffer) then
+        break
+      end
       local last_line = vim.api.nvim_buf_line_count(M.copilot_buffer) - 1
       if i > 1 then
         -- Insert new lines if exists
@@ -236,6 +239,7 @@ function M.handle_output(data)
         end
         vim.api.nvim_buf_set_text(M.copilot_buffer, last_line, last_column, last_line, last_column, { line })
       end
+
       -- Auto-scroll to bottom if the cursor is in the last line
       local _, curln = unpack(vim.fn.getcurpos())
       if curln >= last_line then
