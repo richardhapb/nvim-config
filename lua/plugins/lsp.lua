@@ -11,25 +11,6 @@ return {
       "folke/lazydev.nvim",
       ft = "lua",
       config = function()
-        -- Monkeypatch to remove a call to the deprecated `client.notify` function.
-        local config = require("lazydev.config")
-        config.have_0_11 = vim.fn.has("nvim-0.11") == 1
-
-        local lsp = require("lazydev.lsp")
-        ---@diagnostic disable-next-line: duplicate-set-field
-        lsp.update = function(client)
-          lsp.assert(client)
-          if config.have_0_11 then
-            client:notify("workspace/didChangeConfiguration", {
-              settings = { Lua = {} },
-            })
-          else
-            client.notify("workspace/didChangeConfiguration", {
-              settings = { Lua = {} },
-            })
-          end
-        end
-
         require("lazydev").setup {
           library = {
             -- See the configuration section for more details
@@ -47,8 +28,6 @@ return {
 
     -- Capabilities, make client capabilities is ran in neovim core
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-    local lc = require("lspconfig")
 
     local lsp_elements = {
       {
@@ -245,12 +224,7 @@ return {
       }
 
       config = vim.tbl_deep_extend("force", config, type(lsp_element.config) == "table" and lsp_element.config or {})
-
-      if lc[name] then
-        vim.lsp.config(name, config)
-      else
-        vim.notify("LSP server not found: " .. name, vim.log.levels.WARN)
-      end
+      vim.lsp.config(name, config)
     end
   end,
 }

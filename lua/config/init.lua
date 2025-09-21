@@ -48,12 +48,12 @@ vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
 
 -- Enable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
-   pattern = "*",
-   group = vim.api.nvim_create_augroup("Basics", { clear = true }),
-   callback = function()
-      vim.opt.formatoptions = "cro"
-   end,
-   desc = "Enable New Line Comment",
+  pattern = "*",
+  group = vim.api.nvim_create_augroup("Basics", { clear = true }),
+  callback = function()
+    vim.opt.formatoptions = "cro"
+  end,
+  desc = "Enable New Line Comment",
 })
 
 -- Formatting and break lines
@@ -69,21 +69,21 @@ vim.opt.eof = false
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
 vim.api.nvim_create_autocmd("VimEnter", {
-   callback = function()
-      vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
-   end
+  callback = function()
+    vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
+  end
 })
 
 if vim.fn.has("mac") then
-   require("config.macos")
+  require("config.macos")
 end
 
 if vim.fn.has("linux") then
-   require("config.linux")
+  require("config.linux")
 end
 
 if vim.fn.has("win32") then
-   require("config.windows")
+  require("config.windows")
 end
 
 -- Load environment variables
@@ -94,6 +94,3 @@ require("config.autocommands")
 require("config.usercommands")
 
 require("config.keymaps")
-
-
-

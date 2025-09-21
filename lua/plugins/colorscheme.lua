@@ -31,7 +31,7 @@ local function custom_hl()
       hl(0, 'DiffDelete', { bg = "#400000" })
 
       -- Transparent
-      hl(0, 'Normal', { bg = "NONE" })
+      hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
       hl(0, 'SignColumn', { bg = "NONE" })
       hl(0, 'VertSplit', { bg = "NONE" })
       hl(0, 'FoldColumn', { bg = "NONE" })

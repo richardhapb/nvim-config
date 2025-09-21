@@ -6,13 +6,13 @@ M.socket_chan = nil
 -- This avoids LSP attachment to the buffer, but Tree-sitter marks the syntax.
 vim.filetype.add({
   extension = {
-    ["copilot-chat.md"] = "copilot-chat",
+    ["copilot-chat.md"] = "copilot-chat-cli",
   },
   filename = {
-    [".copilot-chat"] = "copilot-chat",
+    [".copilot-chat"] = "copilot-chat-cli",
   },
 })
-vim.treesitter.language.register("markdown", "copilot-chat")
+vim.treesitter.language.register("markdown", "copilot-chat-cli")
 
 
 ---Get the Copilot's buffer if it exists; otherwise, create one.
@@ -22,14 +22,14 @@ local function get_copilot_buffer()
 
   for _, buf in ipairs(bufs) do
     local name = vim.api.nvim_buf_get_name(buf)
-    if name:match(".*/(.*)$") == "copilot-chat" and vim.api.nvim_buf_is_valid(buf) then
+    if name:match(".*/(.*)$") == "copilot-chat-cli" and vim.api.nvim_buf_is_valid(buf) then
       return buf
     end
   end
 
   local buf = vim.api.nvim_create_buf(false, false)
-  vim.api.nvim_buf_set_name(buf, "copilot-chat")
-  vim.api.nvim_set_option_value("filetype", "copilot-chat", { buf = buf })
+  vim.api.nvim_buf_set_name(buf, "copilot-chat-cli")
+  vim.api.nvim_set_option_value("filetype", "copilot-chat-cli", { buf = buf })
   vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf }) -- Automatically discard buffer on close
   return buf
 end
@@ -182,7 +182,7 @@ end
 ---@param last integer?
 function M.temp_float_prompt(start, last)
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+  vim.api.nvim_set_option_value("filetype", "copilot-chat-cli", { buf = buf })
 
   local width = math.floor(vim.o.columns * 0.6)
   local height = math.floor(vim.o.lines * 0.2)
