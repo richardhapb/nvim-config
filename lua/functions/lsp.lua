@@ -211,8 +211,12 @@ M.on_attach = function(client, bufnr)
   if client == nil then
     return
   end
-  if client.server_capabilities and client.server_capabilities.completionProvider then
+  if client.server_capabilities and client:supports_method('textDocument/completion') then
     vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+  end
+
+  if client and client:supports_method('textDocument/documentColor') then
+    vim.lsp.document_color.enable(true, bufnr, { style = 'background' })
   end
 
 
