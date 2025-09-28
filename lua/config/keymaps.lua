@@ -151,7 +151,7 @@ keymap('n', '<leader>nb', function()
 end, { silent = true, desc = 'Create a new note for branch' })
 
 -- Git
-keymap('n', '<leader>gg', ':G<CR>', { silent = true, desc = 'Git status' })
+keymap('n', '<leader>gg', ':!git status<CR>', { silent = true, desc = 'Git status' })
 keymap('n', '<leader>gc', function()
   ---@type function | nil
   local callback = function(buf)
@@ -214,6 +214,7 @@ keymap('n', '<leader>gS', ':!git stash<CR>', { silent = true, desc = 'Git stash'
 keymap('n', '<leader>gA', ':!git add .<CR>', { silent = true, desc = 'Git add .' })
 keymap('n', '<leader>gdd', ':!git diff<CR>', { silent = true, desc = 'Git diff' })
 keymap('n', '<leader>gf', ':!git fetch --all<CR>', { silent = true, desc = 'Git fetch' })
+keymap('n', '<leader>gF', ':!git push --force-with-lease<CR>', { silent = true, desc = 'Git push force with lease' })
 keymap('n', '<leader>gb', ':!git blame<CR>', { silent = true, desc = 'Git blame' })
 keymap('n', '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
 keymap('n', '<leader>gdv', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })

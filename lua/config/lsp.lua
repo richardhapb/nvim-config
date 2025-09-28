@@ -82,7 +82,7 @@ return {
       {
         name = "html",
         config = {
-
+          filetypes = { 'html', "htmldjango" },
           configurationSection = { "html", "css", "javascript" },
           embeddedLanguages = {
             css = true,
@@ -118,29 +118,20 @@ return {
           end
         }
       },
+      { name = "htmx",         config = { filetypes = { 'html', "htmldjango" } } },
+      { name = "vuels",        config = { cmd = { "vls" }, filetypes = { "vue" } } },
       { name = "harper_ls" },
-      { name = "htmx",                           config = { filetypes = { 'html', "htmldjango" } } },
-      { name = "html",                           config = { filetypes = { 'html', "htmldjango" } } },
-      { name = "eslint" },
       { name = "yamlls" },
-      { name = "dockerls" },
-      { name = "docker_compose_language_service" },
-      { name = "vimls" },
-      { name = "markdown_oxide" },
-      { name = "texlab" },
       { name = "bashls" },
       { name = "jsonls" },
       { name = 'gopls' },
       { name = "astro" },
-      { name = "vuels",                          config = { cmd = { "vls" }, filetypes = { "vue" } } },
-      { name = "postgres_lsp" },
       { name = "rust_analyzer" },
     }
 
     if not utils.is_raspberry_pi() then
       vim.list_extend(lsp_elements, {
         { name = "clangd" },
-        { name = "lemminx" },
       })
     end
 

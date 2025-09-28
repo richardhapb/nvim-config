@@ -16,28 +16,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   end,
 })
 
-vim.api.nvim_create_autocmd("Filetype", {
-  group = vim.api.nvim_create_augroup("FugitiveConfig", { clear = true }),
-  pattern = "fugitive",
-  callback = function()
-    local keymap = vim.keymap.set
-
-    keymap('n', '<leader>P', '<cmd>Git push<cr>', { noremap = true, desc = "Git push", buffer = 0 })
-    keymap('n', '<leader>F', '<cmd>Git push --force-with-lease<cr>',
-      { noremap = true, desc = "Git push force with lease", buffer = 0 })
-    keymap('n', '<leader>p', '<cmd>Git pull --rebase<cr>', { noremap = true, desc = "Git pull", buffer = 0 })
-  end
-})
-
-vim.api.nvim_create_autocmd('FileType', {
-  group = vim.api.nvim_create_augroup('LuaTest', { clear = true }),
-  pattern = 'lua',
-  callback = function()
-    vim.keymap.set('n', '<leader>tf', '<cmd>write<cr><cmd>PlenaryBustedFile %<cr>',
-      { noremap = true, desc = 'Run tests' })
-  end
-})
-
 vim.api.nvim_create_autocmd("TermOpen", {
   group = vim.api.nvim_create_augroup("TermConfig", { clear = true }),
   callback = function()
@@ -62,5 +40,11 @@ vim.api.nvim_create_autocmd("FileType", {
         end
       })
     end
+  end
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  callback = function()
+    pcall(vim.treesitter.start)
   end
 })
