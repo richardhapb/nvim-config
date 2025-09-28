@@ -112,13 +112,15 @@ function M.fzf_run(opts)
   -- Add preview if provided
   if opts.preview then
     local preview_cmd = type(opts.preview) == "function" and opts.preview() or opts.preview
-    table.insert(cmd_parts, "--multi")
     table.insert(cmd_parts, "--preview=" .. escape_shell(preview_cmd))
     table.insert(cmd_parts, "--preview-window=right:60%:wrap")
+  end
+
+  table.insert(cmd_parts, "--print-query")
+  if opts.fzf_opts:find(".*--multi.*") then
     table.insert(cmd_parts,
       "--bind=ctrl-y:select-all+accept"
     )
-    table.insert(cmd_parts, "--print-query")
   end
 
   local fzf_command = table.concat(cmd_parts, " ")
@@ -150,8 +152,6 @@ function M.fzf_run(opts)
 
   vim.bo[buf].bufhidden = "wipe"
   vim.wo[win].winblend = M.config.window.winblend
-
-  local keybinding_pressed = ""
 
   local function on_exit(_, code, _)
     pcall(vim.api.nvim_win_close, win, true)
@@ -204,21 +204,11 @@ function M.fzf_run(opts)
     end
 
     if #selections > 0 and opts.sink then
-      if keybinding_pressed ~= "" then
-        for _, keymap in ipairs(opts.keymaps) do
-          if keybinding_pressed == keymap[2] then
-            pcall(keymap[3], selections, { prompt = query, title = opts.title, buf = buf })
-          end
-        end
-        vim.notify("Command finished", vim.log.levels.INFO)
+      local success, err = pcall(opts.sink, selections, { prompt = query, title = opts.title, buf = buf })
+      if not success then
+        vim.notify("Error opening selection: " .. tostring(err), vim.log.levels.ERROR)
         return
       end
-      vim.schedule(function()
-        local success, err = pcall(opts.sink, selections)
-        if not success then
-          vim.notify("Error opening selection: " .. tostring(err), vim.log.levels.ERROR)
-        end
-      end)
     end
   end
 
@@ -237,7 +227,8 @@ function M.fzf_run(opts)
   for _, keymap in ipairs(opts.keymaps) do
     local map_desc = keymap[4] or ""
     vim.keymap.set(keymap[1], keymap[2], function()
-        keybinding_pressed = keymap[2]
+        opts.sink = keymap[3]
+        vim.api.nvim_chan_send(chan, "\x19")
       end,
       vim.tbl_extend("force", kopts, { desc = map_desc }))
   end
@@ -275,6 +266,7 @@ function M.files(opts)
     source = get_file_cmd(),
     preview = get_preview_cmd(),
     title = "Files",
+    fzf_opts = "--ansi --multi",
     sink = function(selections)
       for i, file in ipairs(selections) do
         local path = vim.fn.fnameescape(file)
@@ -730,6 +722,7 @@ function M.git_files(opts)
         return "head -500 {}"
       end
     end,
+    fzf_opts = "--ansi --multi",
     title = "Git Files",
     sink = function(selections)
       for i, file in ipairs(selections) do
@@ -795,12 +788,15 @@ function M.docker_containers(opts)
 }' | sed '1d' ]],
     preview = "container=$(echo {} | awk '{print $1}'); docker logs -n 100 $container",
     title = "Docker containers",
+    fzf_opts = "--ansi --multi",
     keymaps = {
       { "t", "<C-r>", function(selections, args)
         for _, container in ipairs(selections) do
           if container:find("^" .. args.prompt .. ".*$") then
             container = container:match("^(%S+)")
-            vim.fn.system("docker start " .. container)
+            vim.system({ "docker", "start", container }, {}, function()
+              vim.schedule(function() vim.notify(container .. " started", vim.log.levels.INFO) end)
+            end)
           end
         end
       end, "Run containers with prefix" },
@@ -808,7 +804,9 @@ function M.docker_containers(opts)
         for _, container in ipairs(selections) do
           if container:find("^" .. args.prompt .. ".*$") then
             container = container:match("^(%S+)")
-            vim.fn.system("docker stop " .. container)
+            vim.system({ "docker", "stop", container }, {}, function()
+              vim.schedule(function() vim.notify(container .. " stopped", vim.log.levels.INFO) end)
+            end)
           end
         end
       end, "Stop containers with prefix" }
