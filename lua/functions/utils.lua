@@ -269,7 +269,7 @@ local function buffer_log(lines, opts)
   if opts.keymaps then
     for _, keymap in ipairs(opts.keymaps) do
       local desc_map = keymap[4] or ""
-      vim.keymap.set(keymap[1], keymap[2], keymap[3], vim.tbl_extend("force", kopts, { desc = desc_map }))
+      vim.keymap.set(keymap[1], keymap[2], function() keymap[3](buffer) end, vim.tbl_extend("force", kopts, { desc = desc_map }))
     end
   end
 

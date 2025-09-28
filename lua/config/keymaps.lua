@@ -185,7 +185,10 @@ keymap('n', '<leader>gc', function()
         callback(buf)
       end
     end,
-    keymaps = { { "n", "<C-c>", function() callback = nil end, "Close without commit" } },
+    keymaps = { { "n", "<C-c>", function(buf)
+      callback = nil
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end, "Close without commit" } },
     title = "Git commit"
   }
   if vim.fn.executable("copilot-chat") == 1 then
