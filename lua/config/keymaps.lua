@@ -172,8 +172,8 @@ keymap('n', '<leader>gc', function()
         else
           vim.notify("Commit failed:\n" .. (obj.stderr or ""), vim.log.levels.ERROR)
         end
+        vim.fn.delete(tmpfile)
       end)
-      vim.fn.delete(tmpfile)
     end)
   end
 
@@ -204,7 +204,7 @@ keymap('n', '<leader>gc', function()
     end)
   end
 end, { silent = true, desc = 'Git commit' })
-keymap('n', '<leader>gC', ':G commit --amend<CR>', { silent = true, desc = 'Git commit --amend' })
+keymap('n', '<leader>gC', ':!git commit --amend --no-edit<CR>', { silent = true, desc = 'Git commit --amend --no-edit' })
 keymap('n', '<leader>gP', ':!git push<CR>', { silent = true, desc = 'Git push' })
 keymap('n', '<leader>gp', ':!git pull<CR>', { silent = true, desc = 'Git pull' })
 keymap('n', '<leader>gS', ':!git stash<CR>', { silent = true, desc = 'Git stash' })
