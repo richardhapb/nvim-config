@@ -45,15 +45,12 @@ M.set_keymaps = function(bufnr)
 
   keymap('n', 'K', function() vim.lsp.buf.hover { border = _border } end, opts("Show hover"))
   keymap('n', '<C-e>', function() vim.lsp.buf.signature_help { border = _border } end, opts("Show signature help"))
-  keymap('n', 'gs', require 'telescope.builtin'.lsp_document_symbols, opts("Show document symbols"))
-  keymap('n', 'gS', require 'telescope.builtin'.lsp_workspace_symbols, opts("Show workspace symbols"))
   keymap('n', 'g=', function() vim.lsp.buf.format { async = true } end, opts("Format document"))
   keymap('n', '<leader>e', vim.diagnostic.open_float, { desc = "View diagnostic in a float windows" })
   keymap('n', '<leader>]', function() vim.diagnostic.jump({ count = 1, float = true }) end,
     { desc = "Go to next diagnostic" })
   keymap('n', '<leader>[', function() vim.diagnostic.jump({ count = -1, float = true }) end,
     { desc = "Go to previous diagnostic" })
-  keymap('n', 'g\\', require 'telescope.builtin'.diagnostics, opts("Show diagnostics"))
 end
 
 
@@ -214,7 +211,7 @@ M.on_attach = function(client, bufnr)
   if client == nil then
     return
   end
-  if client.server_capabilities.completionProvider then
+  if client.server_capabilities and client.server_capabilities.completionProvider then
     vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
   end
 
@@ -230,31 +227,8 @@ M.on_attach = function(client, bufnr)
     virtual_text = M.virtual_text
   })
 
-  require 'lspconfig.ui.windows'.default_options = {
-    border = M.border,
-    focusable = true,
-  }
-
   if client.name and client.name:find("^ltex") then
     M.setup_ltex(bufnr)
-  end
-
-  local e, lsp_signature = pcall(require, 'lsp_signature')
-
-  if e then
-    lsp_signature.on_attach({
-      bind = true,
-      handler_opts = {
-        border = _border,
-      },
-      hint_enable = false,
-      hint_prefix = " ",
-      hint_scheme = "String",
-      hi_parameter = "LspSignatureActiveParameter",
-      max_height = 12,
-      zindex = 200,
-      transpancy = 90,
-    })
   end
 
   M.set_keymaps(bufnr)

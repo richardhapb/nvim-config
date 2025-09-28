@@ -1,10 +1,26 @@
-local function custom_hl()
+local M = {}
+
+M.custom_hl = function()
+
+  vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+      vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
+    end
+  })
+
+
   vim.api.nvim_create_autocmd('ColorScheme', {
     group = vim.api.nvim_create_augroup("Colorscheme", { clear = true }),
     callback = function()
       local hl = vim.api.nvim_set_hl
 
       local visual = { bg = "#555555" }
+
+      -- Transparency
+      hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
+      hl(0, 'NormalFloat', { bg = "NONE" })
+      hl(0, 'FloatBorder', { bg = 'NONE' })
+      hl(0, 'Pmenu', { bg = 'NONE' })
 
       -- Theme customization
       hl(0, 'CursorLine', { bg = "#004040" })
@@ -18,7 +34,6 @@ local function custom_hl()
       hl(0, 'Comment', { fg = "#999999" })
       hl(0, 'LspReferenceTarget', { bg = "#111111" })
       hl(0, 'LspReferenceText', { bg = "#111111" })
-      hl(0, 'NormalFloat', { bg = "#000000" })
       hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
 
       hl(0, "NonText", { fg = "#999999" })
@@ -31,7 +46,6 @@ local function custom_hl()
       hl(0, 'DiffDelete', { bg = "#400000" })
 
       -- Transparent
-      hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
       hl(0, 'SignColumn', { bg = "NONE" })
       hl(0, 'VertSplit', { bg = "NONE" })
       hl(0, 'FoldColumn', { bg = "NONE" })
@@ -52,47 +66,9 @@ local function custom_hl()
       hl(0, 'DiagnosticVirtualTextInfo', { fg = "#AAAAAA", bg = nil })
     end
   })
+
+  vim.cmd("colorscheme unokai")
 end
 
-return {
-  {
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {},
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require("tokyonight").setup({
-        transparent = true,
-        styles = {
-          sidebars = "transparent",
-          floats = "transparent"
-        }
-      })
-      custom_hl()
-      vim.cmd.colorscheme('tokyonight-moon')
-    end,
-  },
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    priority = 1000,
-    config = function()
-      require 'catppuccin'.setup({
-        flavour = 'macchiato',
-        transparent_background = true,
-        telescope = true
-      })
-    end,
-    -- vim.cmd.colorscheme('catppuccin')
-  },
-  {
-    "Shatur/neovim-ayu",
-    lazy = false,
-    priority = 1000,
-    opts = {},
-    config = function()
-      -- vim.cmd.colorscheme('ayu-dark')
-    end,
-  },
-}
+return M
+

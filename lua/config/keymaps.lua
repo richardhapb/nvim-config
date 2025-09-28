@@ -21,7 +21,7 @@ keymap('n', '<C-s>', '<cmd>source %<CR>', { noremap = true, desc = 'Source file'
 keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
 
 -- Edit
-keymap('n', '-', '<cmd>edit %:p:h<cr>', { silent = true })
+keymap('n', '<BS>', '<cmd>Explore<cr>', { silent = true })
 keymap('n', 'x', '"_x', { silent = true })
 keymap('n', 'db', '"_db', { silent = true })
 keymap('n', 'de', '"_de', { silent = true })

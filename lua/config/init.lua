@@ -68,11 +68,6 @@ vim.opt.eof = false
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
-  end
-})
 
 if vim.fn.has("mac") then
   require("config.macos")
@@ -82,14 +77,9 @@ if vim.fn.has("linux") then
   require("config.linux")
 end
 
-if vim.fn.has("win32") then
-  require("config.windows")
-end
-
 -- Load environment variables
 pcall(dofile, vim.fs.joinpath(vim.fn.stdpath("config"), ".env.lua"))
 
-require("config.lazy")
 require("config.autocommands")
 require("config.usercommands")
 
