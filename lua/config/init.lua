@@ -29,6 +29,7 @@ vim.opt.linebreak = true
 if vim.fn.has('nvim-0.11') == 1 then
   vim.opt.completeopt = { "menuone", "noselect", "popup", "noinsert", "fuzzy" }
   vim.o.shortmess = vim.o.shortmess .. "c"
+  vim.o.pumblend = 0 -- crisp
 end
 
 vim.opt.wrap = false

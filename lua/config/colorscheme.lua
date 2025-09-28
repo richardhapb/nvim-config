@@ -17,6 +17,7 @@ M.custom_hl = function()
 
       -- Transparency
       hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
+      hl(0, 'NormalNC', { bg = "NONE", fg = "#CCCCCC" })
       hl(0, 'NormalFloat', { bg = "NONE" })
       hl(0, 'FloatBorder', { bg = 'NONE' })
       hl(0, 'Pmenu', { bg = 'NONE' })
@@ -68,8 +69,6 @@ M.custom_hl = function()
       hl(0, 'DiagnosticVirtualTextInfo', { fg = "#AAAAAA", bg = nil })
     end
   })
-
-  vim.cmd("colorscheme slate")
 end
 
 return M

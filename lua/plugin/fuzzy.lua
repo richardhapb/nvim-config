@@ -7,7 +7,7 @@ M.config = {
     width_ratio = 0.9,
     height_ratio = 0.9,
     border = "rounded",
-    winblend = 10,
+    winblend = 0,
   },
   preview = {
     width_ratio = 0.6,
