@@ -73,6 +73,7 @@ function M.fzf_run(opts)
     preview = nil, -- preview command or function
     prompt = "❯ ",
     title = "FZF",
+    keymaps = {},
     fzf_opts = "--ansi",
     formatter = nil, -- function to format table items
   }, opts or {})
@@ -111,8 +112,13 @@ function M.fzf_run(opts)
   -- Add preview if provided
   if opts.preview then
     local preview_cmd = type(opts.preview) == "function" and opts.preview() or opts.preview
+    table.insert(cmd_parts, "--multi")
     table.insert(cmd_parts, "--preview=" .. escape_shell(preview_cmd))
     table.insert(cmd_parts, "--preview-window=right:60%:wrap")
+    table.insert(cmd_parts,
+      "--bind=ctrl-y:select-all+accept"
+    )
+    table.insert(cmd_parts, "--print-query")
   end
 
   local fzf_command = table.concat(cmd_parts, " ")
@@ -145,63 +151,81 @@ function M.fzf_run(opts)
   vim.bo[buf].bufhidden = "wipe"
   vim.wo[win].winblend = M.config.window.winblend
 
-  -- Use termopen with explicit shell
-  vim.fn.termopen({ "bash", "-c", full_cmd }, {
-    on_exit = function(_, code, _)
-      pcall(vim.api.nvim_win_close, win, true)
+  local keybinding_pressed = ""
 
-      -- Always cleanup input file
-      pcall(os.remove, tmp_input)
+  local function on_exit(_, code, _)
+    pcall(vim.api.nvim_win_close, win, true)
 
-      -- Check if user cancelled (ESC) vs actual error
-      if code == 130 then -- FZF cancelled with ESC
-        pcall(os.remove, tmp_output)
-        return
-      end
+    -- Always cleanup input file
+    pcall(os.remove, tmp_input)
 
-      -- Don't error on code 1 (no selection), that's normal
-      if code ~= 0 and code ~= 1 and code ~= 129 then
-        vim.notify("FZF failed with code: " .. code, vim.log.levels.ERROR)
-        pcall(os.remove, tmp_output)
-        return
-      end
-
-      -- Read selection
-      if vim.fn.filereadable(tmp_output) == 0 then
-        pcall(os.remove, tmp_output)
-        return -- No selection made
-      end
-
-      local f = io.open(tmp_output, "r")
-      if not f then
-        pcall(os.remove, tmp_output)
-        return
-      end
-      local data = f:read("*a") or ""
-      f:close()
+    -- Check if user cancelled (ESC) vs actual error
+    if code == 129 then -- FZF cancelled with ESC
       pcall(os.remove, tmp_output)
+      return
+    end
 
-      if data == "" then
-        return -- Silent exit for no selection
-      end
+    -- Don't error on code 1 (no selection), that's normal
+    if code ~= 0 and code ~= 1 then
+      vim.notify("FZF failed with code: " .. code, vim.log.levels.ERROR)
+      pcall(os.remove, tmp_output)
+      return
+    end
 
-      local selections = {}
-      for line in data:gmatch("[^\n]+") do
-        line = trim(line)
-        if line ~= "" then
-          table.insert(selections, line)
-        end
-      end
+    -- Read selection
+    if vim.fn.filereadable(tmp_output) == 0 then
+      pcall(os.remove, tmp_output)
+      return -- No selection made
+    end
 
-      if #selections > 0 and opts.sink then
-        vim.schedule(function()
-          local success, err = pcall(opts.sink, selections)
-          if not success then
-            vim.notify("Error opening selection: " .. tostring(err), vim.log.levels.ERROR)
+    -- Read output: first line = query (because of --print-query), rest = selections
+    local f = io.open(tmp_output, "r")
+    if not f then
+      pcall(os.remove, tmp_output)
+      return
+    end
+    local data = f:read("*a") or ""
+    f:close()
+    pcall(os.remove, tmp_output)
+
+    if data == "" then return end
+
+    local lines = {}
+    for line in data:gmatch("[^\n]+") do
+      line = trim(line)
+      if line ~= "" then table.insert(lines, line) end
+    end
+    if #lines == 0 then return end
+
+    local query = lines[1]
+    local selections = {}
+    for i = 2, #lines do
+      table.insert(selections, lines[i])
+    end
+
+    if #selections > 0 and opts.sink then
+      if keybinding_pressed ~= "" then
+        for _, keymap in ipairs(opts.keymaps) do
+          if keybinding_pressed == keymap[2] then
+            pcall(keymap[3], selections, { prompt = query, title = opts.title, buf = buf })
           end
-        end)
+        end
+        vim.notify("Command finished", vim.log.levels.INFO)
+        return
       end
-    end,
+      vim.schedule(function()
+        local success, err = pcall(opts.sink, selections)
+        if not success then
+          vim.notify("Error opening selection: " .. tostring(err), vim.log.levels.ERROR)
+        end
+      end)
+    end
+  end
+
+
+  local chan = vim.fn.jobstart({ "bash", "-c", full_cmd }, {
+    term = true,
+    on_exit = on_exit,
   })
 
   -- Key mappings
@@ -209,6 +233,14 @@ function M.fzf_run(opts)
   vim.keymap.set("t", "<ESC>", "<C-\\><C-n>:q<CR>", kopts)
   vim.keymap.set("n", "<ESC>", ":q<CR>", kopts)
   vim.keymap.set("n", "q", ":q<CR>", kopts)
+
+  for _, keymap in ipairs(opts.keymaps) do
+    local map_desc = keymap[4] or ""
+    vim.keymap.set(keymap[1], keymap[2], function()
+        keybinding_pressed = keymap[2]
+      end,
+      vim.tbl_extend("force", kopts, { desc = map_desc }))
+  end
 
   vim.cmd("startinsert")
 end
@@ -243,7 +275,6 @@ function M.files(opts)
     source = get_file_cmd(),
     preview = get_preview_cmd(),
     title = "Files",
-    fzf_opts = "--ansi --multi",
     sink = function(selections)
       for i, file in ipairs(selections) do
         local path = vim.fn.fnameescape(file)
@@ -444,16 +475,17 @@ function M.live_grep(opts)
   vim.bo[buf].bufhidden = "wipe"
   vim.wo[win].winblend = M.config.window.winblend
 
-  vim.fn.termopen({ "bash", "-c", full_cmd }, {
+  vim.fn.jobstart({ "bash", "-c", full_cmd }, {
+    term = true,
     on_exit = function(_, code, _)
       pcall(vim.api.nvim_win_close, win, true)
 
-      if code == 130 then -- ESC
+      if code == 129 then -- ESC
         pcall(os.remove, tmp_output)
         return
       end
 
-      if code ~= 0 and code ~= 1 and code ~= 129 then
+      if code ~= 0 and code ~= 1 then
         vim.notify("Live grep failed with code: " .. code, vim.log.levels.ERROR)
         pcall(os.remove, tmp_output)
         return
@@ -745,6 +777,51 @@ function M.registers(opts)
   }, opts))
 end
 
+function M.docker_containers(opts)
+  opts = opts or {}
+
+  if vim.fn.executable("docker") == 0 then
+    vim.notify("Docker is not installed", vim.log.levels.WARN)
+    return
+  end
+
+  M.fzf_run(vim.tbl_extend("force", {
+    source = [[ docker ps -a --format '{{.Names}}\t{{.State}}\t{{.Image}}' \
+| awk -F '\t' '{
+  name="\033[32m"$1"\033[0m"
+  status="\033[33m"$2"\033[0m"
+  image="\033[34m"$3"\033[0m"
+  printf "%-40s %-30s %-30s\n", name, status, image
+}' | sed '1d' ]],
+    preview = "container=$(echo {} | awk '{print $1}'); docker logs -n 100 $container",
+    title = "Docker containers",
+    keymaps = {
+      { "t", "<C-r>", function(selections, args)
+        for _, container in ipairs(selections) do
+          if container:find("^" .. args.prompt .. ".*$") then
+            container = container:match("^(%S+)")
+            vim.fn.system("docker start " .. container)
+          end
+        end
+      end, "Run containers with prefix" },
+      { "t", "<C-c>", function(selections, args)
+        for _, container in ipairs(selections) do
+          if container:find("^" .. args.prompt .. ".*$") then
+            container = container:match("^(%S+)")
+            vim.fn.system("docker stop " .. container)
+          end
+        end
+      end, "Stop containers with prefix" }
+    },
+    sink = function(selections)
+      for _, container in ipairs(selections) do
+        container = container:match("^(%S+)")
+        vim.fn.system("docker start " .. container)
+      end
+    end,
+  }, opts))
+end
+
 -- Setup function with all keymaps
 function M.setup(user_config)
   -- Merge user config
@@ -757,6 +834,7 @@ function M.setup(user_config)
   vim.keymap.set("n", "<leader>bb", M.buffers, { desc = "Find Buffers" })
   vim.keymap.set("n", "<leader>fl", M.grep, { desc = "Grep" })
   vim.keymap.set("n", "<leader>fg", M.live_grep, { desc = "Live Grep" })
+  vim.keymap.set("n", "<leader>fd", M.docker_containers, { desc = "Docker containers" })
 
   -- Additional mappings
   vim.keymap.set("n", "<leader>fh", M.help_tags, { desc = "Help Tags" })
