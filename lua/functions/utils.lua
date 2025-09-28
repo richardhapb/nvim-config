@@ -136,7 +136,7 @@ local function git_curr_line_diff_split(branch_name, main_buffer)
 
     local branch_buffer = vim.api.nvim_create_buf(false, true)
     local branch_file_content = vim.system({ 'git', 'show', branch_name .. ':' .. current_line_text }, { text = true })
-    :wait()
+        :wait()
 
     if branch_file_content.stderr ~= '' then
       vim.notify('Error: ' .. branch_file_content.stderr, vim.log.levels.ERROR, { title = 'Git Diff' })
@@ -178,124 +178,134 @@ local function git_restore_curr_line(branch_name)
     '--worktree',
     '--',
     vim.fs.joinpath(git_cwd, current_line_text) })
-    :wait()
+      :wait()
 
-    close_diff_buffers(main_buffer)
-    local success_message = 'Restored ' .. current_line_text .. ' from ' .. branch_name .. ' successfully!'
-    vim.notify(success_message, vim.log.levels.INFO, { title = 'Git Restore' })
+  close_diff_buffers(main_buffer)
+  local success_message = 'Restored ' .. current_line_text .. ' from ' .. branch_name .. ' successfully!'
+  vim.notify(success_message, vim.log.levels.INFO, { title = 'Git Restore' })
+end
+
+--- @class BufferLogOptions
+--- @field float? boolean: split type to open the buffer 'split'/'vsplit' (default: 'split')
+--- @field split_type? string: split type to open the buffer 'split'/'vsplit' (default: 'split')
+--- @field buf? integer: buffer number to write the lines
+--- @field on_exit? function(integer?): function to be executed at end
+--- @field keymaps? table: additional keymaps
+--- @field title? string: Title of the buffer
+
+--- @param lines table: list of strings to write in the buffer
+--- @param opts? BufferLogOptions
+--- @return integer?: buffer number
+local function buffer_log(lines, opts)
+  assert(type(lines) == 'table', 'lines must be a table')
+
+  opts = opts or {}
+
+  local split_type = "split"
+
+  if opts.split_type then
+    split_type = opts.split_type
   end
 
-  --- @class BufferLogOptions
-  --- @field float? boolean: split type to open the buffer 'split'/'vsplit' (default: 'split')
-  --- @field split_type? string: split type to open the buffer 'split'/'vsplit' (default: 'split')
-  --- @field buf? integer: buffer number to write the lines
-  --- @field on_exit? function(integer?): buffer number to write the lines
-
-    --- @param lines table: list of strings to write in the buffer
-    --- @param opts? BufferLogOptions
-    --- @return integer?: buffer number
-    local function buffer_log(lines, opts)
-      assert(type(lines) == 'table', 'lines must be a table')
-
-      opts = opts or {}
-
-      local split_type = "split"
-
-      if opts.split_type then
-        split_type = opts.split_type
+  local buffer
+  if opts.buf and vim.api.nvim_buf_is_valid(opts.buf) then
+    buffer = opts.buf
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_buf(win) == buffer then
+        vim.api.nvim_set_current_win(win)
+        goto exit
       end
-
-      local buffer
-      if opts.buf and vim.api.nvim_buf_is_valid(opts.buf) then
-        buffer = opts.buf
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-          if vim.api.nvim_win_get_buf(win) == buffer then
-            vim.api.nvim_set_current_win(win)
-            goto exit
-          end
-        end
-
-        vim.cmd(split_type)
-        vim.api.nvim_set_current_buf(buffer)
-
-        ::exit::
-      else
-        buffer = vim.api.nvim_create_buf(false, true)
-        local width = math.floor(vim.o.columns * 0.6)
-        local height = math.floor(vim.o.lines * 0.5)
-
-        local row = vim.o.lines / 2 - height / 2
-        local col = vim.o.columns / 2 - width / 2
-
-        if opts.float then
-          local win_config = {
-            relative = 'editor',
-            border = 'rounded',
-            focusable = true,
-            row = row,
-            col = col,
-            width = width,
-            height = height,
-            style = 'minimal',
-            title = "Executed code"
-          }
-
-          local win = vim.api.nvim_open_win(buffer, true, win_config)
-          vim.api.nvim_set_option_value("wrap", true, { win = 0 })
-          vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buffer })
-          vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buffer), 0 })
-        else
-          vim.cmd(split_type)
-          vim.api.nvim_win_set_cursor(0, { vim.api.nvim_buf_line_count(buffer), 0 })
-        end
-        vim.api.nvim_set_current_buf(buffer)
-      end
-
-      vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
-
-      local keys = { '<CR>', '<Esc>', 'q' }
-      for _, key in ipairs(keys) do
-        vim.keymap.set('n', key, function()
-          vim.api.nvim_buf_delete(buffer, { force = true })
-          if opts.on_exit then
-            opts.on_exit(buffer)
-          end
-        end, { noremap = true, buffer = buffer })
-      end
-
-      return buffer
     end
 
-    local function is_ssh()
-      return vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil
+    vim.cmd(split_type)
+    vim.api.nvim_set_current_buf(buffer)
+
+    ::exit::
+  else
+    buffer = vim.api.nvim_create_buf(false, true)
+    local width = math.floor(vim.o.columns * 0.6)
+    local height = math.floor(vim.o.lines * 0.5)
+
+    local row = vim.o.lines / 2 - height / 2
+    local col = vim.o.columns / 2 - width / 2
+
+    if opts.float then
+      local win_config = {
+        relative = 'editor',
+        border = 'rounded',
+        focusable = true,
+        row = row,
+        col = col,
+        width = width,
+        height = height,
+        style = 'minimal',
+        title = opts.title or "Executed code"
+      }
+
+      local win = vim.api.nvim_open_win(buffer, true, win_config)
+      vim.api.nvim_set_option_value("wrap", true, { win = 0 })
+      vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buffer })
+      vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buffer), 0 })
+    else
+      vim.cmd(split_type)
+      vim.api.nvim_win_set_cursor(0, { vim.api.nvim_buf_line_count(buffer), 0 })
     end
+    vim.api.nvim_set_current_buf(buffer)
+  end
 
-    local function is_raspberry_pi()
-      local ok, cpuinfo = pcall(vim.fn.readfile, "/proc/cpuinfo")
-      if not ok then
-        return false
+  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+
+  local keys = { '<CR>', '<Esc>', 'q' }
+  local kopts = { noremap = true, buffer = buffer }
+  for _, key in ipairs(keys) do
+    vim.keymap.set('n', key, function()
+      if opts.on_exit then
+        opts.on_exit(buffer)
       end
+      vim.api.nvim_buf_delete(buffer, { force = true })
+    end, kopts)
+  end
 
-      for _, line in ipairs(cpuinfo) do
-        if line:match("Raspberry Pi") then
-          return true
-        end
-      end
-
-      return false
+  if opts.keymaps then
+    for _, keymap in ipairs(opts.keymaps) do
+      local desc_map = keymap[4] or ""
+      vim.keymap.set(keymap[1], keymap[2], keymap[3], vim.tbl_extend("force", kopts, { desc = desc_map }))
     end
+  end
 
-    return {
-      get_root_cwd_dir = get_root_cwd_dir,
-      get_git_cwd = get_git_cwd,
-      get_text_range = get_text_range,
-      get_visual_selection = get_visual_selection,
-      diff_buffers = diff_buffers,
-      git_diff_name_only = git_diff_name_only,
-      git_curr_line_diff_split = git_curr_line_diff_split,
-      git_restore_curr_line = git_restore_curr_line,
-      buf_delete_line = buf_delete_line,
-      buffer_log = buffer_log,
-      is_raspberry_pi = is_raspberry_pi,
-      is_ssh = is_ssh,
-    }
+  return buffer
+end
+
+local function is_ssh()
+  return vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil
+end
+
+local function is_raspberry_pi()
+  local ok, cpuinfo = pcall(vim.fn.readfile, "/proc/cpuinfo")
+  if not ok then
+    return false
+  end
+
+  for _, line in ipairs(cpuinfo) do
+    if line:match("Raspberry Pi") then
+      return true
+    end
+  end
+
+  return false
+end
+
+return {
+  get_root_cwd_dir = get_root_cwd_dir,
+  get_git_cwd = get_git_cwd,
+  get_text_range = get_text_range,
+  get_visual_selection = get_visual_selection,
+  diff_buffers = diff_buffers,
+  git_diff_name_only = git_diff_name_only,
+  git_curr_line_diff_split = git_curr_line_diff_split,
+  git_restore_curr_line = git_restore_curr_line,
+  buf_delete_line = buf_delete_line,
+  buffer_log = buffer_log,
+  is_raspberry_pi = is_raspberry_pi,
+  is_ssh = is_ssh,
+}

@@ -152,12 +152,61 @@ end, { silent = true, desc = 'Create a new note for branch' })
 
 -- Git
 keymap('n', '<leader>gg', ':G<CR>', { silent = true, desc = 'Git status' })
-keymap('n', '<leader>gc', ':G commit<CR>', { silent = true, desc = 'Git commit' })
+keymap('n', '<leader>gc', function()
+  ---@type function | nil
+  local callback = function(buf)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local msg = vim.fn.join(lines, "\n"):gsub("^%s+", ""):gsub("%s+$", "")
+    if msg == "" then
+      vim.notify("Commit message is empty, canceled", vim.log.levels.WARN)
+      return
+    end
+
+    local tmpfile = vim.fn.tempname()
+    vim.fn.writefile(lines, tmpfile)
+
+    vim.system({ "git", "commit", "--file", tmpfile }, { text = true }, function(obj)
+      if obj.code == 0 then
+        vim.notify("Commit successful", vim.log.levels.INFO)
+      else
+        vim.notify("Commit failed:\n" .. (obj.stderr or ""), vim.log.levels.ERROR)
+      end
+      vim.fn.delete(tmpfile)
+    end)
+  end
+
+  ---@type BufferLogOptions
+  local opts = {
+    float = true,
+    on_exit = function(buf)
+      if callback then
+        callback(buf)
+      end
+    end,
+    keymaps = { { "n", "<C-c>", function() callback = nil end, "Close without commit" } },
+    title = "Git commit"
+  }
+  if vim.fn.executable("copilot-chat") == 1 then
+    local buf = utils.buffer_log({}, opts)
+    vim.system({ "copilot-chat", "commit" }, { text = true }, function(obj)
+      vim.schedule(function()
+        if obj.stdout ~= "" then
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(obj.stdout, "\n", { plain = true }))
+          return
+        end
+
+        if obj.stderr ~= "" then
+          vim.notify(obj.stderr, vim.log.levels.WARN)
+        end
+      end)
+    end)
+  end
+end, { silent = true, desc = 'Git commit' })
 keymap('n', '<leader>gC', ':G commit --amend<CR>', { silent = true, desc = 'Git commit --amend' })
 keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
 keymap('n', '<leader>gp', ':G pull<CR>', { silent = true, desc = 'Git pull' })
 keymap('n', '<leader>gS', ':G stash<CR>', { silent = true, desc = 'Git stash' })
-keymap('n', '<leader>gA', ':G add .<CR>', { silent = true, desc = 'Git add .' })
+keymap('n', '<leader>gA', ':!git add .<CR>', { silent = true, desc = 'Git add .' })
 keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
 keymap('n', '<leader>gf', ':G fetch --all<CR>', { silent = true, desc = 'Git fetch' })
 keymap('n', '<leader>gb', ':G blame<CR>', { silent = true, desc = 'Git blame' })
@@ -271,4 +320,3 @@ keymap('n', '<leader>cb', function()
   vim.api.nvim_win_set_height(0, 10)
   vim.cmd.startinsert()
 end, { silent = true, desc = 'Open terminal on bottom' })
-
