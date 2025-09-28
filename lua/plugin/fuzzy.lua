@@ -1,3 +1,4 @@
+local utils = require 'functions.utils'
 local M = {}
 
 -- Core configuration
@@ -61,23 +62,6 @@ local function table_to_fzf_items(tbl, formatter)
     end
   end
   return items
-end
-
--- Debug function to test FZF
-function M.test_fzf()
-  if vim.fn.executable("fzf") == 0 then
-    vim.notify("FZF is not installed or not in PATH", vim.log.levels.ERROR)
-    return
-  end
-
-  M.fzf_run({
-    source = "echo -e 'test1\\ntest2\\ntest3'",
-    title = "FZF Test",
-    preview = "echo 'Preview of: {}'",
-    sink = function(selections)
-      vim.notify("Selected: " .. vim.inspect(selections), vim.log.levels.INFO)
-    end,
-  })
 end
 
 -- Core FZF interface
@@ -349,14 +333,14 @@ function M.grep(search_term, opts)
           'end=$((line+' .. context .. ')); [ "$start" -gt $((end-' .. context .. ')) ]; start=1; ' ..
           bat_cmd .. ' --style=numbers --color=always --highlight-line="$line" --line-range="$start:$end" "$file"; ' ..
           'else ' .. bat_cmd .. ' --style=numbers --color=always "$file"; fi'
-    else
-      return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
-          'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
-          'start=$((line-50)); [ "$start" -lt 1 ] && start=1; ' ..
-          'end=$((line+50)); ' ..
-          'sed -n "${start},${end}p" "$file" | nl -ba -v"$start"; ' ..
-          'else cat -n "$file"; fi'
     end
+
+    return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
+        'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
+        'start=$((line-50)); [ "$start" -lt 1 ] && start=1; ' ..
+        'end=$((line+50)); ' ..
+        'sed -n "${start},${end}p" "$file" | nl -ba -v"$start"; ' ..
+        'else cat -n "$file"; fi'
   end
 
   M.fzf_run(vim.tbl_extend("force", {
@@ -409,20 +393,18 @@ function M.live_grep(opts)
           'end=$((line+' .. context .. ')); [ "$start" -gt $((end-' .. context .. ')) ]; start=1; ' ..
           bat_cmd .. ' --style=numbers --color=always --highlight-line="$line" --line-range="$start:$end" "$file"; ' ..
           'else echo "Cannot preview"; fi'
-    else
-      -- Fallback for when bat is not available
-      return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
-          'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
-          'start=$((line-50)); [ "$start" -lt 1 ] && start=1; end=$((line+50)); ' ..
-          'sed -n "${start},${end}p" "$file" | nl -ba -v"$start"; ' ..
-          'else cat "$file" 2>/dev/null || echo "Cannot preview"; fi'
     end
+    -- Fallback for when bat is not available
+    return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
+        'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
+        'start=$((line-50)); [ "$start" -lt 1 ] && start=1; end=$((line+50)); ' ..
+        'sed -n "${start},${end}p" "$file" | nl -ba -v"$start"; ' ..
+        'else cat "$file" 2>/dev/null || echo "Cannot preview"; fi'
   end
 
   local tmp_output = get_tmp_file("fzf_output")
   local rg_base = get_rg_cmd()
 
-  -- Build the live grep command properly
   local cmd_parts = { "fzf" }
   table.insert(cmd_parts, "--ansi")
   table.insert(cmd_parts, "--disabled")
@@ -673,13 +655,12 @@ function M.quickfix(opts)
             'end=$((line+' .. context .. ')); ' ..
             bat_cmd .. ' --style=numbers --color=always --highlight-line="$line" --line-range="$start:$end" "$file"; ' ..
             'else ' .. bat_cmd .. ' --style=numbers --color=always "$file"; fi'
-      else
-        return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
-            'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
-            'start=$((line-50)); [ "$start" -lt 1 ] && start=1; end=$((line+50)); ' ..
-            'sed -n "${start},${end}p" "$file" | nl -ba -v"$start"; ' ..
-            'else cat -n "$file"; fi'
       end
+      return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
+          'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
+          'start=$((line-50)); [ "$start" -lt 1 ] && start=1; end=$((line+50)); ' ..
+          'sed -n "${start},${end}p" "$file" | nl -ba -v"$start"; ' ..
+          'else cat -n "$file"; fi'
     end,
     sink = function(selections)
       for _, selection in ipairs(selections) do
@@ -791,12 +772,11 @@ function M.setup(user_config)
     M.grep(vim.fn.expand("<cword>"))
   end, { desc = "Grep word under cursor" })
 
-  vim.keymap.set("v", "<leader>fg", function()
-    local text = vim.fn.getline("'<", "'>")
-    M.grep(table.concat(text, "\n"))
+  vim.keymap.set("v", "<leader>fv", function()
+    local text = utils.get_visual_selection()
+    M.grep(text)
   end, { desc = "Grep visual selection" })
 
-  -- Create user command for easy access
   vim.api.nvim_create_user_command("FZF", function(opts)
     local func_name = opts.args
     if M[func_name] then
@@ -809,6 +789,7 @@ function M.setup(user_config)
     complete = function()
       return vim.tbl_keys(M)
     end,
+    desc = 'FZF funtions'
   })
 end
 
