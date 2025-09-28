@@ -346,7 +346,7 @@ function M.grep(search_term, opts)
       return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
           'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
           'start=$((line-' .. context .. ')); [ "$start" -lt 1 ] && start=1; ' ..
-          'end=$((line+' .. context .. ')); ' ..
+          'end=$((line+' .. context .. ')); [ "$start" -gt $((end-' .. context .. ')) ]; start=1; ' ..
           bat_cmd .. ' --style=numbers --color=always --highlight-line="$line" --line-range="$start:$end" "$file"; ' ..
           'else ' .. bat_cmd .. ' --style=numbers --color=always "$file"; fi'
     else
@@ -406,7 +406,7 @@ function M.live_grep(opts)
       return 'file=$(echo {} | cut -d: -f1); line=$(echo {} | cut -d: -f2); ' ..
           'if [ -f "$file" ] && [ -n "$line" ] && [ "$line" -gt 0 ] 2>/dev/null; then ' ..
           'start=$((line-' .. context .. ')); [ "$start" -lt 1 ] && start=1; ' ..
-          'end=$((line+' .. context .. ')); ' ..
+          'end=$((line+' .. context .. ')); [ "$start" -gt $((end-' .. context .. ')) ]; start=1; ' ..
           bat_cmd .. ' --style=numbers --color=always --highlight-line="$line" --line-range="$start:$end" "$file"; ' ..
           'else echo "Cannot preview"; fi'
     else
