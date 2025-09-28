@@ -1,7 +1,6 @@
 local M = {}
 
 M.custom_hl = function()
-
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
       vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
@@ -51,6 +50,9 @@ M.custom_hl = function()
       hl(0, 'FoldColumn', { bg = "NONE" })
       hl(0, 'Folded', { bg = "NONE" })
 
+      -- Mode
+      hl(0, 'ModeMsg', { bg = "NONE", fg = "#FFCC00" })
+
       -- Visual
       hl(0, 'Visual', visual)
       hl(0, 'VisualNOS', visual)
@@ -67,8 +69,7 @@ M.custom_hl = function()
     end
   })
 
-  vim.cmd("colorscheme unokai")
+  vim.cmd("colorscheme slate")
 end
 
 return M
-
