@@ -166,11 +166,13 @@ keymap('n', '<leader>gc', function()
     vim.fn.writefile(lines, tmpfile)
 
     vim.system({ "git", "commit", "--file", tmpfile }, { text = true }, function(obj)
-      if obj.code == 0 then
-        vim.notify("Commit successful", vim.log.levels.INFO)
-      else
-        vim.notify("Commit failed:\n" .. (obj.stderr or ""), vim.log.levels.ERROR)
-      end
+      vim.schedule(function()
+        if obj.code == 0 then
+          vim.notify("Commit successful", vim.log.levels.INFO)
+        else
+          vim.notify("Commit failed:\n" .. (obj.stderr or ""), vim.log.levels.ERROR)
+        end
+      end)
       vim.fn.delete(tmpfile)
     end)
   end
@@ -203,13 +205,13 @@ keymap('n', '<leader>gc', function()
   end
 end, { silent = true, desc = 'Git commit' })
 keymap('n', '<leader>gC', ':G commit --amend<CR>', { silent = true, desc = 'Git commit --amend' })
-keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
-keymap('n', '<leader>gp', ':G pull<CR>', { silent = true, desc = 'Git pull' })
-keymap('n', '<leader>gS', ':G stash<CR>', { silent = true, desc = 'Git stash' })
+keymap('n', '<leader>gP', ':!git push<CR>', { silent = true, desc = 'Git push' })
+keymap('n', '<leader>gp', ':!git pull<CR>', { silent = true, desc = 'Git pull' })
+keymap('n', '<leader>gS', ':!git stash<CR>', { silent = true, desc = 'Git stash' })
 keymap('n', '<leader>gA', ':!git add .<CR>', { silent = true, desc = 'Git add .' })
-keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
-keymap('n', '<leader>gf', ':G fetch --all<CR>', { silent = true, desc = 'Git fetch' })
-keymap('n', '<leader>gb', ':G blame<CR>', { silent = true, desc = 'Git blame' })
+keymap('n', '<leader>gdd', ':!git diff<CR>', { silent = true, desc = 'Git diff' })
+keymap('n', '<leader>gf', ':!git fetch --all<CR>', { silent = true, desc = 'Git fetch' })
+keymap('n', '<leader>gb', ':!git blame<CR>', { silent = true, desc = 'Git blame' })
 keymap('n', '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
 keymap('n', '<leader>gdv', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
 keymap('n', '<leader>gds', ':Gdiffsplit<CR>', { silent = true, desc = 'Git horizontal diff split' })
