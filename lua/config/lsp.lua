@@ -45,7 +45,7 @@ local lsp_elements = {
     }
   },
   {
-    name = 'lspdock_ruff',
+    name = 'ruff',
     config = {
       trace = "messages",
       init_options = {
@@ -72,7 +72,7 @@ local lsp_elements = {
     }
   },
   {
-    name = 'lspdock_pyright',
+    name = 'pyright',
     config = {
       settings = {
         python = {
@@ -158,8 +158,8 @@ if not utils.is_raspberry_pi() then
 end
 
 -------------------------------------------------------- Temporary ----------------------------------------------------------
--- Patch lspdock instead of pyright because I am handling pyright trought it
-vim.lsp.config("lspdock_pyright", {
+
+vim.lsp.config("pyright", {
   handlers = {
     -- Override the default rename handler to remove the `annotationId` from edits.
     --

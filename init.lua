@@ -1,4 +1,4 @@
-require("config")
+require("config.opts")
 require("config.mini_plugins")
 require("config.lsp")
 require("config.autocommands")

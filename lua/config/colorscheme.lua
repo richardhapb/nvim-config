@@ -23,7 +23,7 @@ local function custom_hl()
       hl(0, 'Pmenu', { bg = 'NONE' })
 
       -- Theme customization
-      hl(0, 'CursorLine', { bg = "#004040" })
+      hl(0, 'CursorLine', { bg = "#222222" })
       hl(0, 'LineNr', { fg = "#FFFFFF" })
       hl(0, 'LineNrAbove', { fg = "#CCCCCC" })
       hl(0, 'LineNrBelow', { fg = "#CCCCCC" })
