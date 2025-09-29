@@ -60,7 +60,7 @@ require 'nvim-treesitter.configs'.setup({
     "lua", "bash", "vim", "python", "javascript", "typescript",
     "markdown", "markdown_inline", "html", "css", "json",
     "sql", "gitignore", "dockerfile", "rust", "c", "go",
-    "mermaid", "astro", "yaml", "xml", "bash", "toml"
+    "mermaid", "astro", "yaml", "xml", "bash", "toml", "htmldjango"
   },
   highlight = {
     enable = true,
