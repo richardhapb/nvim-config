@@ -74,7 +74,7 @@ local function get_status_hl(status)
   end
 end
 
----Make a tiny helper to extract the last tab field (the hidden key)
+--- Helper to extract the last tab field (the hidden key)
 local function extract_key(line)
   return line and line:match("\t([^\t]+)$") or nil
 end
@@ -152,7 +152,7 @@ local function container_action(container_id, action)
   else
     -- Simple docker commands (start, stop, restart)
     docker_exec(args, function()
-      vim.notify(action:gsub('^%l', string.upper) .. 'ed container: ' .. container_id)
+      vim.notify(action:gsub("stop", "stopp"):gsub('^%l', string.upper) .. 'ed container: ' .. container_id)
     end)
   end
 end
@@ -201,7 +201,7 @@ M.docker_containers = function(opts)
     end
 
     -- Create fzf picker with custom actions
-    -- 4) fzf picker: tell fzf to show/search only the first 3 columns (hide the key)
+    -- nth tells fzf to show/search only the first 3 columns (hide the key)
     fzf.fzf_exec(containers_entries, {
       prompt = "Docker Containers> ",
       fzf_opts = {
@@ -209,7 +209,7 @@ M.docker_containers = function(opts)
         ["--delimiter"]      = "\t",
         ["--with-nth"]       = "1,2,3", -- display cols only
         ["--nth"]            = "1,2,3", -- search only these cols
-        ["--preview-window"] = "right:50%:wrap:follow",
+        ["--preview-window"] = "bottom:50%:wrap:follow",
         ["--header"]         =
         "Enter: logs/start | C-s: start | C-q: stop | C-d: delete | C-l: logs | C-t: shell | C-x: stats",
       },

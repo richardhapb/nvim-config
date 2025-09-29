@@ -14,6 +14,7 @@ vim.pack.add({
   { src = "https://github.com/ibhagwan/fzf-lua" },
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
+  { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 })
@@ -95,12 +96,55 @@ vim.keymap.set("n", "<leader>gf", fzf.git_files, { desc = "Git Files" })
 vim.keymap.set("n", "<leader>fr", fzf.registers, { desc = "Registers" })
 vim.keymap.set("n", "<leader>fb", fzf.git_branches, { desc = "Git branches" })
 vim.keymap.set("n", "<leader>fB", fzf.git_blame, { desc = "Git blame" })
+
+
+local tn = {
+  ["<c-h>"] = "<cmd><C-U>TmuxNavigateLeft<cr>",
+  ["<c-j>"] = "<cmd><C-U>TmuxNavigateDown<cr>",
+  ["<c-k>"] = "<cmd><C-U>TmuxNavigateUp<cr>",
+  ["<c-l>"] = "<cmd><C-U>TmuxNavigateRight<cr>",
+  ["<c-\\>"] = "<cmd><C-U>TmuxNavigatePrevious<cr>",
+}
+
+for km, direction in pairs(tn) do
+  vim.keymap.set("n", km, "<cmd><C-U>TmuxNavigate" .. direction,
+    { desc = "TmuxNav navigate " .. direction, silent = true })
+end
+
+--- My plugins
 --
--- -- My plugins
---
--- -- My plugins
-require 'pytest'.setup(require "plugin.pytest")
 require 'neospeller'.setup()
+require 'pytest'.setup((function()
+  local utils = require 'functions.utils'
+  return {
+    docker = {
+      enabled = function()
+        return vim.fn.getcwd():find("ddirt") ~= nil or vim.fn.getcwd():find("fundfridge") ~= nil or
+            vim.fn.getcwd():find("agora_hedge") ~= nil
+      end,
+      container = function()
+        if vim.fn.getcwd():find("ddirt") == nil and vim.fn.getcwd():find("agora_hedge") == nil and vim.fn.getcwd():find("fundfridge") == nil then return end
+
+        local parent_dir = utils.get_root_cwd_dir()
+        return parent_dir .. "-web-1"
+      end,
+      enable_docker_compose = true,
+      docker_compose_service = 'web',
+      local_path_prefix = function()
+        if vim.fn.getcwd():find("ddirt") or vim.fn.getcwd():find("agora_hedge") then
+          return "app"
+        elseif vim.fn.getcwd():find("fundfridge") then
+          return "fundfridge"
+        end
+
+        return ""
+      end
+    },
+    django = {
+      enabled = true
+    }
+  }
+end)())
 
 vim.keymap.set({ "x", "n" }, "<leader>S", ":CheckSpell<CR>", { desc = "Check spelling", silent = true })
 vim.keymap.set({ "x", "n" }, "<leader>D", ":CheckSpellText<CR>", { desc = "Check spelling", silent = true })

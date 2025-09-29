@@ -3,7 +3,7 @@ local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lspdock", "target"
 
 return {
   cmd = { path, "--exec", "pyright-langserver", '--stdio' },
-  cmd_env = { RUST_LOG = "none,lsdock=trace" },
+  cmd_env = { RUST_LOG = "none,lspdock=trace" },
   filetypes = { "python" },
   root_markers = {
     'pyproject.toml',
