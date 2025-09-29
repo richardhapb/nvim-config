@@ -219,8 +219,7 @@ M.on_attach = function(client, bufnr)
     vim.lsp.document_color.enable(true, bufnr, { style = 'background' })
   end
 
-
-  vim.diagnostic.config({
+  pcall(vim.diagnostic.config, {
     underline = true,
     signs = true,
     float = {

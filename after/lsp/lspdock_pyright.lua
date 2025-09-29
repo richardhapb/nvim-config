@@ -1,4 +1,3 @@
-local lsp_utils = require 'functions.lsp'
 local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lspdock", "target", "release", "lspdock")
 
 return {
@@ -14,13 +13,13 @@ return {
     'pyrightconfig.json',
     '.git',
   },
-  on_attach = lsp_utils.on_attach,
   settings = {
     python = {
       analysis = {
+        typeCheckingMode = "standard",
+        diagnosticMode = "workspace",
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
-        diagnosticMode = 'openFilesOnly',
       },
     },
   },

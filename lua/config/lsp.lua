@@ -37,7 +37,12 @@ local lsp_elements = {
       trace = "messages",
       init_options = {
         settings = {
-          configuration = vim.fn.getcwd() .. "/pyproject.toml",
+          configuration = (function()
+            if vim.fn.filereadable(vim.fn.getcwd() .. "/app/pyproject.toml") then
+              return vim.fn.getcwd() .. "/app/pyproject.toml"
+            end
+            return vim.fn.getcwd() .. "/pyproject.toml"
+          end)(),
           configurationPreference = 'filesystemFirst',
           exclude = { "node_modules", ".git", ".venv" },
           lineLength = 100,
@@ -64,7 +69,6 @@ local lsp_elements = {
             diagnosticMode = "workspace",
             typeCheckingMode = "standard",
           },
-          pythonPath = lsp_utils.search_python_path(),
         }
       }
     }

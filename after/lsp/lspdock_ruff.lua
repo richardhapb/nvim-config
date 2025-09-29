@@ -1,4 +1,3 @@
-local lsp_utils = require 'functions.lsp'
 local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lspdock", "target", "release", "lspdock")
 
 return {
@@ -16,7 +15,6 @@ return {
     'pyrightconfig.json',
     '.git',
   },
-  on_attach = lsp_utils.on_attach,
   single_file_support = true,
   settings = {
     trace = "messages",
