@@ -26,10 +26,12 @@ M.set_keymaps = function(bufnr)
   keymap('n', 'ga', vim.lsp.buf.code_action, opts("Code action"))
 
   keymap('n', 'gK', function()
+    ---@type boolean
     local vl_new_config = not vim.diagnostic.config().virtual_lines
-    local vt_new_config
-    if type(vim.diagnostic.config().virtual_text) == 'table' and vl_new_config then
-      vt_new_config = false
+    ---@type table | boolean
+    local vt_new_config = false
+    if not vim.diagnostic.config().virtual_text and not vl_new_config then
+      vt_new_config = _virtual_text
     end
     vim.diagnostic.config({ virtual_lines = vl_new_config, virtual_text = vt_new_config })
   end, { desc = "Toggle Virtual Lines" })
@@ -218,17 +220,6 @@ M.on_attach = function(client, bufnr)
   if client and client:supports_method('textDocument/documentColor') then
     vim.lsp.document_color.enable(true, bufnr, { style = 'background' })
   end
-
-  pcall(vim.diagnostic.config, {
-    underline = true,
-    signs = true,
-    float = {
-      border = _border,
-    },
-    virtual_lines = false,
-    update_in_insert = false,
-    virtual_text = M.virtual_text
-  })
 
   if client.name and client.name:find("^ltex") then
     M.setup_ltex(bufnr)

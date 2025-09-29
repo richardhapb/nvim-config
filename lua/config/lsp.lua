@@ -1,8 +1,21 @@
 local lsp_utils = require 'functions.lsp'
 local utils = require 'functions.utils'
 
+pcall(vim.diagnostic.config, {
+  underline = true,
+  signs = true,
+  float = {
+    border = lsp_utils.border,
+  },
+  virtual_lines = false,
+  update_in_insert = false,
+  virtual_text = lsp_utils.virtual_text
+})
+
+
 -- Capabilities, make client capabilities is ran in neovim core
 local capabilities = vim.lsp.protocol.make_client_capabilities()
+
 
 local lsp_elements = {
   {
