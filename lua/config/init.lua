@@ -70,19 +70,3 @@ vim.opt.eof = false
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
-
-if vim.fn.has("mac") then
-  require("config.macos")
-end
-
-if vim.fn.has("linux") then
-  require("config.linux")
-end
-
--- Load environment variables
-pcall(dofile, vim.fs.joinpath(vim.fn.stdpath("config"), ".env.lua"))
-
-require("config.autocommands")
-require("config.usercommands")
-
-require("config.keymaps")

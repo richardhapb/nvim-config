@@ -104,6 +104,3 @@ require 'neospeller'.setup()
 
 vim.keymap.set({ "x", "n" }, "<leader>S", ":CheckSpell<CR>", { desc = "Check spelling", silent = true })
 vim.keymap.set({ "x", "n" }, "<leader>D", ":CheckSpellText<CR>", { desc = "Check spelling", silent = true })
-
--- CS
-vim.cmd("colorscheme rose-pine")

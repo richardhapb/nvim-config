@@ -1,6 +1,6 @@
 local M = {}
 
-M.custom_hl = function()
+local function custom_hl()
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
       vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
@@ -69,6 +69,11 @@ M.custom_hl = function()
       hl(0, 'DiagnosticVirtualTextInfo', { fg = "#AAAAAA", bg = nil })
     end
   })
+end
+
+function M.enable_custom(cs)
+  custom_hl()
+  vim.cmd("colorscheme " .. cs)
 end
 
 return M
