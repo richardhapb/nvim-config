@@ -312,9 +312,6 @@ keymap('n', '<leader>rr', ':!cargo run<CR>', { silent = true, desc = 'Run cargo'
 keymap('n', '<leader>rc', ':!cargo check<CR>', { silent = true, desc = 'Check cargo' })
 keymap('n', '<leader>rt', ':!cargo test<CR>', { silent = true, desc = 'Test cargo' })
 
--- Misc
-keymap('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, desc = 'Undo tree' })
-
 -- Terminal
 keymap('t', '<esc><esc>', "<C-\\><C-n>", { silent = true, desc = 'Normal mode in terminal' })
 

@@ -157,19 +157,41 @@ local function container_action(container_id, action)
   end
 end
 
----Generate preview command for container details
----@param container_data table Container information
----@return string Command to generate preview
-local function preview_container(container_data)
-  if container_data.State == 'running' then
-    -- Show recent logs for running containers
-    local result = vim.system({ 'docker', 'logs', '--tail', '50', container_data.ID }):wait()
-    return result.stdout
+---Sort the containers by the provided key
+---@param raw_data string The data of the containers from docker output
+---@param order string[] A list for the state order
+---@return Iter<table> ordered containers by State
+local function sort_containers_by_state(raw_data, order)
+  ---@type table<integer>
+  local containers_by_order = {}
+  ---@type table<string, integer>
+
+  local state_to_int = {}
+
+  for i, state in ipairs(order) do
+    containers_by_order[i] = {}
+    state_to_int[state] = i
   end
 
-  -- Show container inspect for stopped containers
-  local result = vim.system({ 'sh', '-c', 'docker inspect ' .. container_data.ID .. ' | jq .' }):wait()
-  return result.stdout
+
+  for line in raw_data:gmatch("[^\r\n]+") do
+    if vim.trim(line) ~= "" then
+      local ok, container = pcall(vim.json.decode, line)
+      if ok and container then
+        local state = container.State or "unknown"
+        local target_state = containers_by_order[state_to_int[state]]
+        -- If it is not in the list, append to the end
+        if not target_state then
+          containers_by_order[#containers_by_order + 1] = {}
+          target_state = containers_by_order[#containers_by_order]
+        end
+
+        table.insert(target_state, container)
+      end
+    end
+  end
+
+  return vim.iter(containers_by_order):flatten()
 end
 
 ---List docker containers with fzf-lua interface
@@ -179,20 +201,14 @@ M.docker_containers = function(opts)
 
   -- Get all containers (running and stopped)
   docker_exec({ 'ps', '-a', '--format', 'json' }, function(output)
-    local containers = {}
+    local containers = sort_containers_by_state(output, { "running", "restarting", "created", "exited" })
 
-    -- Parse JSON output line by line
     -- Build the sources and a map by key
     local containers_entries, container_map = {}, {}
-    for line in output:gmatch("[^\r\n]+") do
-      if vim.trim(line) ~= "" then
-        local ok, container = pcall(vim.json.decode, line)
-        if ok and container then
-          local fzf_line, key = format_entry(container)
-          table.insert(containers_entries, fzf_line)
-          container_map[key] = container
-        end
-      end
+    for container in containers do
+      local fzf_line, key = format_entry(container)
+      table.insert(containers_entries, fzf_line)
+      container_map[key] = container
     end
 
     if #containers_entries == 0 then

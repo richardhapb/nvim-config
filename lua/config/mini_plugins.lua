@@ -15,6 +15,7 @@ vim.pack.add({
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
+  { src = "https://github.com/jiaoshijie/undotree" },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 })
@@ -110,6 +111,9 @@ for km, direction in pairs(tn) do
   vim.keymap.set("n", km, "<cmd><C-U>TmuxNavigate" .. direction,
     { desc = "TmuxNav navigate " .. direction, silent = true })
 end
+
+require "undotree".setup()
+vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
 
 --- My plugins
 --
