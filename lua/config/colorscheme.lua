@@ -7,7 +7,6 @@ local function custom_hl()
     end
   })
 
-
   vim.api.nvim_create_autocmd('ColorScheme', {
     group = vim.api.nvim_create_augroup("Colorscheme", { clear = true }),
     callback = function()
@@ -20,7 +19,9 @@ local function custom_hl()
       hl(0, 'NormalNC', { bg = "NONE", fg = "#CCCCCC" })
       hl(0, 'NormalFloat', { bg = "NONE" })
       hl(0, 'FloatBorder', { bg = 'NONE' })
-      hl(0, 'Pmenu', { bg = 'NONE' })
+
+      -- LSP autocompletion
+      hl(0, 'Pmenu', { bg = '#111111' })
 
       -- Theme customization
       hl(0, 'CursorLine', { bg = "#222222" })
