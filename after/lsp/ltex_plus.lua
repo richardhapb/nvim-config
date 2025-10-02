@@ -24,6 +24,7 @@ return {
   single_file_support = true,
   settings = {
     ltex = {
+      language = "en-US",
       enabled = {
         'bib',
         'context',

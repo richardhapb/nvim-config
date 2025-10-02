@@ -4,6 +4,9 @@ return {
   root_markers = { ".git" },
   single_file_support = true,
   settings = {
+    editor = {
+      tabSize = 2,
+    },
     redhat = { telemetry = { enabled = false } },
     yaml = { format = { enable = true } },
   },

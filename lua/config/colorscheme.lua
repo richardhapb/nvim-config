@@ -12,7 +12,7 @@ local function custom_hl()
     callback = function()
       local hl = vim.api.nvim_set_hl
 
-      local visual = { bg = "#555555" }
+      local visual = { bg = "#993333" }
 
       -- Transparency
       hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
