@@ -1,4 +1,4 @@
-local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lspdock", "target", "release", "lspdock")
+local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "lspdock", "target", "release", "lspdock")
 
 return {
   cmd = { path, "--exec", "ruff", 'server' },

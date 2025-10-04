@@ -21,11 +21,13 @@ local lsp_elements = {
   "lua_ls",
   'ruff',
   'pyright',
+  'mypy', -- Used for some python Open source projects
   'cssls',
   "html",
   "ltex_plus",
   "ts_ls",
   "yamlls",
+  "ty",
   -- "harper_ls",
   "bashls",
   "jsonls",

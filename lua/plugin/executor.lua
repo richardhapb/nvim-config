@@ -3,7 +3,13 @@ local utils              = require 'functions.utils'
 
 local M                  = {}
 
-local SUPPORTED_LANGUGES = { "python", "lua", "rust", "bash", "go" }
+local SUPPORTED_LANGUGES = { "python", "lua", "rust", "bash", "go", "sh" }
+
+local function normalize_ft(ft)
+  if ft == "sh" then return "bash" end
+  if ft == "zsh" then return "bash" end
+  return ft
+end
 
 ---Get the binary command depending of filetype
 ---@param ft string
@@ -12,16 +18,12 @@ local function get_binary_cmd(ft)
   local paths = {
     lua = { "lua" },
     python = { ft == "python" and lsputils.search_python_path(), "-u" }, -- The condition avoids looking for the path unnecessarily, -u flag forces the unbuffered output
-    bash = { "bash" },
+    bash = { "bash", "-s" },
     rust = { "cargo", "run" },
     go = { "go", "run", "." }
   }
 
-  if paths[ft] then
-    return paths[ft]
-  end
-
-  return nil
+  return paths[ft]
 end
 
 ---Check if a language use an interpreter, return True if it is
@@ -36,11 +38,7 @@ local function use_interpreter(ft)
     go = false,
   }
 
-  if uses[ft] then
-    return uses[ft]
-  end
-
-  return nil
+  return uses[ft]
 end
 
 ---Append lines to buffer
@@ -56,7 +54,7 @@ end
 ---@param code string[]
 ---@param args string?
 local function execute_code(code, args)
-  local ft = vim.api.nvim_get_option_value("filetype", { buf = 0 })
+  local ft = normalize_ft(vim.api.nvim_get_option_value("filetype", { buf = 0 }))
   local bin = get_binary_cmd(ft)
   if not bin then
     vim.notify("Language not supported: " .. ft, vim.log.levels.ERROR)
@@ -127,9 +125,9 @@ M.setup = function()
     pattern = SUPPORTED_LANGUGES,
     callback = function(args)
       vim.keymap.set({ 'x' }, '<leader>=', '<ESC><CMD>\'<,\'>ExecuteCode<CR>',
-        { noremap = true, buffer = args.buf, silent = true, desc = 'Execute SQL query' })
+        { noremap = true, buffer = args.buf, silent = true, desc = 'Execute selected code' })
       vim.keymap.set({ 'n' }, '<leader>=', '<CMD>ExecuteCode<CR>',
-        { noremap = true, buffer = args.buf, silent = true, desc = 'Execute SQL query' })
+        { noremap = true, buffer = args.buf, silent = true, desc = 'Execute whole code' })
     end
   })
 end

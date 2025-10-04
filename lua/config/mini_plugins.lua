@@ -1,6 +1,6 @@
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher', "executor", "copilot",
-  "aligner", "statusline" }
+  "aligner", "statusline", "jupyter" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
@@ -16,6 +16,8 @@ vim.pack.add({
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
+  { src = "https://github.com/goerz/jupytext.vim",                              name = "jupytext" },
+  { src = "https://github.com/Vigemus/iron.nvim",                               name = "iron" },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 })
@@ -24,6 +26,7 @@ vim.pack.add({
 
 local opts = {
   surround = {},
+  icons = {},
   ai = function()
     local spec_treesitter = require('mini.ai').gen_spec.treesitter
     return {
@@ -114,6 +117,31 @@ end
 
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
+
+
+--- JUPYTER NOTEBOOKS
+
+require 'iron'.setup {
+  config = {
+    -- Whether a repl should be discarded or not
+    scratch_repl = true,
+    -- Your repl definitions come here
+
+    repl_definition = {
+      python = require("iron.fts.python").ipython,
+      scala = require("iron.fts.scala").scala,
+    },
+    -- How the repl window will be displayed
+    -- See below for more information
+    repl_open_cmd = require "iron.view".split.vertical.botright(100)
+  },
+  -- If the highliht is on, you can change how it looks
+  -- For the available options, check nvim_set_hl
+  highlight = {
+    italic = true,
+  },
+  ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
+}
 
 --- My plugins
 --

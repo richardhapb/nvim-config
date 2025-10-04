@@ -1,9 +1,18 @@
-local path = vim.fs.joinpath(vim.fn.expand("$HOME"), "proj", "lspdock", "target", "release", "lspdock")
+local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "lspdock", "target", "release", "lspdock")
+local excluded_projects = { "pandas", "finitum" }
 
 return {
   cmd = { path, "--exec", "pyright-langserver", '--stdio' },
   cmd_env = { RUST_LOG = "none,lspdock=trace" },
-  filetypes = { "python" },
+  filetypes = (function()
+    local parent = vim.fn.getcwd()
+    for _, project in ipairs(excluded_projects) do
+      if parent:find(project .. "$") then
+        return { "" }
+      end
+    end
+    return { "python" }
+  end)(),
   root_markers = {
     'pyproject.toml',
     'setup.py',
