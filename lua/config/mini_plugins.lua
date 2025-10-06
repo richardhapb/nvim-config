@@ -82,13 +82,15 @@ vim.cmd "packadd fugitive"
 local fzf = require "fzf-lua"
 fzf.setup()
 
-local fzf_pickers = require 'plugin.pickers.docker'
+local fzf_docker = require 'plugin.pickers.docker'
+local fzf_git = require 'plugin.pickers.git'
 
 vim.keymap.set("n", "<leader><leader>", fzf.files, { desc = "Find Files" })
 vim.keymap.set("n", "<leader>bb", fzf.buffers, { desc = "Find Buffers" })
 vim.keymap.set("n", "<leader>fl", fzf.grep, { desc = "Grep" })
 vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live Grep" })
-vim.keymap.set("n", "<leader>fd", fzf_pickers.docker_containers, { desc = "Docker containers" })
+vim.keymap.set("n", "<leader>fd", fzf_docker.docker_containers, { desc = "Docker containers" })
+vim.keymap.set("n", "<leader>fw", fzf_git.worktrees, { desc = "Git Worktrees" })
 
 -- Additional mappings
 vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Help Tags" })

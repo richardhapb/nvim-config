@@ -209,7 +209,7 @@ keymap('n', '<leader>gc', function()
 end, { silent = true, desc = 'Git commit' })
 keymap('n', '<leader>gC', ':G commit --amend --no-edit<CR>', { silent = true, desc = 'Git commit --amend --no-edit' })
 keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
-keymap('n', '<leader>gp', ':G pull<CR>', { silent = true, desc = 'Git pull --rebase' })
+keymap('n', '<leader>gp', ':G pull --rebase<CR>', { silent = true, desc = 'Git pull --rebase' })
 keymap('n', '<leader>gS', ':G stash<CR>', { silent = true, desc = 'Git stash' })
 keymap('n', '<leader>gA', ':G add .<CR>', { silent = true, desc = 'Git add .' })
 keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
@@ -260,7 +260,7 @@ keymap('n', '<leader>g+', function()
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
   end
 
-  require 'git-worktree'.create_worktree(worktree_name, branch_name)
+  require 'plugin.pickers.git'.worktree_action(worktree_name, "add",branch_name)
 
   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 end, { silent = true, desc = 'Git add a branch and switch' })
