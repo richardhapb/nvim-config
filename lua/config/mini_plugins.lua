@@ -1,11 +1,3 @@
--- Mini plugins for specific tasks
-local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher', "executor", "copilot",
-  "aligner", "statusline", "jupyter" }
-
-for _, plugin in ipairs(plugins) do
-  require('plugin.' .. plugin).setup()
-end
-
 vim.pack.add({
   { src = "https://github.com/nvim-mini/mini.nvim",                             name = "mini" },
   { src = "https://github.com/rose-pine/neovim" },
@@ -18,9 +10,26 @@ vim.pack.add({
   { src = "https://github.com/jiaoshijie/undotree" },
   { src = "https://github.com/goerz/jupytext.vim",                              name = "jupytext" },
   { src = "https://github.com/Vigemus/iron.nvim",                               name = "iron" },
+
+  -- DAP plugins
+  { src = "https://github.com/mfussenegger/nvim-dap" },
+  { src = "https://github.com/mfussenegger/nvim-dap-python" },
+  { src = "https://github.com/rcarriga/nvim-dap-ui" },
+  { src = "https://github.com/nvim-neotest/nvim-nio" },
+  { src = "https://github.com/jbyuki/one-small-step-for-vimkind" },
+  { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
+
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 })
+
+-- Mini plugins for specific tasks
+local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher', "executor", "copilot",
+  "aligner", "statusline", "jupyter", "dap" }
+
+for _, plugin in ipairs(plugins) do
+  require('plugin.' .. plugin).setup()
+end
 
 -- Some basics plugins
 
