@@ -19,6 +19,45 @@ local function is_in_tmux()
   return vim.env.TMUX ~= nil
 end
 
+--- Open a new buffer with the command's stdout/stderr (synchronous).
+--- WARNING: blocks Neovim until the command finishes.
+---@param cmd string[] Command to run
+local function open_buffer(cmd)
+  -- capture text output
+  local result = vim.system(cmd, { text = true }):wait()
+
+  local out = result.stdout or ""
+  local err = result.stderr or ""
+  local text = out
+  if err ~= "" then
+    text = (text ~= "" and (text .. "\n") or "") .. err
+  end
+  if text == "" then
+    text = string.format("<no output> (exit code %s)", tostring(result.code))
+  end
+
+  local lines = vim.split(text, "\n", { plain = true, trimempty = true })
+
+  vim.cmd("new")
+  local buf = vim.api.nvim_get_current_buf()
+
+  -- make it a scratch log buffer
+  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+  vim.api.nvim_set_option_value("swapfile", false, { buf = buf })
+  vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
+  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+  vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+  vim.api.nvim_set_option_value("filetype", "log", { buf = buf })
+
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+  local n = vim.api.nvim_buf_line_count(buf)
+  if n > 0 then
+    vim.api.nvim_win_set_cursor(0, { n, 0 }) -- last line, column 0
+  end
+end
+
+
 ---Open a terminal window or tmux pane depending on the settings
 ---when tmux is disabled or not available, use Vim term instead
 ---@param cmd table Command to run
@@ -26,7 +65,7 @@ end
 local function open_terminal(cmd, use_tmux)
   if use_tmux and is_in_tmux() then
     -- Create a new tmux window with the command
-    vim.system({ 'tmux', 'new-window', table.concat(cmd, ' ') })
+    vim.system({ 'tmux', 'new-window', unpack(cmd) })
   else
     -- Fallback to Neovim terminal
     local term_cmd = M.settings.terminal_cmd
@@ -132,6 +171,7 @@ local function container_action(container_id, action)
     restart = { 'restart', container_id },
     remove = { 'rm', '-f', container_id },
     logs = { 'logs', '--tail', '100', '-f', container_id },
+    logs_buf = { 'logs', '--tail', '1000', container_id },
     exec = { 'exec', '-it', container_id, 'bash' },
     stats = { 'stats', container_id }
   }
@@ -149,6 +189,8 @@ local function container_action(container_id, action)
     docker_exec(args, function()
       vim.notify('Container removed: ' .. container_id)
     end)
+  elseif action == 'logs_buf' then
+    open_buffer({ 'docker', unpack(args) })
   else
     -- Simple docker commands (start, stop, restart)
     docker_exec(args, function()
@@ -227,7 +269,7 @@ M.docker_containers = function(opts)
         ["--nth"]            = "1,2,3", -- search only these cols
         ["--preview-window"] = "bottom:50%:wrap:follow",
         ["--header"]         =
-        "Enter: logs/start | C-s: start | C-q: stop | C-d: delete | C-l: logs | C-t: shell | C-x: stats",
+        "Enter: logs/start | C-s: start | C-q: stop | C-d: delete | C-l: logs | C-b: buf log | C-t: shell | C-x: stats",
       },
       preview = [[docker logs -n 50 -f {4}]],
       actions = {
@@ -270,6 +312,10 @@ M.docker_containers = function(opts)
         ["ctrl-l"] = function(selected)
           local c = container_map[extract_key(selected[1]) or ""]
           if c then container_action(c.ID, "logs") end
+        end,
+        ["ctrl-b"] = function(selected)
+          local c = container_map[extract_key(selected[1]) or ""]
+          if c then container_action(c.ID, "logs_buf") end
         end,
         ["ctrl-t"] = function(selected)
           local c = container_map[extract_key(selected[1]) or ""]
