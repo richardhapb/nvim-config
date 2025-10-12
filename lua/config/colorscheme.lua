@@ -21,7 +21,9 @@ local function custom_hl()
       hl(0, 'FloatBorder', { bg = 'NONE' })
 
       -- LSP autocompletion
-      hl(0, 'Pmenu', { bg = '#111111' })
+      vim.o.pumborder = 'rounded'
+      hl(0, 'Pmenu', { bg = 'NONE' })
+      hl(0, 'PmenuBorder', { bg = 'NONE', fg = "#996666" })
 
       -- Theme customization
       hl(0, 'CursorLine', { bg = "#222222" })

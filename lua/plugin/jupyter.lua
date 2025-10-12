@@ -69,6 +69,7 @@ local function setup()
     end
     if not end_line then
       end_line = line_count
+      current_col = -1
     end
     return current_row, current_col, start_line, end_line
   end

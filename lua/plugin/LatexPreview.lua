@@ -7,6 +7,8 @@ M.setup = function()
     vim.notify('Building ' .. vim.fn.expand('%:t') .. '...')
     local build_dir = vim.fn.expand('%:p:h') .. '/build'
     local file_path = vim.fn.expand('%:p')
+    local basename = vim.fn.fnamemodify(file_path, ':t:r')
+    local source_dir = vim.fn.expand('%:p:h')
 
     -- Verify if the build directory exists, if not, create it
     if vim.fn.isdirectory(build_dir) == 0 then
@@ -14,15 +16,14 @@ M.setup = function()
     end
 
     -- Verify if some .bib file exists in the same directory
-    local biblio = vim.fn.glob(vim.fn.expand('%:p:h') .. '/*.bib')
+    local biblio = vim.fn.glob(source_dir .. '/*.bib')
 
     local function run_command(cmd)
-      local current_dir = vim.fn.expand('%:p:h')
-      -- Use vim.fn.system to run commands in shell context
-      return vim.fn.system('cd ' .. vim.fn.shellescape(current_dir) .. ' && ' .. cmd)
+      return vim.fn.system('cd ' .. vim.fn.shellescape(source_dir) .. ' && ' .. cmd)
     end
 
-    local build_command = string.format('xelatex -output-directory=%s -interaction=nonstopmode -halt-on-error %s',
+    local build_command = string.format(
+      'xelatex -output-directory=%s -interaction=nonstopmode -halt-on-error -shell-escape %s',
       vim.fn.shellescape(build_dir),
       vim.fn.shellescape(file_path)
     )
@@ -30,11 +31,17 @@ M.setup = function()
     -- Initial latex compilation
     local results = run_command(build_command)
 
-    -- If a .bib file exists, run biber and rebuild
+    -- If a .bib file exists, run bibtex and rebuild
     if vim.fn.filereadable(biblio) == 1 then
-      -- Run biber
-      local basename = vim.fn.fnamemodify(file_path, ':t:r')
-      results = results .. "\n" .. run_command('bibtex ' .. build_dir .. '/' .. basename)
+      -- Set BIBINPUTS environment variable to include both directories
+      local bibtex_cmd = string.format(
+        'cd %s && BIBINPUTS=%s:%s: bibtex %s',
+        vim.fn.shellescape(build_dir),
+        vim.fn.shellescape(source_dir),
+        vim.fn.shellescape(build_dir),
+        vim.fn.shellescape(basename)
+      )
+      results = results .. "\n" .. vim.fn.system(bibtex_cmd)
 
       -- Run latex again twice after bibliography processing
       for _ = 1, 2 do
@@ -51,7 +58,7 @@ M.setup = function()
     vim.api.nvim_create_autocmd('BufUnload', {
       buffer = buffer,
       callback = function()
-        vim.system({ 'open', build_dir .. '/' .. vim.fn.expand('%:t:r') .. '.pdf' })
+        vim.system({ 'open', build_dir .. '/' .. basename .. '.pdf' })
       end
     })
 
@@ -92,13 +99,18 @@ M.setup = function()
       return
     end
 
-    if vim.fn.executable('tmux') == 0 or vim.fn.system('tmux has-session -t texpresso') == 0 then
-      vim.notify('Nothing to shutdown')
+    if vim.fn.executable('tmux') == 0 then
+      vim.notify('tmux not available')
       return
     end
 
+    local _ = vim.fn.system('tmux has-session -t texpresso 2>/dev/null')
+    if vim.v.shell_error ~= 0 then
+      vim.notify('Nothing to shutdown')
+      return
+    end
     vim.fn.system('tmux kill-session -t texpresso')
+    vim.notify('TeXpresso session terminated')
   end, {})
 end
-
 return M
