@@ -1,4 +1,5 @@
 local fzf = require('fzf-lua')
+local fzf_actions = require('fzf-lua.actions')
 
 ---Execute git command and handle errors properly
 ---@param args table Git command arguments
@@ -86,10 +87,7 @@ local function worktrees(opts)
         "Enter: switch to worktree | C-a: add | C-d: delete",
       },
       actions = {
-        ["default"] = function(selected)
-          local new_cwd = extract_worktree(selected[1])
-          vim.cmd('lcd ' .. new_cwd)
-        end,
+        ["default"] = fzf_actions.git_worktree_cd,
         ["ctrl-a"] = function(_, args)
           local worktree = args.query
 

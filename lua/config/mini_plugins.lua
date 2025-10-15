@@ -23,6 +23,8 @@ vim.pack.add({
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 })
 
+vim.cmd "packadd! termdebug"
+
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher', "executor", "copilot",
   "aligner", "statusline", "jupyter", "dap" }
@@ -97,6 +99,9 @@ local fzf_git = require 'plugin.pickers.git'
 vim.keymap.set("n", "<leader><leader>", fzf.files, { desc = "Find Files" })
 vim.keymap.set("n", "<leader>bb", fzf.buffers, { desc = "Find Buffers" })
 vim.keymap.set("n", "<leader>fl", fzf.grep, { desc = "Grep" })
+vim.keymap.set("n", "<leader>ff", fzf.builtin, { desc = "FzfLua builtins" })
+vim.keymap.set("n", "<leader>fm", fzf.manpages, { desc = "Man pages" })
+vim.keymap.set("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "LSP doc symbols" })
 vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live Grep" })
 vim.keymap.set("n", "<leader>fd", fzf_docker.docker_containers, { desc = "Docker containers" })
 vim.keymap.set("n", "<leader>fw", fzf_git.worktrees, { desc = "Git Worktrees" })
