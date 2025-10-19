@@ -3,6 +3,8 @@ local CELL_FG_COLOR = "#000000"
 local CELL_MARKER = "^# %%%%"
 local CELL_MARKER_SIGN = "cell_marker_sign"
 
+local jupyter_group = vim.api.nvim_create_augroup("JupyterConfig", { clear = true })
+
 
 local function setup()
   vim.api.nvim_set_hl(0, "cell_marker_hl", { bg = CELL_MARKER_COLOR, fg = CELL_FG_COLOR })
@@ -69,17 +71,18 @@ local function setup()
     end
     if not end_line then
       end_line = line_count
-      current_col = -1
     end
-    return current_row, current_col, start_line, end_line
+
+    local end_col = #vim.api.nvim_buf_get_lines(0, end_line - 1, end_line, false)[1]
+    return current_row, current_col, start_line, end_line, end_col
   end
 
   local function execute_cell()
-    local current_row, current_col, start_line, end_line = select_cell()
+    local current_row, current_col, start_line, end_line, end_col = select_cell()
     if start_line and end_line then
       vim.fn.setpos("'<", { 0, start_line + 1, 0, 0 })
-      vim.fn.setpos("'>", { 0, end_line - 1, 0, 0 })
-      require("iron.core").visual_send()
+      vim.fn.setpos("'>", { 0, end_line - 1, end_col, 0 })
+      vim.cmd "MoltenEvaluateVisual"
       vim.api.nvim_win_set_cursor(0, { current_row, current_col })
     end
   end
@@ -89,7 +92,7 @@ local function setup()
     local line_count = vim.api.nvim_buf_line_count(0)
     vim.fn.setpos("'<", { 0, 1, 0, 0 })
     vim.fn.setpos("'>", { 0, line_count, 0, 0 })
-    require("iron.core").visual_send()
+    vim.cmd "MoltenEvaluateVisual"
     vim.api.nvim_win_set_cursor(0, { current_row, current_col })
   end
 
@@ -159,7 +162,7 @@ local function setup()
 
   -- Autocmd to set cell markers
   vim.api.nvim_create_autocmd({ "BufEnter" }, { -- "BufWriteCmd"
-    group = vim.api.nvim_create_augroup("au_show_cell_markers", { clear = true }),
+    group = jupyter_group,
     pattern = { "*.ipynb", "*.r", "*.jl", "*.scala" },
     callback = function()
       vim.schedule(show_cell_markers)
@@ -167,40 +170,51 @@ local function setup()
   })
 
   vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-    group = vim.api.nvim_create_augroup("au_check_cell_marker", { clear = true }),
+    group = jupyter_group,
     pattern = { "*.ipynb", "*.r", "*.jl", "*.scala" },
     callback = function()
       vim.schedule(show_cell_marker)
     end,
   })
 
+  -- Avoid jsonls attached in a new jupyter notebook
+  vim.api.nvim_create_autocmd("FileType", {
+    group = jupyter_group,
+    callback = function(args)
+      if args.file:find('%.ipynb$') then
+        vim.bo[args.buf].filetype = "python"
+        vim.api.nvim_create_autocmd("LspAttach", {
+          callback = function(client_data)
+            local client = vim.lsp.get_client_by_id(client_data.data.client_id)
+            if client and client.name == 'jsonls' then
+              client.stop(true)
+            end
+          end
+        })
+      end
+    end
+  })
+
+
   local keys = {
-    { "<localleader>x", execute_cell,                                                   desc = "Execute Cell" },
-    { "<localleader>X", execute_all_cells,                                              desc = "Execute All Cells" },
-    { "<localleader>i", insert_code_cell,                                               desc = "Insert Code Cell" },
-    { "<localleader>m", insert_markdown_cell,                                           desc = "Insert Markdown Cell" },
-    { "<localleader>d", delete_cell,                                                    desc = "Delete Cell" },
-    { "<localleader>n", navigate_cell,                                                  desc = "Next Cell" },
-    { "<localleader>M", show_cell_markers,                                              desc = "Reload markers" },
-    { "<localleader>p", function() navigate_cell(true) end,                             desc = "Previous Cell" },
-    { "<leader>xs",     function() require("iron.core").run_motion("send_motion") end,  desc = "Send Motion" },
-    { "<leader>xs",     function() require("iron.core").visual_send() end,              mode = { "v" },               desc = "Send" },
-    { "<leader>xl",     function() require("iron.core").send_line() end,                desc = "Send Line" },
-    { "<leader>xt",     function() require("iron.core").send_until_cursor() end,        desc = "Send Until Cursor" },
-    { "<leader>xf",     function() require("iron.core").send_file() end,                desc = "Send File" },
-    { "<leader>xL",     function() require("iron.marks").clear_hl() end,                mode = { "v" },               desc = "Clear Highlight" },
-    { "<leader>x<cr>",  function() require("iron.core").send(nil, string.char(13)) end, desc = "ENTER" },
-    { "<leader>xI",     function() require("iron.core").send(nil, string.char(03)) end, desc = "Interrupt" },
-    { "<leader>xC",     function() require("iron.core").close_repl() end,               desc = "Close REPL" },
-    { "<leader>xc",     function() require("iron.core").send(nil, string.char(12)) end, desc = "Clear" },
-    { "<leader>xms",    function() require("iron.core").send_mark() end,                desc = "Send Mark" },
-    { "<leader>xmm",    function() require("iron.core").run_motion("mark_motion") end,  desc = "Mark Motion" },
-    { "<leader>xmv",    function() require("iron.core").mark_visual() end,              mode = { "v" },               desc = "Mark Visual" },
-    { "<leader>xmr",    function() require("iron.marks").drop_last() end,               desc = "Remove Mark" },
-    { "<leader>xR",     "<cmd>IronRepl<cr>",                                            desc = "REPL" },
-    { "<leader>xS",     "<cmd>IronRestart<cr>",                                         desc = "Restart" },
-    { "<leader>xF",     "<cmd>IronFocus<cr>",                                           desc = "Focus" },
-    { "<leader>xH",     "<cmd>IronHide<cr>",                                            desc = "Hide" },
+    { "<localleader>x", function() vim.cmd "MoltenReevaluateCell" end, desc = "Execute Cell" },
+    { "<localleader>X", function() vim.cmd "MoltenReevaluateAll" end,  desc = "Execute All Cells" },
+    { "<localleader>i", insert_code_cell,                              desc = "Insert Code Cell" },
+    { "<localleader>m", insert_markdown_cell,                          desc = "Insert Markdown Cell" },
+    { "<localleader>d", delete_cell,                                   desc = "Delete Cell" },
+    { "<localleader>n", navigate_cell,                                 desc = "Next Cell" },
+    { "<localleader>M", show_cell_markers,                             desc = "Reload markers" },
+    { "<localleader>p", function() navigate_cell(true) end,            desc = "Previous Cell" },
+    {
+      "<localleader>v",
+      function()
+        vim.cmd.normal(""); vim.cmd "MoltenEvaluateVisual"
+      end,
+      mode = { "v" },
+      desc = "Send"
+    },
+    { "<localleader>l", function() vim.cmd "MoltenEvaluateLine" end, desc = "Send Line" },
+    -- { "<leader>xt",     function() require("iron.core").send_until_cursor() end,        desc = "Send Until Cursor" },
   }
 
   for _, key in ipairs(keys) do
@@ -208,6 +222,90 @@ local function setup()
     local desc = key["desc"] or ""
     vim.keymap.set(mode, key[1], key[2], { desc = desc })
   end
+
+  -- automatically import output chunks from a jupyter notebook
+  -- tries to find a kernel that matches the kernel in the jupyter notebook
+  -- falls back to a kernel that matches the name of the active venv (if any)
+  local imb = function(e) -- init molten buffer
+    vim.schedule(function()
+      local kernels = vim.fn.MoltenAvailableKernels()
+      local try_kernel_name = function()
+        local metadata = vim.json.decode(io.open(e.file, "r"):read("a"))["metadata"]
+        return metadata.kernelspec.name
+      end
+      local ok, kernel_name = pcall(try_kernel_name)
+      if not ok or not vim.tbl_contains(kernels, kernel_name) then
+        kernel_name = nil
+        local venv = os.getenv("VIRTUAL_ENV") or os.getenv("CONDA_PREFIX")
+        if venv ~= nil then
+          kernel_name = string.match(venv, "/.+/(.+)")
+        end
+      end
+      if kernel_name ~= nil and vim.tbl_contains(kernels, kernel_name) then
+        vim.cmd(("MoltenInit %s"):format(kernel_name))
+      end
+      vim.cmd("MoltenImportOutput")
+    end)
+  end
+
+  -- automatically import output chunks from a jupyter notebook
+  vim.api.nvim_create_autocmd("BufAdd", {
+    group = jupyter_group,
+    pattern = { "*.ipynb" },
+    callback = imb,
+  })
+
+  -- we have to do this as well so that we catch files opened like nvim ./hi.ipynb
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = jupyter_group,
+    pattern = { "*.ipynb" },
+    callback = function(e)
+      if vim.api.nvim_get_vvar("vim_did_enter") ~= 1 then
+        imb(e)
+      end
+    end,
+  })
+
+  -- automatically export output chunks to a jupyter notebook on write
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = jupyter_group,
+    pattern = { "*.ipynb" },
+    callback = function()
+      if require("molten.status").initialized() == "Molten" then
+        vim.cmd("MoltenExportOutput!")
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    pattern = { "*.ipynb" },
+    callback = function(e)
+      local client = vim.lsp.get_client_by_id(e.data.client_id)
+      if client and client.name == "pyright" and client.settings then
+        local new = {
+          analysis = {
+            typeCheckingMode = "standard",
+            diagnosticSeverityOverrides = {
+              reportUnusedVariable = "none",
+              reportUnusedFunction = "none",
+              reportUntypedFunctionDecorator = "none",
+              reportConstantRedefinition = "none",
+              reportUnnecessaryIsInstance = "none",
+              reportUnusedCallResult = "none",
+              reportUnusedExpression = "none",
+            }
+          }
+        }
+        client.settings.python = vim.tbl_deep_extend('force', client.settings.python, new)
+        -- Even more lenient settings specifically for notebooks
+        vim.defer_fn(function()
+          client:notify("workspace/didChangeConfiguration", {
+            settings = nil
+          })
+        end, 100)
+      end
+    end,
+  })
 end
 
 

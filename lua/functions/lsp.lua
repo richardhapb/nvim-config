@@ -56,7 +56,9 @@ M.set_keymaps = function(bufnr)
 end
 
 
-M.setup_ltex = function(bufnr)
+---@param client vim.lsp.Client
+---@param bufnr integer
+M.setup_ltex = function(client, bufnr)
   -- Latex config
   local spelling_fts = { 'markdown', 'tex', 'plaintext', 'ltex', 'text', 'gitcommit' }
   local ft = vim.api.nvim_get_option_value('filetype', { buf = bufnr })
@@ -65,13 +67,12 @@ M.setup_ltex = function(bufnr)
     return
   end
 
+  local ltex_config = client.config.settings
+  if not ltex_config then
+    return
+  end
   -- Git commit messages should not have uppercase sentence start
   if ft == 'gitcommit' then
-    local ltex_config = vim.lsp.get_clients({ name = "ltex_plus" })[1].config.settings
-    if ltex_config == nil then
-      vim.notify("ltex config not found", vim.log.levels.INFO)
-      return
-    end
     ---@diagnostic disable-next-line: inject-field
     ltex_config.ltex.disabledRules = {
       ["en-US"] = {
@@ -83,48 +84,36 @@ M.setup_ltex = function(bufnr)
     }
   end
 
-
-  local ok, ltex = pcall(vim.lsp.get_clients, { name = "ltex_plus" })
-  local ltex_config
-
-  if ok and ltex[1] then
-    ltex_config = ltex[1].config.settings
-  end
-
-  if ltex_config ~= nil then
-    -- Setup language for spell checking
-    local function change_ltex_config(language)
-      if language == "en" then
-        language = "en-US"
-      end
-
-      ---@diagnostic disable-next-line: inject-field
-      ltex_config.ltex.language = language
-      vim.lsp.buf_notify(0, "workspace/didChangeConfiguration", {
-        settings = ltex_config
-      })
-      vim.notify("Changed ltex language to " .. language, vim.log.levels.INFO)
+  -- Setup language for spell checking
+  local function change_ltex_config(language)
+    if language == "en" then
+      language = "en-US"
     end
 
-    (function()
-      local language = ltex_config.ltex.language or "en-US"
-      local vim_lang = language
+    ---@diagnostic disable-next-line: inject-field
+    ltex_config.ltex.language = language
+    client:notify("workspace/didChangeConfiguration", {
+      settings = ltex_config
+    })
+    vim.notify("Changed ltex language to " .. language, vim.log.levels.INFO)
 
-      if language == "en-US" then
-        vim_lang = "en"
-      end
+    language = ltex_config.ltex.language or "en-US"
+    local vim_lang = language
 
-      local file = vim.fn.stdpath("config") .. "/spell/" .. vim_lang .. ".utf-8.add"
-      if vim.fn.filereadable(file) == 0 then
-        return
-      end
+    if language == "en-US" then
+      vim_lang = "en"
+    end
 
-      local words = vim.fn.readfile(file)
+    local file = vim.fn.stdpath("config") .. "/spell/" .. vim_lang .. ".utf-8.add"
+    if vim.fn.filereadable(file) == 0 then
+      return
+    end
 
-      ltex_config.ltex.dictionary = ltex_config.ltex.dictionary or {}
-      ltex_config.ltex.dictionary[language] = ltex_config.ltex.dictionary[language] or {}
-      ltex_config.ltex.dictionary[language] = words
-    end)()
+    local words = vim.fn.readfile(file)
+
+    ltex_config.ltex.dictionary = ltex_config.ltex.dictionary or {}
+    ltex_config.ltex.dictionary[language] = ltex_config.ltex.dictionary[language] or {}
+    ltex_config.ltex.dictionary[language] = words
 
     vim.api.nvim_buf_create_user_command(
       bufnr,
@@ -153,7 +142,7 @@ M.setup_ltex = function(bufnr)
           ltex_config.ltex.enabled = {}
           vim.notify("Disabled ltex diagnostics check", vim.log.levels.INFO)
         end
-        vim.lsp.buf_notify(0, "workspace/didChangeConfiguration", {
+        client:notify("workspace/didChangeConfiguration", {
           settings = ltex_config
         })
       end, {
@@ -161,7 +150,7 @@ M.setup_ltex = function(bufnr)
       })
 
     vim.keymap.set({ "n", "x" }, "zg", function()
-      local language = ltex_config.ltex.language or "en-US"
+      language = ltex_config.ltex.language or "en-US"
       local vim_lang = language
 
       if language == "en-US" then
@@ -204,7 +193,7 @@ M.setup_ltex = function(bufnr)
       end
 
       table.insert(ltex_config.ltex.dictionary[language], word)
-      vim.lsp.buf_notify(0, "workspace/didChangeConfiguration", { settings = ltex_config })
+      client:notify("workspace/didChangeConfiguration", { settings = ltex_config })
     end, { desc = "󰓆 Add Word", buffer = true })
   end
 end
@@ -222,10 +211,27 @@ M.on_attach = function(client, bufnr)
   end
 
   if client.name and client.name:find("^ltex") then
-    M.setup_ltex(bufnr)
+    M.setup_ltex(client, bufnr)
   end
 
   M.set_keymaps(bufnr)
+end
+
+M.get_active_clients_names = function()
+  local clients = vim.lsp.get_clients()
+  local names = {}
+  for _, client in ipairs(clients) do
+    table.insert(names, client.name)
+  end
+  return names
+end
+
+---Get the client from the name
+---@param name string
+---@return vim.lsp.Client?
+M.get_client_from_name = function(name)
+  local clients = vim.lsp.get_clients({ name = name })
+  return clients[1]
 end
 
 M.border = _border

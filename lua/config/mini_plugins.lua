@@ -8,8 +8,9 @@ vim.pack.add({
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
-  { src = "https://github.com/goerz/jupytext.vim",                              name = "jupytext" },
-  { src = "https://github.com/Vigemus/iron.nvim",                               name = "iron" },
+  { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
+  { src = "https://github.com/richardhapb/molten-nvim",                         name = "molten" },
+  { src = "https://github.com/3rd/image.nvim",                                  name = "image" },
 
   -- DAP plugins
   { src = "https://github.com/mfussenegger/nvim-dap" },
@@ -74,8 +75,8 @@ require 'nvim-treesitter.configs'.setup({
   ensure_installed = {
     "lua", "bash", "vim", "python", "javascript", "typescript",
     "markdown", "markdown_inline", "html", "css", "json",
-    "sql", "gitignore", "dockerfile", "rust", "c", "go",
-    "mermaid", "astro", "yaml", "xml", "bash", "toml", "htmldjango"
+    "sql", "gitignore", "dockerfile", "rust", "c", "go", "make",
+    "mermaid", "astro", "yaml", "xml", "bash", "toml", "htmldjango",
   },
   highlight = {
     enable = true,
@@ -105,6 +106,7 @@ vim.keymap.set("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "LSP doc sy
 vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live Grep" })
 vim.keymap.set("n", "<leader>fd", fzf_docker.docker_containers, { desc = "Docker containers" })
 vim.keymap.set("n", "<leader>fw", fzf_git.worktrees, { desc = "Git Worktrees" })
+
 
 -- Additional mappings
 vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Help Tags" })
@@ -137,27 +139,20 @@ vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, s
 
 --- JUPYTER NOTEBOOKS
 
-require 'iron'.setup {
-  config = {
-    -- Whether a repl should be discarded or not
-    scratch_repl = true,
-    -- Your repl definitions come here
+require 'jupytext'.setup()
+require("image").setup({
+  backend = "sixel",
+  max_width = 100,                          -- tweak to preference
+  max_height = 12,                          -- ^
+  max_height_window_percentage = math.huge, -- this is necessary for a good experience
+  max_width_window_percentage = math.huge,
+  window_overlap_clear_enabled = true,
+  window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
+})
 
-    repl_definition = {
-      python = require("iron.fts.python").ipython,
-      scala = require("iron.fts.scala").scala,
-    },
-    -- How the repl window will be displayed
-    -- See below for more information
-    repl_open_cmd = require "iron.view".split.vertical.botright(100)
-  },
-  -- If the highliht is on, you can change how it looks
-  -- For the available options, check nvim_set_hl
-  highlight = {
-    italic = true,
-  },
-  ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
-}
+vim.g.molten_image_provider = "image.nvim"
+vim.g.molten_virt_text_output = true
+vim.g.molten_auto_open_output = false
 
 --- My plugins
 --

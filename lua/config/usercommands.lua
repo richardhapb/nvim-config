@@ -1,3 +1,5 @@
+lsputils = require 'functions.lsp'
+
 vim.api.nvim_create_user_command(
   'DiffOrig',
   function()
@@ -78,5 +80,78 @@ vim.api.nvim_create_user_command(
     complete = function(_, _, _)
       return { 'richard', 'syzlab' }
     end
+  }
+)
+
+---@param names string[]
+local function stop_clients(names)
+  for _, name in ipairs(names) do
+    ---@type vim.lsp.Client?
+    local client = lsputils.get_client_from_name(name)
+    if client then
+      client:stop(true)
+      ---@diagnostic disable-next-line: undefined-field
+      if client.rpc and client.rpc.pid then
+        ---@diagnostic disable-next-line: undefined-field
+        vim.fn.jobstop(client.rpc.pid)
+      end
+      vim.lsp.buf_detach_client(0, client.id)
+    end
+  end
+end
+
+---@param names string[]
+local function start_clients(names)
+  for _, name in ipairs(names) do
+    vim.lsp.enable(name, true)
+  end
+end
+
+vim.api.nvim_create_user_command(
+  "LspRestart",
+  function(opts)
+    local names_arg = opts.args
+    if names_arg == "" then
+      vim.notify("Client name is required", vim.log.levels.ERROR)
+      return
+    end
+    local names = vim.split(names_arg, " ", { plain = true })
+    stop_clients(names)
+    start_clients(names)
+  end,
+  {
+    nargs = 1,
+    desc = 'LSP client',
+    complete = lsputils.get_active_clients_names
+  }
+)
+
+vim.api.nvim_create_user_command(
+  "LspStop",
+  function(opts)
+    local names_arg = opts.args
+    if names_arg == "" then
+      vim.notify("Client name is required", vim.log.levels.ERROR)
+      return
+    end
+
+    local names = vim.split(names_arg, " ", { plain = true })
+    stop_clients(names)
+  end,
+  {
+    nargs = 1,
+    desc = 'LSP client',
+    complete = lsputils.get_active_clients_names
+  }
+)
+
+vim.api.nvim_create_user_command(
+  "LspLog",
+  function()
+    local log = vim.lsp.log.get_filename()
+    vim.cmd ("tabnew " .. log)
+  end,
+  {
+    nargs = 0,
   }
 )

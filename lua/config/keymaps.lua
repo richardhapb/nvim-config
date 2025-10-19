@@ -120,16 +120,28 @@ keymap({ 'x', 'n' }, '<leader>o', function()
   vim.fn.jobstart({ cmd, args }, { detach = true })
 end, { desc = 'Open current selection' })
 
---- @param note string
-local create_work_note = function(note)
+---@param note string
+---@param work? boolean
+local create_note = function(note, work)
   if note == '' then
     return
   end
-  local path = vim.fs.joinpath(vim.fn.expand('$NOTES'), 'work', 'inbox', note .. '.md')
+
+  local base_path = vim.fs.joinpath(vim.fn.expand('$NOTES'))
+  if work then
+    base_path = vim.fs.joinpath(base_path, "work")
+  end
+
+  local path = vim.fs.joinpath(base_path, 'inbox', note .. '.md')
 
   vim.cmd('edit ' .. path)
   vim.notify('Note ' .. path .. ' loaded successfully', vim.log.levels.INFO)
 end
+
+keymap('n', '<leader>nn', function()
+  local note = vim.fn.input('Note: ')
+  create_note(note)
+end, { silent = true, desc = 'Create a new note' })
 
 keymap('n', '<leader>nb', function()
   local repository = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
@@ -147,7 +159,7 @@ keymap('n', '<leader>nb', function()
     branch = branch_sections[#branch_sections]
   end
 
-  create_work_note(repository .. '-' .. branch)
+  create_note(repository .. '-' .. branch, true)
 end, { silent = true, desc = 'Create a new note for branch' })
 
 -- Git
@@ -260,7 +272,7 @@ keymap('n', '<leader>g+', function()
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
   end
 
-  require 'plugin.pickers.git'.worktree_action(worktree_name, "add",branch_name)
+  require 'plugin.pickers.git'.worktree_action(worktree_name, "add", branch_name)
 
   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 end, { silent = true, desc = 'Git add a branch and switch' })

@@ -25,8 +25,18 @@ local function custom_hl()
       hl(0, 'Pmenu', { bg = 'NONE' })
       hl(0, 'PmenuBorder', { bg = 'NONE', fg = "#996666" })
 
+      -- TERM
+      hl(0, "ModesCopy", { ctermfg = 0, fg = "#000000", bg = "#f6c177" })
+      hl(0, "TermNormal", { ctermfg = 0, fg = "#000000", bg = "#f6c177" })
+      hl(0, "ModesDelete", { ctermfg = 0, fg = "#222222", bg = "#eb6f92" })
+      hl(0, "ModesFormat", { ctermfg = 0, fg = "#222222", bg = "#ebbcba" })
+      hl(0, "ModesInsert", { ctermfg = 0, fg = "#222222", bg = "#9ccfd8" })
+      hl(0, "ModesReplace", { ctermfg = 0, fg = "#222222", bg = "#31748f" })
+      hl(0, "ModesVisual", { ctermfg = 0, fg = "#222222", bg = "#c4a7e7" })
+
       -- Theme customization
       hl(0, 'CursorLine', { bg = "#222222" })
+      hl(0, 'lCursor', { fg = "#000000" })
       hl(0, 'LineNr', { fg = "#FFFFFF" })
       hl(0, 'LineNrAbove', { fg = "#CCCCCC" })
       hl(0, 'LineNrBelow', { fg = "#CCCCCC" })

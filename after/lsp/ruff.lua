@@ -17,25 +17,23 @@ return {
   },
   single_file_support = true,
   trace = "messages",
-  init_options = {
-    settings = {
-      configuration = (function()
-        if vim.fn.filereadable(vim.fn.getcwd() .. "/app/pyproject.toml") then
-          return vim.fn.getcwd() .. "/app/pyproject.toml"
-        end
-        return vim.fn.getcwd() .. "/pyproject.toml"
-      end)(),
-      configurationPreference = 'filesystemFirst',
-      exclude = { "node_modules", ".git", ".venv" },
-      lineLength = 100,
-      lint = {
-        enabled = true,
-        preview = true,
-      },
-      format = {
-        enabled = true,
-        preview = true,
-      },
+  settings = {
+    configuration = (function()
+      if vim.fn.filereadable(vim.fn.getcwd() .. "/app/pyproject.toml") then
+        return vim.fn.getcwd() .. "/app/pyproject.toml"
+      end
+      return vim.fn.getcwd() .. "/pyproject.toml"
+    end)(),
+    configurationPreference = 'filesystemFirst',
+    exclude = { "node_modules", ".git", ".venv" },
+    lineLength = 100,
+    lint = {
+      enabled = true,
+      preview = true,
+    },
+    format = {
+      enabled = true,
+      preview = true,
     },
   }
 }

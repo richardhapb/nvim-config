@@ -25,8 +25,12 @@ return {
   settings = {
     python = {
       analysis = {
-        typeCheckingMode = "standard",
+        typeCheckingMode = "strict",
         diagnosticMode = "workspace",
+        diagnosticSeverityOverrides = {
+          reportUnnecessaryTypeIgnoreComment = "warning",
+              reportUnnecessaryCast = "warning",
+        },
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
       },
