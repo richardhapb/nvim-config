@@ -9,7 +9,7 @@ vim.pack.add({
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
   { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
-  { src = "https://github.com/richardhapb/molten-nvim",                         name = "molten" },
+  { src = "https://github.com/Vigemus/iron.nvim",                               name = "iron" },
   { src = "https://github.com/3rd/image.nvim",                                  name = "image" },
 
   -- DAP plugins
@@ -150,9 +150,28 @@ require("image").setup({
   window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
 })
 
-vim.g.molten_image_provider = "image.nvim"
-vim.g.molten_virt_text_output = true
-vim.g.molten_auto_open_output = false
+require 'iron'.setup {
+  config = {
+    -- Whether a repl should be discarded or not
+    scratch_repl = true,
+    -- Your repl definitions come here
+
+    repl_definition = {
+      python = require("iron.fts.python").ipython,
+      scala = require("iron.fts.scala").scala,
+    },
+    -- How the repl window will be displayed
+    -- See below for more information
+    repl_open_cmd = require "iron.view".split.vertical.botright(100)
+  },
+  -- If the highliht is on, you can change how it looks
+  -- For the available options, check nvim_set_hl
+  highlight = {
+    italic = true,
+  },
+  ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
+}
+
 
 --- My plugins
 --

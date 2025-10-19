@@ -4,7 +4,7 @@ local Config = {
   CELL_FG_COLOR = "#000000",
   CELL_MARKER = "^# %%%%",
   CELL_MARKER_SIGN = "cell_marker_sign",
-  SUPPORTED_FILETYPES = { "*.ipynb", "*.r", "*.jl", "*.scala" },
+  SUPPORTED_FILETYPES = { "*.ipynb", "*.py", "*.r", "*.jl", "*.scala" },
 }
 
 -- Cell Data Structure
@@ -16,28 +16,6 @@ function Cell.new(start_line, is_markdown)
   self.start = start_line
   self.is_markdown = is_markdown or false
   return self
-end
-
--- Cache Manager for Cell Boundaries
-local CellCache = {}
-CellCache.__index = CellCache
-
-function CellCache.new()
-  local self = setmetatable({}, CellCache)
-  self.cache = {}
-  return self
-end
-
-function CellCache:get(bufnr)
-  return self.cache[bufnr]
-end
-
-function CellCache:invalidate(bufnr)
-  self.cache[bufnr] = nil
-end
-
-function CellCache:update(bufnr, cells)
-  self.cache[bufnr] = cells
 end
 
 -- Sign Manager for Visual Markers
@@ -79,17 +57,13 @@ end
 local CellParser = {}
 CellParser.__index = CellParser
 
-function CellParser.new(config, cache)
+function CellParser.new(config)
   local self = setmetatable({}, CellParser)
   self.config = config
-  self.cache = cache
   return self
 end
 
 function CellParser:parse_buffer(bufnr)
-  local cached = self.cache:get(bufnr)
-  if cached then return cached end
-
   local cells = {}
   local total_lines = vim.api.nvim_buf_line_count(bufnr)
 
@@ -101,20 +75,17 @@ function CellParser:parse_buffer(bufnr)
     end
   end
 
-  self.cache:update(bufnr, cells)
   return cells
 end
 
 function CellParser:is_cell_empty(bufnr, start_line, end_line)
   local lines = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
 
-  -- Check if marker line has content after the marker
   local marker_line = lines[1]
   if marker_line and marker_line:match("^%s*" .. self.config.CELL_MARKER:sub(2) .. "[^%s]") then
     return false
   end
 
-  -- Check remaining lines for non-empty, non-comment content
   for i = 2, #lines do
     local line = lines[i]
     if line and line:match("%S") and not line:match("^%s*[#%-]") then
@@ -186,19 +157,108 @@ function CellNavigator:move_to_adjacent_cell(direction_up)
   end
 end
 
--- Cell Executor - Handles Cell Execution Logic
-local CellExecutor = {}
-CellExecutor.__index = CellExecutor
+function CellNavigator:get_cell_content(bufnr, start_line, end_line)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, start_line, end_line, false)
+  return table.concat(lines, "\n")
+end
 
-function CellExecutor.new(parser, navigator)
-  local self = setmetatable({}, CellExecutor)
-  self.parser = parser
-  self.navigator = navigator
+-- Iron REPL Manager
+local IronManager = {}
+IronManager.__index = IronManager
+
+function IronManager.new()
+  local self = setmetatable({}, IronManager)
+  self.iron = require("iron.core")
   return self
 end
 
+function IronManager:ensure_repl_running()
+  local ft = vim.bo.filetype
+  local repl_def = require("iron.fts")[ft]
+
+  if not repl_def then
+    vim.notify("No REPL defined for filetype: " .. ft, vim.log.levels.ERROR)
+    return false
+  end
+
+  -- Check if REPL is running, if not start it
+  local success, _ = pcall(function()
+    self.iron.send(ft, "")
+  end)
+
+  if not success then
+    vim.cmd("IronRepl")
+    vim.schedule(function()
+      vim.notify("Started REPL for " .. ft, vim.log.levels.INFO)
+    end)
+  end
+
+  return true
+end
+
+function IronManager:send_code(code)
+  if not self:ensure_repl_running() then
+    return false
+  end
+
+  local ft = vim.bo.filetype
+  self.iron.send(ft, code)
+  return true
+end
+
+function IronManager:send_lines(start_line, end_line)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local lines = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
+  local code = table.concat(lines, "\n")
+  return self:send_code(code)
+end
+
+-- Cell Executor - Handles Cell Execution Logic with Iron
+local CellExecutor = {}
+CellExecutor.__index = CellExecutor
+
+function CellExecutor.new(parser, navigator, iron_manager)
+  local self = setmetatable({}, CellExecutor)
+  self.parser = parser
+  self.navigator = navigator
+  self.iron = iron_manager
+  return self
+end
+
+function CellExecutor:execute_current_cell()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local start_line, end_line = self.navigator:get_current_cell_bounds()
+
+  if self.parser:is_cell_empty(bufnr, start_line, end_line) then
+    vim.notify("Cell is empty", vim.log.levels.WARN)
+    return false
+  end
+
+  -- Skip the marker line
+  if self.iron:send_lines(start_line + 1, end_line) then
+    vim.notify("Cell executed", vim.log.levels.INFO)
+    return true
+  end
+
+  return false
+end
+
+function CellExecutor:execute_all_cells()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local line_count = vim.api.nvim_buf_line_count(bufnr)
+  local cells = self.parser:parse_buffer(bufnr)
+
+  if #cells == 0 then
+    vim.notify("No cells found", vim.log.levels.WARN)
+    return
+  end
+
+  local executed = self:execute_cell_range(bufnr, cells, 1, #cells, line_count)
+  vim.notify(string.format("Executed %d code cell(s)", executed), vim.log.levels.INFO)
+end
+
 function CellExecutor:execute_until_cursor(include_current)
-  local current_row, current_col = unpack(vim.api.nvim_win_get_cursor(0))
+  local current_row = vim.api.nvim_win_get_cursor(0)[1]
   local bufnr = vim.api.nvim_get_current_buf()
   local line_count = vim.api.nvim_buf_line_count(bufnr)
 
@@ -215,9 +275,7 @@ function CellExecutor:execute_until_cursor(include_current)
   end
 
   local executed = self:execute_cell_range(bufnr, cells, 1, last_index, line_count)
-
-  vim.api.nvim_win_set_cursor(0, { current_row, current_col })
-  vim.notify(string.format("Executed %d code cell(s)", executed), vim.log.levels.INFO, { title = "Jupyter" })
+  vim.notify(string.format("Executed %d code cell(s)", executed), vim.log.levels.INFO)
 end
 
 function CellExecutor:find_execution_boundary(cells, cursor_row, include_current)
@@ -251,45 +309,25 @@ function CellExecutor:execute_cell_range(bufnr, cells, start_idx, end_idx, line_
     if cell.is_markdown then
       -- Skip markdown cells
     elseif self.parser:is_cell_empty(bufnr, cell.start, cell_end) then
-      vim.notify("Skipping empty cell at line " .. cell.start, vim.log.levels.INFO, { title = "Molten" })
+      vim.notify("Skipping empty cell at line " .. cell.start, vim.log.levels.INFO)
     else
-      executed = executed + self:execute_single_cell(cell.start)
+      if self.iron:send_lines(cell.start + 1, cell_end) then
+        executed = executed + 1
+      end
     end
   end
 
   return executed
 end
 
-function CellExecutor:execute_single_cell(line)
-  -- Move cursor to the line AFTER the cell marker, not on the marker itself
-  -- Molten needs to be inside the cell content to execute
-  vim.api.nvim_win_set_cursor(0, { line + 1, 0 })
-
-  local success, err = pcall(function()
-    vim.cmd "MoltenReevaluateCell"
-  end)
-
-  if success then
-    return 1
-  elseif err then
-    -- Only show error if it's not the expected "Not in a cell" message
-    if not err:match("Not in a cell") then
-      vim.notify("Error executing cell at line " .. line .. ": " .. err, vim.log.levels.ERROR)
-    end
-  end
-
-  return 0
-end
-
 -- Cell Editor - Handles Cell Manipulation
 local CellEditor = {}
 CellEditor.__index = CellEditor
 
-function CellEditor.new(navigator, sign_manager, cache)
+function CellEditor.new(navigator, sign_manager)
   local self = setmetatable({}, CellEditor)
   self.navigator = navigator
   self.sign_manager = sign_manager
-  self.cache = cache
   return self
 end
 
@@ -303,8 +341,6 @@ function CellEditor:delete_current_cell()
   vim.cmd "normal!d"
   vim.cmd "normal!k"
 
-  local bufnr = vim.api.nvim_get_current_buf()
-  self.cache:invalidate(bufnr)
   self:refresh_markers()
 end
 
@@ -324,12 +360,11 @@ function CellEditor:insert_cell(marker_text)
   vim.cmd "normal!2o"
   vim.cmd "normal!k"
 
-  self.cache:invalidate(bufnr)
   self:refresh_markers()
 end
 
 function CellEditor:refresh_markers()
-  -- This will be bound to the main manager's method
+  -- Bound to main manager's method
 end
 
 -- Main Jupyter Manager - Orchestrates Everything
@@ -340,16 +375,14 @@ function JupyterManager.new()
   local self = setmetatable({}, JupyterManager)
 
   self.config = Config
-  self.cache = CellCache.new()
   self.sign_manager = SignManager.new(self.config)
-  self.parser = CellParser.new(self.config, self.cache)
+  self.parser = CellParser.new(self.config)
   self.navigator = CellNavigator.new(self.config, self.parser)
-  self.executor = CellExecutor.new(self.parser, self.navigator)
-  self.editor = CellEditor.new(self.navigator, self.sign_manager, self.cache)
+  self.iron_manager = IronManager.new()
+  self.executor = CellExecutor.new(self.parser, self.navigator, self.iron_manager)
+  self.editor = CellEditor.new(self.navigator, self.sign_manager)
 
-  -- Bind refresh method
   self.editor.refresh_markers = function() self:show_all_markers() end
-
   self.group = vim.api.nvim_create_augroup("JupyterConfig", { clear = true })
 
   return self
@@ -379,25 +412,20 @@ end
 
 function JupyterManager:setup_keymaps()
   local keys = {
-    { "<localleader>x", function() vim.cmd "MoltenReevaluateCell" end,              desc = "Execute Cell" },
-    { "<localleader>X", function() vim.cmd "MoltenReevaluateAll" end,               desc = "Execute All Cells" },
+    { "<localleader>x", function() self.executor:execute_current_cell() end,        desc = "Execute Cell" },
+    { "<localleader>X", function() self.executor:execute_all_cells() end,           desc = "Execute All Cells" },
     { "<localleader>i", function() self.editor:insert_cell("# %%") end,             desc = "Insert Code Cell" },
     { "<localleader>m", function() self.editor:insert_cell("# %% [markdown]") end,  desc = "Insert Markdown Cell" },
     { "<localleader>d", function() self.editor:delete_current_cell() end,           desc = "Delete Cell" },
     { "<localleader>n", function() self.navigator:move_to_adjacent_cell(false) end, desc = "Next Cell" },
     { "<localleader>p", function() self.navigator:move_to_adjacent_cell(true) end,  desc = "Previous Cell" },
     { "<localleader>M", function() self:show_all_markers() end,                     desc = "Reload markers" },
-    {
-      "<localleader>v",
-      function()
-        vim.cmd.normal(""); vim.cmd "MoltenEvaluateVisual"
-      end,
-      mode = "v",
-      desc = "Send"
-    },
-    { "<localleader>l", function() vim.cmd "MoltenEvaluateLine" end,              desc = "Send Line" },
-    { "<localleader>h", function() self.executor:execute_until_cursor(false) end, desc = "Execute until cursor" },
-    { "<localleader>H", function() self.executor:execute_until_cursor(true) end,  desc = "Execute until cursor (include)" },
+    { "<localleader>v", function() vim.cmd "IronSend" end,                          mode = "v",                             desc = "Send Selection" },
+    { "<localleader>l", function() vim.cmd "IronSendLine" end,                      desc = "Send Line" },
+    { "<localleader>h", function() self.executor:execute_until_cursor(false) end,   desc = "Execute until cursor" },
+    { "<localleader>H", function() self.executor:execute_until_cursor(true) end,    desc = "Execute until cursor (include)" },
+    { "<localleader>r", function() vim.cmd "IronRepl" end,                          desc = "Toggle REPL" },
+    { "<localleader>R", function() vim.cmd "IronRestart" end,                       desc = "Restart REPL" },
   }
 
   for _, key in ipairs(keys) do
@@ -423,125 +451,11 @@ function JupyterManager:setup_autocommands()
     callback = function(args)
       if args.file:find('%.ipynb$') then
         vim.bo[args.buf].filetype = "python"
-        vim.api.nvim_create_autocmd("LspAttach", {
-          callback = function(client_data)
-            local client = vim.lsp.get_client_by_id(client_data.data.client_id)
-            if client and client.name == 'jsonls' then
-              client.stop(true)
-            end
-          end
-        })
       end
     end
   })
 
-  self:setup_molten_integration()
   self:setup_lsp_config()
-end
-
-function JupyterManager:setup_molten_integration()
-  local init_molten_buffer = function(e)
-    vim.schedule(function()
-      local kernels = vim.fn.MoltenAvailableKernels()
-      local kernel_name = self:detect_kernel(e.file, kernels)
-
-      if kernel_name and vim.tbl_contains(kernels, kernel_name) then
-        vim.notify("Activating kernel " .. kernel_name, vim.log.levels.INFO, { title = "Molten" })
-        vim.cmd(("MoltenInit %s"):format(kernel_name))
-      end
-      vim.cmd("MoltenImportOutput")
-    end)
-  end
-
-  vim.api.nvim_create_autocmd("BufAdd", {
-    group = self.group,
-    pattern = { "*.ipynb" },
-    callback = init_molten_buffer,
-  })
-
-  vim.api.nvim_create_autocmd("BufEnter", {
-    group = self.group,
-    pattern = { "*.ipynb" },
-    callback = function(e)
-      if vim.api.nvim_get_vvar("vim_did_enter") ~= 1 then
-        init_molten_buffer(e)
-      end
-    end,
-  })
-
-  vim.api.nvim_create_autocmd("BufWritePost", {
-    group = self.group,
-    pattern = { "*.ipynb" },
-    callback = function()
-      if require("molten.status").initialized() == "Molten" then
-        vim.cmd("MoltenExportOutput!")
-      end
-    end,
-  })
-end
-
-function JupyterManager:parse_pyvenv_cfg(venv, available_kernels)
-  local kernel = string.match(venv, "/.+/(.+)")
-
-  if venv then
-    local pyenv_path = vim.fs.joinpath(venv, "pyvenv.cfg")
-    if vim.fn.filereadable(pyenv_path) then
-      local file = io.open(pyenv_path, "r")
-      if file then
-        local content = file:read("a")
-        file:close()
-        for _, line in ipairs(vim.split(content, "\n", { plain = true })) do
-          local env = line:match("prompt = (%S+)")
-          if env then
-            kernel = env
-          end
-        end
-      end
-    end
-
-    if kernel and vim.tbl_contains(available_kernels, kernel) then
-      return kernel
-    end
-  end
-  return nil
-end
-
-function JupyterManager:get_current_env(available_kernels)
-  local venv = os.getenv("VIRTUAL_ENV") or os.getenv("CONDA_PREFIX")
-  local env = self:parse_pyvenv_cfg(venv, available_kernels)
-
-  if env then
-    return env
-  end
-
-  if venv then
-    local kernel = string.match(venv, "/.+/(.+)")
-    if kernel and vim.tbl_contains(available_kernels, kernel) then
-      return kernel
-    end
-  end
-end
-
-function JupyterManager:detect_kernel(filepath, available_kernels)
-  local kernel = self:get_current_env(available_kernels)
-
-  if kernel then
-    return kernel
-  end
-
-  local ok, metadata = pcall(function()
-    local content = io.open(filepath, "r"):read("a")
-    return vim.json.decode(content)["metadata"]
-  end)
-
-  if ok and metadata and metadata.kernelspec then
-    kernel = metadata.kernelspec.name
-    if vim.tbl_contains(available_kernels, kernel) then
-      return kernel
-    end
-  end
-
-  return nil
 end
 
 function JupyterManager:setup_lsp_config()
