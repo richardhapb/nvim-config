@@ -11,6 +11,7 @@ vim.pack.add({
   { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
   { src = "https://github.com/Vigemus/iron.nvim",                               name = "iron" },
   { src = "https://github.com/3rd/image.nvim",                                  name = "image" },
+  { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
 
   -- DAP plugins
   { src = "https://github.com/mfussenegger/nvim-dap" },
@@ -138,7 +139,7 @@ vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, s
 
 
 --- JUPYTER NOTEBOOKS
-
+---
 require 'jupytext'.setup()
 require("image").setup({
   backend = "sixel",
@@ -149,29 +150,6 @@ require("image").setup({
   window_overlap_clear_enabled = true,
   window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
 })
-
-require 'iron'.setup {
-  config = {
-    -- Whether a repl should be discarded or not
-    scratch_repl = true,
-    -- Your repl definitions come here
-
-    repl_definition = {
-      python = require("iron.fts.python").ipython,
-      scala = require("iron.fts.scala").scala,
-    },
-    -- How the repl window will be displayed
-    -- See below for more information
-    repl_open_cmd = require "iron.view".split.vertical.botright(100)
-  },
-  -- If the highliht is on, you can change how it looks
-  -- For the available options, check nvim_set_hl
-  highlight = {
-    italic = true,
-  },
-  ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
-}
-
 
 --- My plugins
 --

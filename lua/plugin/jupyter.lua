@@ -162,66 +162,116 @@ function CellNavigator:get_cell_content(bufnr, start_line, end_line)
   return table.concat(lines, "\n")
 end
 
--- Iron REPL Manager
-local IronManager = {}
-IronManager.__index = IronManager
+-- Slime Manager
+local SlimeManager = {}
+SlimeManager.__index = SlimeManager
 
-function IronManager.new()
-  local self = setmetatable({}, IronManager)
-  self.iron = require("iron.core")
+function SlimeManager.new()
+  local self = setmetatable({}, SlimeManager)
   return self
 end
 
-function IronManager:ensure_repl_running()
+function SlimeManager:ensure_repl_running()
   local ft = vim.bo.filetype
-  local repl_def = require("iron.fts")[ft]
 
-  if not repl_def then
-    vim.notify("No REPL defined for filetype: " .. ft, vim.log.levels.ERROR)
+  -- Already configured? Done.
+  if vim.b.slime_config and vim.b.slime_config.target_pane then
+    return true
+  end
+
+  local repl_processes = {
+    python = "^%%[0-9]*%s[Pp]ython[0-9.]*$",
+  }
+
+  local pattern = repl_processes[ft]
+  if not pattern then
+    return false -- Silent fail for unsupported filetypes
+  end
+
+  local repl_commands = {
+    python = "ipython --no-autoindent",
+    julia = "julia",
+    r = "R",
+    javascript = "node",
+    ruby = "irb",
+    lua = "lua",
+  }
+
+  local repl_cmd = repl_commands[ft]
+  if not repl_cmd then
+    vim.notify("No REPL for " .. ft, vim.log.levels.ERROR)
     return false
   end
 
-  -- Check if REPL is running, if not start it
-  local success, _ = pcall(function()
-    self.iron.send(ft, "")
-  end)
+  -- Try to find existing REPL in last pane
+  local handle = io.popen(string.format([[tmux list-panes -F "#{pane_id} #{pane_current_command}"]], pattern))
 
-  if not success then
-    vim.cmd("IronRepl")
-    vim.schedule(function()
-      vim.notify("Started REPL for " .. ft, vim.log.levels.INFO)
-    end)
+  if handle then
+    local content = vim.trim(handle:read("*a") or "")
+    local success = handle:close()
+    local pane_id = ""
+
+    for _, line in ipairs(vim.split(content, "\n", { plain = true })) do
+      if line:find(pattern) then
+        pane_id = vim.split(line, " ", { plain = true })[1] or ""
+      end
+    end
+
+    if success and pane_id ~= "" then
+      vim.b.slime_config = { socket_name = "default", target_pane = pane_id }
+      vim.notify("Using pane " .. pane_id, vim.log.levels.INFO)
+      return true
+    end
   end
 
+  -- Create new REPL
+  local result = vim.system({ "tmux", "split-window", "-h", "-d", "-P", "-F", "#{pane_id}" }):wait()
+  if result.code ~= 0 then
+    return false
+  end
+
+  local pane_id = vim.trim(result.stdout)
+
+  -- Source venv if exists
+  local venv_path = vim.fn.getcwd() .. "/.venv/bin/activate"
+  if vim.fn.filereadable(venv_path) == 1 then
+    vim.system({ "tmux", "send-keys", "-t", pane_id, "source .venv/bin/activate", "C-m" }):wait()
+    vim.wait(100)
+  end
+
+  -- Start REPL
+  vim.system({ "tmux", "send-keys", "-t", pane_id, repl_cmd, "C-m" }):wait()
+  vim.wait(500)
+
+  vim.b.slime_config = { socket_name = "default", target_pane = pane_id }
+  vim.notify("Started " .. repl_cmd, vim.log.levels.INFO)
   return true
 end
 
-function IronManager:send_code(code)
+function SlimeManager:send_lines(start_line, end_line)
   if not self:ensure_repl_running() then
     return false
   end
 
-  local ft = vim.bo.filetype
-  self.iron.send(ft, code)
+  -- Get the lines
+  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
+  local code = table.concat(lines, "\n")
+
+  -- Send to slime
+  vim.fn["slime#send"](code .. "\n")
+
   return true
 end
 
-function IronManager:send_lines(start_line, end_line)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local lines = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
-  local code = table.concat(lines, "\n")
-  return self:send_code(code)
-end
-
--- Cell Executor - Handles Cell Execution Logic with Iron
+-- Cell Executor - Handles Cell Execution Logic with Slime
 local CellExecutor = {}
 CellExecutor.__index = CellExecutor
 
-function CellExecutor.new(parser, navigator, iron_manager)
+function CellExecutor.new(parser, navigator, slime_manager)
   local self = setmetatable({}, CellExecutor)
   self.parser = parser
   self.navigator = navigator
-  self.iron = iron_manager
+  self.slime = slime_manager
   return self
 end
 
@@ -235,7 +285,7 @@ function CellExecutor:execute_current_cell()
   end
 
   -- Skip the marker line
-  if self.iron:send_lines(start_line + 1, end_line) then
+  if self.slime:send_lines(start_line + 1, end_line - 1) then
     vim.notify("Cell executed", vim.log.levels.INFO)
     return true
   end
@@ -300,24 +350,95 @@ function CellExecutor:find_execution_boundary(cells, cursor_row, include_current
 end
 
 function CellExecutor:execute_cell_range(bufnr, cells, start_idx, end_idx, line_count)
-  local executed = 0
+  local config = vim.b.slime_config
 
-  for i = start_idx, end_idx do
-    local cell = cells[i]
-    local cell_end = (cells[i + 1] and cells[i + 1].start - 1) or line_count
-
-    if cell.is_markdown then
-      -- Skip markdown cells
-    elseif self.parser:is_cell_empty(bufnr, cell.start, cell_end) then
-      vim.notify("Skipping empty cell at line " .. cell.start, vim.log.levels.INFO)
-    else
-      if self.iron:send_lines(cell.start + 1, cell_end) then
-        executed = executed + 1
-      end
-    end
+  if not config or not config.target_pane then
+    vim.notify("No target pane configured", vim.log.levels.ERROR)
+    return 0
   end
 
-  return executed
+  local executed = { count = 0 }
+
+  local function execute_next_cell(idx)
+    if idx > end_idx then
+      vim.schedule(function()
+        vim.notify(string.format("Executed %d code cell(s)", executed.count), vim.log.levels.INFO)
+      end)
+      return
+    end
+
+    local cell = cells[idx]
+    local cell_end = (cells[idx + 1] and cells[idx + 1].start - 1) or line_count
+
+    if cell.is_markdown then
+      execute_next_cell(idx + 1)
+      return
+    end
+
+    if self.parser:is_cell_empty(bufnr, cell.start, cell_end) then
+      vim.schedule(function()
+        vim.notify("Skipping empty cell at line " .. cell.start, vim.log.levels.INFO)
+      end)
+      execute_next_cell(idx + 1)
+      return
+    end
+
+    -- Send cell
+    local success = self.slime:send_lines(cell.start + 1, cell_end)
+    if success then
+      executed.count = executed.count + 1
+    end
+
+    -- Poll tmux pane for In[N]: prompt before continuing
+    local max_attempts = 1000 -- 100 seconds max wait
+    local attempts = 0
+
+    vim.defer_fn(function()
+      local check_prompt
+      check_prompt = function()
+        attempts = attempts + 1
+
+        if attempts > max_attempts then
+          vim.schedule(function()
+            vim.notify("Timeout waiting for REPL, continuing anyway", vim.log.levels.WARN)
+          end)
+          execute_next_cell(idx + 1)
+          return
+        end
+
+        local result = vim.system({
+          "tmux", "capture-pane", "-t", config.target_pane, "-p"
+        }):wait()
+
+        if not result or not result.stdout then
+          vim.defer_fn(check_prompt, 100)
+          return
+        end
+
+        local output = result.stdout
+
+        -- Look for IPython prompt in last few lines
+        local lines = vim.split(vim.trim(output), "\n")
+        local last_line = lines[#lines] or ""
+
+        -- More flexible prompt matching
+        if last_line:match("In %[") or last_line:match("In%[") or
+            last_line:match(">>>") or last_line:match("%.%.%.") then
+          -- Ready for next cell
+          execute_next_cell(idx + 1)
+        else
+          -- Still executing, check again
+          vim.defer_fn(check_prompt, 100)
+        end
+      end
+      check_prompt()
+    end, 200) -- Give first cell more time
+  end
+
+  -- Start execution
+  execute_next_cell(start_idx)
+
+  return 0
 end
 
 -- Cell Editor - Handles Cell Manipulation
@@ -378,8 +499,8 @@ function JupyterManager.new()
   self.sign_manager = SignManager.new(self.config)
   self.parser = CellParser.new(self.config)
   self.navigator = CellNavigator.new(self.config, self.parser)
-  self.iron_manager = IronManager.new()
-  self.executor = CellExecutor.new(self.parser, self.navigator, self.iron_manager)
+  self.slime_manager = SlimeManager.new()
+  self.executor = CellExecutor.new(self.parser, self.navigator, self.slime_manager)
   self.editor = CellEditor.new(self.navigator, self.sign_manager)
 
   self.editor.refresh_markers = function() self:show_all_markers() end
@@ -420,12 +541,10 @@ function JupyterManager:setup_keymaps()
     { "<localleader>n", function() self.navigator:move_to_adjacent_cell(false) end, desc = "Next Cell" },
     { "<localleader>p", function() self.navigator:move_to_adjacent_cell(true) end,  desc = "Previous Cell" },
     { "<localleader>M", function() self:show_all_markers() end,                     desc = "Reload markers" },
-    { "<localleader>v", function() vim.cmd "IronSend" end,                          mode = "v",                             desc = "Send Selection" },
-    { "<localleader>l", function() vim.cmd "IronSendLine" end,                      desc = "Send Line" },
+    { "<localleader>v", function() vim.cmd "SlimeSend" end,                         mode = "v",                             desc = "Send Selection" },
+    { "<localleader>l", function() vim.cmd "SlimeSend" end,                         desc = "Send Line" },
     { "<localleader>h", function() self.executor:execute_until_cursor(false) end,   desc = "Execute until cursor" },
     { "<localleader>H", function() self.executor:execute_until_cursor(true) end,    desc = "Execute until cursor (include)" },
-    { "<localleader>r", function() vim.cmd "IronRepl" end,                          desc = "Toggle REPL" },
-    { "<localleader>R", function() vim.cmd "IronRestart" end,                       desc = "Restart REPL" },
   }
 
   for _, key in ipairs(keys) do
@@ -492,6 +611,17 @@ end
 
 function JupyterManager:setup()
   vim.g.jupytext_fmt = "py:percent"
+
+  vim.g.slime_target = "tmux"
+  vim.g.slime_default_config = {
+    socket_name = "default",
+    target_pane = "{last}",
+  }
+
+  vim.g.slime_cell_delimiter = "# %%"
+  vim.g.slime_dont_ask_default = 1
+  vim.g.slime_bracketed_paste = 1
+
   self:setup_autocommands()
   self:setup_keymaps()
 end

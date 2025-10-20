@@ -88,6 +88,10 @@
       "rev": "0e94915",
       "src": "https://github.com/quarto-dev/quarto-nvim"
     },
+    "slime": {
+      "rev": "67b24bf",
+      "src": "https://github.com/jpalardy/vim-slime.git"
+    },
     "tmux-navigator": {
       "rev": "c45243d",
       "src": "https://github.com/christoomey/vim-tmux-navigator"
