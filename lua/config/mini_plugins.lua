@@ -9,7 +9,6 @@ vim.pack.add({
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
   { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
-  { src = "https://github.com/Vigemus/iron.nvim",                               name = "iron" },
   { src = "https://github.com/3rd/image.nvim",                                  name = "image" },
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
 
