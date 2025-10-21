@@ -132,7 +132,7 @@ function CellNavigator:find_cell_end(bufnr, from_line, line_count)
   for line = from_line + 1, line_count do
     local content = vim.api.nvim_buf_get_lines(bufnr, line - 1, line, false)[1]
     if content:find(self.config.CELL_MARKER) then
-      return line
+      return line - 1
     end
   end
   return line_count
@@ -285,7 +285,7 @@ function CellExecutor:execute_current_cell()
   end
 
   -- Skip the marker line
-  if self.slime:send_lines(start_line + 1, end_line - 1) then
+  if self.slime:send_lines(start_line + 1, end_line) then
     vim.notify("Cell executed", vim.log.levels.INFO)
     return true
   end
@@ -390,7 +390,7 @@ function CellExecutor:execute_cell_range(bufnr, cells, start_idx, end_idx, line_
     end
 
     -- Poll tmux pane for In[N]: prompt before continuing
-    local max_attempts = 1000 -- 100 seconds max wait
+    local max_attempts = 100 -- 10 seconds max wait
     local attempts = 0
 
     vim.defer_fn(function()

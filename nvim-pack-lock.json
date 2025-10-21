@@ -21,7 +21,7 @@
       "src": "https://github.com/Vigemus/iron.nvim"
     },
     "jupytext": {
-      "rev": "f15aff4",
+      "rev": "c8baf3a",
       "src": "https://github.com/GCBallesteros/jupytext.nvim"
     },
     "magma": {
@@ -38,7 +38,7 @@
     },
     "neospeller.nvim": {
       "rev": "b68f35d",
-      "src": "/Users/richard/plugins/neospeller.nvim"
+      "src": "/home/richard/plugins/neospeller.nvim"
     },
     "neovim": {
       "rev": "72a04c4",
@@ -82,7 +82,7 @@
     },
     "pytest.nvim": {
       "rev": "f9521b1",
-      "src": "/Users/richard/plugins/pytest.nvim"
+      "src": "/home/richard/plugins/pytest.nvim"
     },
     "quarto": {
       "rev": "0e94915",

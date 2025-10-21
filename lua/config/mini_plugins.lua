@@ -138,8 +138,6 @@ require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
 
 
---- JUPYTER NOTEBOOKS
----
 require 'jupytext'.setup()
 require("image").setup({
   backend = "sixel",
