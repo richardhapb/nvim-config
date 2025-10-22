@@ -1,4 +1,4 @@
-vim.pack.add({
+vim.pack.add {
   { src = "https://github.com/nvim-mini/mini.nvim",                             name = "mini" },
   { src = "https://github.com/rose-pine/neovim" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
@@ -8,27 +8,21 @@ vim.pack.add({
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
-  { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
   { src = "https://github.com/3rd/image.nvim",                                  name = "image" },
-  { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
 
-  -- DAP plugins
-  { src = "https://github.com/mfussenegger/nvim-dap" },
-  { src = "https://github.com/mfussenegger/nvim-dap-python" },
-  { src = "https://github.com/rcarriga/nvim-dap-ui" },
-  { src = "https://github.com/nvim-neotest/nvim-nio" },
-  { src = "https://github.com/jbyuki/one-small-step-for-vimkind" },
-  { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
+  -- Jupyter-Notebooks
+  { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
+  { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
 
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
-})
+}
 
 vim.cmd "packadd! termdebug"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher', "executor", "copilot",
-  "aligner", "statusline", "jupyter", "dap" }
+  "aligner", "statusline", "jupyter" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
@@ -39,21 +33,6 @@ end
 local opts = {
   surround = {},
   icons = {},
-  ai = function()
-    local spec_treesitter = require('mini.ai').gen_spec.treesitter
-    return {
-      custom_textobjects = {
-        f = spec_treesitter({ a = "@function.outer", i = "@function.inner" }),
-        c = spec_treesitter({ a = "@class.outer", i = "@class.inner" }),
-        b = spec_treesitter({ a = "@block.outer", i = "@block.inner" }),
-        l = spec_treesitter({ a = "@loop.outer", i = "@loop.inner" }),
-        i = spec_treesitter({ a = "@conditional.outer", i = "@conditional.inner" }),
-        C = spec_treesitter({ a = "@comment.outer", i = "@comment.inner" }),
-        ["="] = spec_treesitter({ a = "@assignment.rhs", i = "@assignment.lhs" }),
-        ["/"] = spec_treesitter({ a = "@statement.outer", i = "@statement.outer" }),
-      }
-    }
-  end,
   completion = {}
 }
 
@@ -71,7 +50,9 @@ for name, config in pairs(opts) do
   end)())
 end
 
-require 'nvim-treesitter.configs'.setup({
+-- Treesitter
+
+require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
     "lua", "bash", "vim", "python", "javascript", "typescript",
     "markdown", "markdown_inline", "html", "css", "json",
@@ -85,14 +66,47 @@ require 'nvim-treesitter.configs'.setup({
     enable = true,
     disable = { "python", "yaml", "markdown" }, -- common offenders
   },
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true,
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+        ["ab"] = "@block.outer",
+        ["ib"] = "@block.inner",
+        ["al"] = "@loop.outer",
+        ["il"] = "@loop.inner",
+        ["ai"] = "@conditional.outer",
+        ["ii"] = "@conditional.inner",
+        ["ad"] = "@comment.outer",
+        ["id"] = "@comment.inner",
+        ["i="] = "@assignment.lhs",
+        ["a="] = "@assignment.rhs",
+        ["a/"] = "@statement.outer"
+      }
+    }
+  }
 }
-)
+
+
+-- Git
 
 require "gitsigns".setup()
 vim.cmd "packadd fugitive"
 
+-- Picker
+
 local fzf = require "fzf-lua"
-fzf.setup()
+fzf.setup {
+  keymap = {
+    fzf = {
+      ["ctrl-q"] = "select-all+accept", -- Send to quickfix
+    },
+  },
+}
 
 local fzf_docker = require 'plugin.pickers.docker'
 local fzf_git = require 'plugin.pickers.git'
@@ -108,7 +122,6 @@ vim.keymap.set("n", "<leader>fd", fzf_docker.docker_containers, { desc = "Docker
 vim.keymap.set("n", "<leader>fw", fzf_git.worktrees, { desc = "Git Worktrees" })
 
 
--- Additional mappings
 vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Help Tags" })
 vim.keymap.set("n", "<leader>fk", fzf.keymaps, { desc = "Keymaps" })
 vim.keymap.set("n", "<leader>fc", fzf.commands, { desc = "Commands" })
@@ -119,6 +132,7 @@ vim.keymap.set("n", "<leader>fr", fzf.registers, { desc = "Registers" })
 vim.keymap.set("n", "<leader>fb", fzf.git_branches, { desc = "Git branches" })
 vim.keymap.set("n", "<leader>fB", fzf.git_blame, { desc = "Git blame" })
 
+-- Misc
 
 local tn = {
   ["<c-h>"] = "<cmd><C-U>TmuxNavigateLeft<cr>",
@@ -136,8 +150,6 @@ end
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
 
-
-require 'jupytext'.setup()
 require("image").setup({
   backend = "sixel",
   max_width = 100,                          -- tweak to preference
@@ -147,6 +159,9 @@ require("image").setup({
   window_overlap_clear_enabled = true,
   window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
 })
+
+
+require 'jupytext'.setup()
 
 --- My plugins
 --
