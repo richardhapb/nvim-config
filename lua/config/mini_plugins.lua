@@ -8,7 +8,6 @@ vim.pack.add {
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
-  { src = "https://github.com/3rd/image.nvim",                                  name = "image" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
@@ -21,7 +20,7 @@ vim.pack.add {
 vim.cmd "packadd! termdebug"
 
 -- Mini plugins for specific tasks
-local plugins = { 'FormatDicts', 'LatexPreview', 'marp', 'mermaid', 'sqlquery', 'jn_watcher', "executor", "copilot",
+local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', 'jn_watcher', "executor",
   "aligner", "statusline", "jupyter" }
 
 for _, plugin in ipairs(plugins) do
@@ -106,8 +105,15 @@ fzf.setup {
     fzf = {
       ["ctrl-q"] = "select-all+accept", -- Send to quickfix
     },
+    profile = "telescope"
   },
+  git = {
+    worktrees = {
+      preview = ""
+    }
+  }
 }
+fzf.setup{"telescope"}
 
 local fzf_docker = require 'plugin.pickers.docker'
 local fzf_git = require 'plugin.pickers.git'
@@ -150,17 +156,6 @@ end
 
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
-
-require("image").setup({
-  backend = "sixel",
-  max_width = 100,                          -- tweak to preference
-  max_height = 12,                          -- ^
-  max_height_window_percentage = math.huge, -- this is necessary for a good experience
-  max_width_window_percentage = math.huge,
-  window_overlap_clear_enabled = true,
-  window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
-})
-
 
 require 'jupytext'.setup()
 
