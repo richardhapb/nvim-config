@@ -199,5 +199,7 @@ require 'pytest'.setup((function()
   }
 end)())
 
+vim.keymap.set("n", "<leader>O", ":PytestOutput<CR>", { silent = true })
+
 vim.keymap.set({ "x", "n" }, "<leader>S", ":CheckSpell<CR>", { desc = "Check spelling", silent = true })
 vim.keymap.set({ "x", "n" }, "<leader>D", ":CheckSpellText<CR>", { desc = "Check spelling", silent = true })
