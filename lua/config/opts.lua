@@ -43,9 +43,6 @@ vim.opt.fileencoding = "utf-8"
 vim.opt.mouse = ''
 vim.opt.cursorline = true
 
--- Disable suspend
-vim.keymap.set("n", "<C-z>", "<Nop>", { noremap = true, silent = true })
-
 vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
 
 -- Enable automatic commenting for next line

@@ -3,4 +3,5 @@ plug
 .venv
 lazy-lock.json
 .env.lua
+*.log
 
