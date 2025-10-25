@@ -119,7 +119,7 @@ local fzf_docker = require 'plugin.pickers.docker'
 local fzf_git = require 'plugin.pickers.git'
 
 vim.keymap.set("n", "<leader><leader>", fzf.files, { desc = "Find Files" })
-vim.keymap.set("n", "<leader>bb", fzf.buffers, { desc = "Find Buffers" })
+vim.keymap.set("n", "<localleader><localleader>", fzf.buffers, { desc = "Find Buffers" })
 vim.keymap.set("n", "<leader>fl", fzf.grep, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ff", fzf.builtin, { desc = "FzfLua builtins" })
 vim.keymap.set("n", "<leader>fm", fzf.manpages, { desc = "Man pages" })

@@ -19,6 +19,10 @@ keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with
 -- Lua dev
 keymap('n', '<C-s>', '<cmd>source %<CR>', { noremap = true, desc = 'Source file' })
 keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
+keymap('n', '<leader>I', '<cmd>source ~/nvim/init.lua<CR>', { desc = 'Source init file' })
+
+-- Diagostic
+keymap('n', '<leader>dq', vim.diagnostic.setloclist, { noremap = true, desc = 'Send diagnostics to qf' })
 
 -- Edit
 keymap('n', '<BS>', '<cmd>Explore<cr>', { silent = true })

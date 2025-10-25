@@ -42,7 +42,6 @@ local function worktree_action(worktree_name, action, ish)
     vim.notify('Unknown action: ' .. action, vim.log.levels.ERROR)
     return
   end
-  vim.print(args)
 
   return git_exec(args, function()
     action = action:gsub("e$", "")
