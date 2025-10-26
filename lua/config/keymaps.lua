@@ -339,3 +339,33 @@ keymap('n', '<leader>cb', function()
   vim.api.nvim_win_set_height(0, 10)
   vim.cmd.startinsert()
 end, { silent = true, desc = 'Open terminal on bottom' })
+
+
+-- Arglist
+
+-- append
+keymap('n', '<leader>H', "<CMD>$arga<CR>", { silent = true, desc = "Add current file to arg list" })
+
+-- to qf, TODO: Add dynamic line number and edit capatility
+keymap('n', '<leader>hq', function()
+  local list = vim.fn.argv()
+  if #list > 0 then
+    local qf_items = {}
+    for _, filename in ipairs(list) do
+      table.insert(qf_items, {
+        filename = filename,
+        lnum = 1,
+        text = filename
+      })
+    end
+    vim.fn.setqflist(qf_items, 'r')
+    vim.cmd.copen()
+  end
+end, { silent = true, desc = "Show args in qf" })
+
+-- assign to each number the arg
+for i = 1, 9 do
+  keymap('n', '<leader>' .. i, "<CMD>argu " .. i .. "<CR>", { silent = true, desc = "Go to arg " .. i })
+  keymap('n', '<leader>h' .. i, "<CMD>" .. i - 1 .. "arga<CR>", { silent = true, desc = "Add current to arg " .. i })
+  keymap('n', '<leader>D' .. i, "<CMD>" .. i .. "argd<CR>", { silent = true, desc = "Delete current arg" })
+end

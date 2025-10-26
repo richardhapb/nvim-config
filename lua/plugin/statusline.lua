@@ -29,7 +29,7 @@ function _G.statusline()
     git_status(),
     "%=",
     lsp_status(),
-    " %-14(%l,%c%V%)",
+    "%-13a %-14(%l,%c%V%)",
     "%P",
   }, " ")
 end

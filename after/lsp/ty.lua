@@ -1,5 +1,5 @@
 local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "cont", "ruff", "target", "release", "ty")
-local projects = { "finitum" }
+local projects = { "finitum", "kitchen", "development" }
 
 return {
   cmd = { path, "server" },

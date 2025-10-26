@@ -6,7 +6,7 @@ pcall(vim.diagnostic.config, {
   signs = true,
   float = {
     border = lsp_utils.border,
-  },
+},
   virtual_lines = false,
   update_in_insert = false,
   virtual_text = lsp_utils.virtual_text
@@ -29,6 +29,7 @@ local lsp_elements = {
   "yamlls",
   "ty",
   -- "harper_ls",
+  "djls",
   "bashls",
   "jsonls",
   'gopls',

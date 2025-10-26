@@ -17,7 +17,9 @@ vim.pack.add {
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 }
 
+-- Builtins
 vim.cmd "packadd! termdebug"
+vim.cmd "packadd! cfilter"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', 'jn_watcher', "executor",
@@ -100,25 +102,53 @@ vim.cmd "packadd fugitive"
 -- Picker
 
 local fzf = require "fzf-lua"
+
 fzf.setup {
+  "telescope", -- Allows scroll with C-d and C-u
   keymap = {
     fzf = {
       ["ctrl-q"] = "select-all+accept", -- Send to quickfix
     },
-    profile = "telescope"
   },
-  git = {
-    worktrees = {
-      preview = ""
-    }
-  }
 }
-fzf.setup{"telescope"}
+
+local fzf_files = {
+  winopts = {
+    split = "belowright 10new",
+    preview = {
+      hidden = true,
+    }
+  },
+  fd_opts = [[--color=never --type f --type l --exclude .git --exclude .venv]],
+  fzf_opts = {
+    -- no reverse view
+    ["--layout"] = "default",
+  },
+}
+
+--  files auto-completion with fzf
+vim.keymap.set({ "n", "v", "i" }, "<C-x><C-f>",
+  function() fzf.complete_path() end,
+  { silent = true, desc = "Fuzzy complete path" })
+
+-- Handle the case when it is not in a worktree, which occurres in bare repos.
+-- git rev-parse --show-toplevel must be executed in a worktree. As a fallback
+-- I use vim cwd, that is the most common case.
+local git_root = fzf.path.git_root
+fzf.path.git_root = function(args, noerr)
+  local result = vim.system({ "git", "rev-parse", "--show-toplevel" }):wait()
+
+  if result.code ~= 0 then
+    -- Fallback
+    return vim.fn.getcwd()
+  end
+
+  return git_root(args, noerr)
+end
 
 local fzf_docker = require 'plugin.pickers.docker'
-local fzf_git = require 'plugin.pickers.git'
 
-vim.keymap.set("n", "<leader><leader>", fzf.files, { desc = "Find Files" })
+vim.keymap.set("n", "<leader><leader>", function() fzf.files(fzf_files) end, { desc = "Find Files" })
 vim.keymap.set("n", "<localleader><localleader>", fzf.buffers, { desc = "Find Buffers" })
 vim.keymap.set("n", "<leader>fl", fzf.grep, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ff", fzf.builtin, { desc = "FzfLua builtins" })
@@ -126,7 +156,7 @@ vim.keymap.set("n", "<leader>fm", fzf.manpages, { desc = "Man pages" })
 vim.keymap.set("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "LSP doc symbols" })
 vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live Grep" })
 vim.keymap.set("n", "<leader>fd", fzf_docker.docker_containers, { desc = "Docker containers" })
-vim.keymap.set("n", "<leader>fw", fzf_git.worktrees, { desc = "Git Worktrees" })
+vim.keymap.set("n", "<leader>fw", fzf.git_worktrees, { desc = "Git Worktrees" })
 
 
 vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Help Tags" })

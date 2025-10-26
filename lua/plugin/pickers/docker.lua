@@ -260,7 +260,7 @@ M.docker_containers = function(opts)
 
     -- Create fzf picker with custom actions
     -- nth tells fzf to show/search only the first 3 columns (hide the key)
-    fzf.fzf_exec(containers_entries, {
+    fzf.fzf_exec(containers_entries, vim.tbl_deep_extend("force", {
       prompt = "Docker Containers> ",
       fzf_opts = {
         ["--ansi"]           = true,
@@ -347,7 +347,7 @@ M.docker_containers = function(opts)
           end
         end,
       },
-    })
+    }, opts))
   end)
 end
 
