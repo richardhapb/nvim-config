@@ -21,7 +21,7 @@ vim.cmd "packadd! termdebug"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', 'jn_watcher', "executor",
-  "aligner", "statusline", "jupyter" }
+  "aligner", "statusline", "jupyter", "fstring" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
