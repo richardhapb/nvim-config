@@ -1,17 +1,18 @@
 local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "cont", "ruff", "target", "release", "ty")
-local projects = { "finitum", "kitchen", "development" }
+-- local projects = { "finitum", "kitchen", "development" }
 
 return {
   cmd = { path, "server" },
-  filetypes = (function()
-    local parent = vim.fn.getcwd()
-    for _, project in ipairs(projects) do
-      if parent:find(project .. "$") then
-        return { "python" }
-      end
-    end
-    return { "" }
-  end)(),
+  filetypes = { "python" },
+  -- filetypes = (function()
+  --   local parent = vim.fn.getcwd()
+  --   for _, project in ipairs(projects) do
+  --     if parent:find(project .. "$") then
+  --       return { "python" }
+  --     end
+  --   end
+  --   return { "" }
+  -- end)(),
   root_markers = { "pyproject.toml", ".git" },
   -- root_dir = vim.fn.getcwd(),
   settings = {

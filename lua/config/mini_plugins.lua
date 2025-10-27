@@ -113,12 +113,6 @@ fzf.setup {
 }
 
 local fzf_files = {
-  winopts = {
-    split = "belowright 10new",
-    preview = {
-      hidden = true,
-    }
-  },
   fd_opts = [[--color=never --type f --type l --exclude .git --exclude .venv]],
   fzf_opts = {
     -- no reverse view
