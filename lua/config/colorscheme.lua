@@ -48,6 +48,7 @@ local function custom_hl()
       hl(0, 'LspReferenceTarget', { bg = "#111111" })
       hl(0, 'LspReferenceText', { bg = "#111111" })
       hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
+      hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
 
       hl(0, "NonText", { fg = "#999999" })
       hl(0, "SpecialKey", { fg = "#999999" })

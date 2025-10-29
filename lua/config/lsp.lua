@@ -20,14 +20,14 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 local lsp_elements = {
   "lua_ls",
   'ruff',
-  -- 'pyright',
+  'pyright',
   'mypy', -- Used for some python Open source projects
   'cssls',
   "html",
   "ltex_plus",
   "ts_ls",
   "yamlls",
-  "ty",
+  -- "ty",
   -- "harper_ls",
   "djls",
   "bashls",
