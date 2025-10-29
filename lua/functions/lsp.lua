@@ -38,7 +38,7 @@ M.set_keymaps = function(bufnr)
 
   keymap('n', 'gL', function()
     ---@type boolean | table
-    local vt_new_config = not vim.diagnostic.config().virtual_text
+    local vt_new_config = not type(vim.diagnostic.config().virtual_text) == "table"
     if vt_new_config then
       vt_new_config = _virtual_text
     end

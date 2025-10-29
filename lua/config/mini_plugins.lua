@@ -51,6 +51,15 @@ for name, config in pairs(opts) do
   end)())
 end
 
+
+-- Monkey patch the float `info` window, because is displayed behind the dmenu.
+local mini_completion = require 'mini.completion'
+local _win_info = mini_completion.info_window_options
+mini_completion.info_window_options = function()
+  local info_opts = _win_info()
+  return vim.tbl_deep_extend('force', info_opts, { zindex = 1000 })
+end
+
 -- Treesitter
 
 require 'nvim-treesitter.configs'.setup {
