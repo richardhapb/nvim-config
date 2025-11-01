@@ -1,5 +1,6 @@
 local fzf = require('fzf-lua')
-local utils = require('fzf-lua.utils')
+local fzfutils = require('fzf-lua.utils')
+local utils = require 'functions.utils'
 
 local M = {}
 
@@ -128,9 +129,9 @@ local function format_entry(container)
   local status    = container.Status or "unknown"
 
   local colorized = table.concat({
-    string.format("%-25s", utils.ansi_codes.green(name)),
-    string.format("%-30s", utils.ansi_codes.blue(image)),
-    utils.ansi_codes[get_status_hl(status):lower()](status),
+    string.format("%-25s", fzfutils.ansi_codes.green(name)),
+    string.format("%-30s", fzfutils.ansi_codes.blue(image)),
+    fzfutils.ansi_codes[get_status_hl(status):lower()](status),
   }, "\t")
 
   -- Hidden, stable key: prefer ID; fall back to name
@@ -269,7 +270,7 @@ M.docker_containers = function(opts)
         ["--nth"]            = "1,2,3", -- search only these cols
         ["--preview-window"] = "bottom:50%:wrap:follow",
         ["--header"]         =
-        "Enter: logs/start | C-s: start | C-q: stop | C-d: delete | C-l: logs | C-b: buf log | C-t: shell | C-x: stats",
+        "Enter: logs/start | C-s: start | C-q: stop | C-c: stop prefix | C-d: delete prefix | C-l: logs | C-b: buf log | C-t: shell | C-x: stats",
       },
       preview = [[docker logs -n 50 -f {4}]],
       actions = {
@@ -303,8 +304,9 @@ M.docker_containers = function(opts)
             return
           end
 
+          local escaped = utils.safe_pattern(q)
           for _, c in pairs(container_map) do
-            if c.State ~= "running" and c.State ~= "restarting" and c.Names:match("^" .. q) then
+            if c.State ~= "running" and c.State ~= "restarting" and c.Names:match("^" .. escaped) then
               container_action(c.ID, "remove")
             end
           end
@@ -340,8 +342,8 @@ M.docker_containers = function(opts)
           local q = args and args.query and vim.trim(args.query) or ""
           if q == "" then return end
           for _, c in pairs(container_map) do
-            vim.print(c.State)
-            if (c.State == "running" or c.State == "restarting") and c.Names:match("^" .. q) then
+            local escaped = utils.safe_pattern(q)
+            if (c.State == "running" or c.State == "restarting") and c.Names:match("^" .. escaped) then
               container_action(c.ID, "stop")
             end
           end

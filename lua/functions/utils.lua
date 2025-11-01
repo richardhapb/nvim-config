@@ -1,3 +1,11 @@
+---Ensure a string is safe to use with `gsub`
+---@param pattern string
+---@return string
+local function safe_pattern(pattern)
+  -- In Lua patterns, these are magic characters that need escaping
+  return (pattern:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1"))
+end
+
 local function close_diff_buffers(main_buffer)
   local e, diff_buffers = pcall(vim.api.nvim_buf_get_var, main_buffer, 'diff_buffers')
   if e then
@@ -308,4 +316,5 @@ return {
   buffer_log = buffer_log,
   is_raspberry_pi = is_raspberry_pi,
   is_ssh = is_ssh,
+  safe_pattern = safe_pattern
 }

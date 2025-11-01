@@ -42,6 +42,7 @@ keymap('n', '<C-u>', '<C-u>zz')
 keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
 keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment number' })
+keymap('n', 'mm', '<CMD>make<CR>', { noremap = true, silent = true, desc = 'Make' })
 
 
 -- Remove search highlight if is active

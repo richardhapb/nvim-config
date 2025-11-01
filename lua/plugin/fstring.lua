@@ -1,3 +1,5 @@
+local utils = require 'functions.utils'
+
 LOGGER_REGEX = "^%s*logger%.[^%(]+%("
 QUOTE_REGEX = "f([\"\'])"
 ELEMENT_REGEX = "({[^{}]-})"
@@ -22,15 +24,6 @@ local function resolve_type(element)
   return t
 end
 
-
----Ensure a string is safe to use with `gsub`
----@param pattern string
----@return string
-local function safe_pattern(pattern)
-  -- In Lua patterns, these are magic characters that need escaping
-  return (pattern:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1"))
-end
-
 ---@param element string
 ---@return string
 local function sanitize_element(element)
@@ -48,7 +41,7 @@ local function transform_fstring(fstring)
     changes = changes + 1
 
     local typ = resolve_type(element)
-    local safe = safe_pattern(element)
+    local safe = utils.safe_pattern(element)
     transformed = transformed:gsub(safe, "%%" .. typ, 1)
     element = sanitize_element(element)
     transformed = transformed .. ", " .. element:sub(2, #element - 1)
