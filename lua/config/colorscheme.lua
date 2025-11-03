@@ -51,8 +51,8 @@ local function custom_hl()
       hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
 
       hl(0, "NonText", { fg = "#999999" })
-      hl(0, "SpecialKey", { fg = "#999999" })
-      hl(0, "Whitespace", { fg = "#999999" })
+      hl(0, "SpecialKey", { fg = "#444444" })
+      hl(0, "Whitespace", { fg = "#282828" })
 
       -- Diff
       hl(0, 'DiffAdd', { bg = "#004000" })

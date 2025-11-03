@@ -25,7 +25,7 @@ keymap('n', '<leader>I', '<cmd>source ~/nvim/init.lua<CR>', { desc = 'Source ini
 keymap('n', '<leader>dq', vim.diagnostic.setloclist, { noremap = true, desc = 'Send diagnostics to qf' })
 
 -- Edit
-keymap('n', '<BS>', '<cmd>Explore<cr>', { silent = true })
+keymap('n', '-', '<cmd>Explore<cr>', { silent = true })
 keymap('n', 'x', '"_x', { silent = true })
 keymap('n', 'db', '"_db', { silent = true })
 keymap('n', 'de', '"_de', { silent = true })
