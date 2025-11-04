@@ -89,7 +89,7 @@ local function stop_clients(names)
     ---@type vim.lsp.Client?
     local client = lsputils.get_client_from_name(name)
     if client then
-      client:stop(true)
+      client:stop(5000)
       ---@diagnostic disable-next-line: undefined-field
       if client.rpc and client.rpc.pid then
         ---@diagnostic disable-next-line: undefined-field
@@ -107,49 +107,55 @@ local function start_clients(names)
   end
 end
 
+local function lsp_cmd(opts, cmd_f)
+  local names_arg = opts.args
+  if names_arg == "" then
+    vim.notify("Client name is required", vim.log.levels.ERROR)
+    return
+  end
+
+  local names = vim.split(names_arg, " ", { plain = true })
+  cmd_f(names)
+end
+
+local lsp_cmd_opts = {
+  nargs = 1,
+  desc = "LSP client",
+  complete = lsputils.get_active_clients_names
+}
+
+vim.api.nvim_create_user_command("LspStart",
+  function(opts)
+    lsp_cmd(opts, start_clients)
+  end,
+  lsp_cmd_opts
+)
+
 vim.api.nvim_create_user_command(
   "LspRestart",
   function(opts)
-    local names_arg = opts.args
-    if names_arg == "" then
-      vim.notify("Client name is required", vim.log.levels.ERROR)
-      return
-    end
-    local names = vim.split(names_arg, " ", { plain = true })
-    stop_clients(names)
-    start_clients(names)
+    lsp_cmd(opts, function(names)
+      stop_clients(names)
+      vim.uv.sleep(5000)
+      start_clients(names)
+    end)
   end,
-  {
-    nargs = 1,
-    desc = 'LSP client',
-    complete = lsputils.get_active_clients_names
-  }
+  lsp_cmd_opts
 )
 
 vim.api.nvim_create_user_command(
   "LspStop",
   function(opts)
-    local names_arg = opts.args
-    if names_arg == "" then
-      vim.notify("Client name is required", vim.log.levels.ERROR)
-      return
-    end
-
-    local names = vim.split(names_arg, " ", { plain = true })
-    stop_clients(names)
+    lsp_cmd(opts, stop_clients)
   end,
-  {
-    nargs = 1,
-    desc = 'LSP client',
-    complete = lsputils.get_active_clients_names
-  }
+  lsp_cmd_opts
 )
 
 vim.api.nvim_create_user_command(
   "LspLog",
   function()
     local log = vim.lsp.log.get_filename()
-    vim.cmd ("tabnew " .. log)
+    vim.cmd("tabnew " .. log)
   end,
   {
     nargs = 0,
