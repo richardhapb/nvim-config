@@ -1,5 +1,5 @@
 -- local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "lspdock", "target", "release", "lspdock")
-local excluded_projects = { "pandas", "finitum" }
+local excluded_projects = { "pandas", "finitum", "provider", "collector" }
 
 return {
   cmd = { "pyright-langserver", '--stdio' },

@@ -90,12 +90,6 @@ local function stop_clients(names)
     local client = lsputils.get_client_from_name(name)
     if client then
       client:stop(5000)
-      ---@diagnostic disable-next-line: undefined-field
-      if client.rpc and client.rpc.pid then
-        ---@diagnostic disable-next-line: undefined-field
-        vim.fn.jobstop(client.rpc.pid)
-      end
-      vim.lsp.buf_detach_client(0, client.id)
     end
   end
 end
@@ -103,7 +97,11 @@ end
 ---@param names string[]
 local function start_clients(names)
   for _, name in ipairs(names) do
-    vim.lsp.enable(name, true)
+    local config = vim.lsp._enabled_configs[name].resolved_config
+    local client_id = vim.lsp.start(config)
+    if client_id then
+      vim.lsp.buf_attach_client(0, client_id)
+    end
   end
 end
 

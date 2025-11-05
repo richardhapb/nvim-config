@@ -24,10 +24,10 @@ local lsp_elements = {
   'mypy', -- Used for some python Open source projects
   'cssls',
   "html",
-  "ltex_plus",
+  -- "ltex_plus",
   "ts_ls",
   "yamlls",
-  -- "ty",
+  "ty",
   -- "harper_ls",
   "djls",
   "bashls",
