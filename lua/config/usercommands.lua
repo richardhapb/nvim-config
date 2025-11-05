@@ -1,4 +1,4 @@
-lsputils = require 'functions.lsp'
+local lsputils = require 'functions.lsp'
 
 vim.api.nvim_create_user_command(
   'DiffOrig',
@@ -85,23 +85,14 @@ vim.api.nvim_create_user_command(
 
 ---@param names string[]
 local function stop_clients(names)
-  for _, name in ipairs(names) do
-    ---@type vim.lsp.Client?
-    local client = lsputils.get_client_from_name(name)
-    if client then
-      client:stop(5000)
-    end
-  end
+  vim.lsp.enable(names, false)
 end
 
 ---@param names string[]
 local function start_clients(names)
   for _, name in ipairs(names) do
     local config = vim.lsp._enabled_configs[name].resolved_config
-    local client_id = vim.lsp.start(config)
-    if client_id then
-      vim.lsp.buf_attach_client(0, client_id)
-    end
+    vim.lsp.start(config, { attach = true, silent = false })
   end
 end
 
@@ -112,7 +103,7 @@ local function lsp_cmd(opts, cmd_f)
     return
   end
 
-  local names = vim.split(names_arg, " ", { plain = true })
+  local names = vim.split(names_arg, " ", { plain = true, silent = false, reuse_client = false })
   cmd_f(names)
 end
 
@@ -134,8 +125,7 @@ vim.api.nvim_create_user_command(
   function(opts)
     lsp_cmd(opts, function(names)
       stop_clients(names)
-      vim.uv.sleep(5000)
-      start_clients(names)
+      vim.defer_fn(function() start_clients(names) end, 5000)
     end)
   end,
   lsp_cmd_opts

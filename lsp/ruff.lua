@@ -1,4 +1,4 @@
-local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "cont","ruff", "target", "release", "ruff")
+local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "cont", "ruff", "target", "release", "ruff")
 
 return {
   cmd = { path, 'server' },
@@ -18,12 +18,6 @@ return {
   single_file_support = true,
   trace = "messages",
   settings = {
-    configuration = (function()
-      if vim.fn.filereadable(vim.fn.getcwd() .. "/app/pyproject.toml") then
-        return vim.fn.getcwd() .. "/app/pyproject.toml"
-      end
-      return vim.fn.getcwd() .. "/pyproject.toml"
-    end)(),
     configurationPreference = 'filesystemFirst',
     exclude = { "node_modules", ".git", ".venv" },
     lineLength = 100,

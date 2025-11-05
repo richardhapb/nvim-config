@@ -1,5 +1,66 @@
 local M = {}
 
+---Locate the root directory and optionally enable the LSP
+---only for determinated projects
+---Allowed opts for projects:
+--- - projects  -- Included projects
+--- - excluded_projects
+---@param markers string[]
+---@param opts table?
+---@return function
+M.root_dir = function(markers, opts)
+  return function(bufnr, on_dir)
+    opts = opts or {}
+    local cwd = vim.fn.getcwd()
+    local bufpath = vim.api.nvim_buf_get_name(bufnr)
+
+    local function search_upward(dir)
+      -- Check current directory for markers
+      for _, marker in ipairs(markers) do
+        local marker_path = vim.fs.joinpath(dir, marker)
+        if vim.fn.filereadable(marker_path) == 1 or vim.fn.isdirectory(marker_path) == 1 then
+          return dir
+        end
+      end
+
+      -- Go up one level
+      local parent = vim.fs.dirname(dir)
+      if parent == cwd then -- Reached cwd
+        return nil
+      end
+
+      return search_upward(parent)
+    end
+
+    local root = search_upward(bufpath)
+    -- If projects are passed, match that is in an allowed project
+    if root then
+      -- Check for included projects
+      if opts.projects then
+        for _, project in ipairs(opts.projects) do
+          if cwd:find(project .. "$") then
+            on_dir(root)
+          end
+        end
+      end
+
+      -- Check for excluded projects
+      if opts.excluded_projects then
+        for _, project in ipairs(opts.excluded_projects) do
+          if cwd:find(project .. "$") then
+            return -- Disabled
+          end
+        end
+      end
+    end
+
+    -- Default is enabled if is not included in a list
+    if not opts.projects then
+      on_dir(root)
+    end
+  end
+end
+
 M.search_python_path = function()
   return vim.system({ "which", "python" }):wait().stdout:gsub('\n', '') or
       vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '')

@@ -1,3 +1,4 @@
+local lsputils = require 'functions.lsp'
 local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "cont", "django-language-server", "target", "release", "djls")
 
 if vim.fn.executable(path) == 0 then
@@ -9,14 +10,11 @@ local projects = { "kitchen", "development" }
 
 return {
   cmd = { path, 'serve' },
-  filetypes = (function()
-    local parent = vim.fn.getcwd()
-    for _, project in ipairs(projects) do
-      if parent:find(project .. "$") then
-        return { "htmldjango", "html", "python" }
-      end
+  filetypes = { "htmldjango", "html", "python" },
+  root_dir = function()
+    if vim.fn.executable(path) == 0 then
+      return -- Disabled
     end
-    return { "" }
-  end)(),
-  root_markers = { 'manage.py', 'pyproject.toml', '.git' },
+    return lsputils.root_dir({ 'manage.py', 'pyproject.toml', '.git' }, { projects = projects })
+  end
 }
