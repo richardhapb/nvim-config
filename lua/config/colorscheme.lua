@@ -35,7 +35,7 @@ local function custom_hl()
       hl(0, "ModesVisual", { ctermfg = 0, fg = "#222222", bg = "#c4a7e7" })
 
       -- Theme customization
-      hl(0, 'CursorLine', { bg = "#222222" })
+      hl(0, 'CursorLine', { bg = "#333333" })
       hl(0, 'lCursor', { fg = "#000000" })
       hl(0, 'LineNr', { fg = "#FFFFFF" })
       hl(0, 'LineNrAbove', { fg = "#CCCCCC" })
