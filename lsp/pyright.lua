@@ -1,5 +1,5 @@
 local lsputils = require 'functions.lsp'
-local excluded_projects = { "pandas", "finitum", "provider", "collector" }
+local projects = { "development" }
 
 return {
   cmd = { "pyright-langserver", '--stdio' },
@@ -14,7 +14,7 @@ return {
     'Pipfile',
     'pyrightconfig.json',
     '.git',
-  }, { excluded_projects = excluded_projects }),
+  }, { projects = projects }),
   settings = {
     python = {
       analysis = {

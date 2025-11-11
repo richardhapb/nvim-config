@@ -1,3 +1,4 @@
+local utils = require 'functions.utils'
 local M = {}
 
 ---Locate the root directory and optionally enable the LSP
@@ -38,7 +39,7 @@ M.root_dir = function(markers, opts)
       -- Check for included projects
       if opts.projects then
         for _, project in ipairs(opts.projects) do
-          if cwd:find(project .. "$") then
+          if cwd:find(utils.safe_pattern(project) .. "$") then
             on_dir(root)
           end
         end
@@ -47,7 +48,7 @@ M.root_dir = function(markers, opts)
       -- Check for excluded projects
       if opts.excluded_projects then
         for _, project in ipairs(opts.excluded_projects) do
-          if cwd:find(project .. "$") then
+          if cwd:find(utils.safe_pattern(project) .. "$") then
             return -- Disabled
           end
         end
