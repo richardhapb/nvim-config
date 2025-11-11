@@ -26,7 +26,7 @@ M.root_dir = function(markers, opts)
 
       -- Go up one level
       local parent = vim.fs.dirname(dir)
-      if parent == cwd then -- Reached cwd
+      if parent == cwd:match("(.*)/.-$") then -- Reached cwd
         return nil
       end
 

@@ -45,10 +45,11 @@ vim.opt.cursorline = true
 
 vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
 
+local basic = vim.api.nvim_create_augroup("Basics", { clear = true })
 -- Enable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "*",
-  group = vim.api.nvim_create_augroup("Basics", { clear = true }),
+  group = basic,
   callback = function()
     vim.opt.formatoptions = "cro"
   end,
@@ -67,3 +68,34 @@ vim.opt.eof = false
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
+
+-- fuzzy is not in the docs recommendation, but worth to add to
+vim.o.wildoptions = 'pum,fuzzy'
+-- lastused is specially useful when use cmds like `:b` to move between open buffers
+vim.o.wildmode = 'noselect:lastused,full'
+
+require('vim._extui').enable({}) -- this is a must even if you don't use anything else of this setup
+
+-- Fuzzy finder
+local files_list
+---@param cmdarg string
+function FindFunc(cmdarg, _)
+  if not files_list then
+    local cmd = { 'fd', '--type', 'file', '--relative-path', '--color', 'never', '--hidden', '.'}
+    local files = vim.system(cmd, { text = true }):wait()
+    if not files.stdout then
+      return {}
+    end
+    files_list = vim.split(vim.trim(files.stdout), '\n')
+  end
+  return vim.fn.matchfuzzy(files_list, cmdarg)
+end
+
+vim.o.findfunc = 'v:lua.FindFunc'
+
+vim.api.nvim_create_autocmd({ 'CmdlineLeave' }, {
+  callback = function()
+    files_list = nil
+  end,
+  group = basic,
+})
