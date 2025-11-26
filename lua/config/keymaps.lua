@@ -43,6 +43,7 @@ keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
 keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment number' })
 keymap('n', 'mm', '<CMD>make<CR>', { noremap = true, silent = true, desc = 'Make' })
+keymap('n', '<leader>Q', vim.diagnostic.setloclist, { noremap = true, silent = true, desc = "Diagnostrics to quick fix" })
 
 
 -- Remove search highlight if is active

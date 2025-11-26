@@ -73,29 +73,3 @@ vim.opt.fillchars:append { horiz = "+", vert = "*" }
 vim.o.wildoptions = 'pum,fuzzy'
 -- lastused is specially useful when use cmds like `:b` to move between open buffers
 vim.o.wildmode = 'noselect:lastused,full'
-
-require('vim._extui').enable({}) -- this is a must even if you don't use anything else of this setup
-
--- Fuzzy finder
-local files_list
----@param cmdarg string
-function FindFunc(cmdarg, _)
-  if not files_list then
-    local cmd = { 'fd', '--type', 'file', '--relative-path', '--color', 'never', '--hidden', '.'}
-    local files = vim.system(cmd, { text = true }):wait()
-    if not files.stdout then
-      return {}
-    end
-    files_list = vim.split(vim.trim(files.stdout), '\n')
-  end
-  return vim.fn.matchfuzzy(files_list, cmdarg)
-end
-
-vim.o.findfunc = 'v:lua.FindFunc'
-
-vim.api.nvim_create_autocmd({ 'CmdlineLeave' }, {
-  callback = function()
-    files_list = nil
-  end,
-  group = basic,
-})

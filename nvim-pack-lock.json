@@ -12,57 +12,25 @@
       "rev": "1ee5c1f",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
-    "image": {
-      "rev": "446a8a5",
-      "src": "https://github.com/3rd/image.nvim"
-    },
-    "iron": {
-      "rev": "746414e",
-      "src": "https://github.com/Vigemus/iron.nvim"
-    },
     "jupytext": {
       "rev": "c8baf3a",
       "src": "https://github.com/GCBallesteros/jupytext.nvim"
-    },
-    "magma": {
-      "rev": "ff3deba",
-      "src": "https://github.com/dccsillag/magma-nvim"
     },
     "mini": {
       "rev": "fbb6ad0",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
-    "molten": {
-      "rev": "1341c64b86a339024966f8cff557fead0cd7ae90",
-      "src": "https://github.com/richardhapb/molten-nvim"
-    },
     "neospeller.nvim": {
-      "rev": "b68f35d",
-      "src": "/home/richard/plugins/neospeller.nvim"
+      "rev": "b68f35d49b44d89ba45371045c5980601ffd6a14",
+      "src": "/Users/richard/plugins/neospeller.nvim"
     },
     "neovim": {
       "rev": "72a04c4",
       "src": "https://github.com/rose-pine/neovim"
     },
-    "nvim-dap": {
-      "rev": "881f7dc",
-      "src": "https://github.com/mfussenegger/nvim-dap"
-    },
-    "nvim-dap-python": {
-      "rev": "64652d1",
-      "src": "https://github.com/mfussenegger/nvim-dap-python"
-    },
-    "nvim-dap-ui": {
-      "rev": "cf91d5e",
-      "src": "https://github.com/rcarriga/nvim-dap-ui"
-    },
-    "nvim-dap-virtual-text": {
-      "rev": "fbdb48c",
-      "src": "https://github.com/theHamsta/nvim-dap-virtual-text"
-    },
-    "nvim-nio": {
-      "rev": "21f5324",
-      "src": "https://github.com/nvim-neotest/nvim-nio"
+    "no-neck-pain.nvim": {
+      "rev": "d871043",
+      "src": "https://github.com/shortcuts/no-neck-pain.nvim"
     },
     "nvim-treesitter": {
       "rev": "42fc28ba",
@@ -72,21 +40,13 @@
       "rev": "71385f1",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-textobjects"
     },
-    "one-small-step-for-vimkind": {
-      "rev": "99c22f1",
-      "src": "https://github.com/jbyuki/one-small-step-for-vimkind"
-    },
-    "otter": {
-      "rev": "fc0aa35",
-      "src": "https://github.com/jmbuhr/otter.nvim"
+    "plenary": {
+      "rev": "b9fd5226c2f76c951fc8ed5923d85e4de065e509",
+      "src": "https://github.com/nvim-lua/plenary.nvim"
     },
     "pytest.nvim": {
-      "rev": "f9521b1",
-      "src": "/home/richard/plugins/pytest.nvim"
-    },
-    "quarto": {
-      "rev": "0e94915",
-      "src": "https://github.com/quarto-dev/quarto-nvim"
+      "rev": "697405d5fb4620db5154ae2212bae6c4c1f41afb",
+      "src": "/Users/richard/plugins/pytest.nvim"
     },
     "slime": {
       "rev": "67b24bf",
@@ -99,10 +59,6 @@
     "undotree": {
       "rev": "1c3e753",
       "src": "https://github.com/jiaoshijie/undotree"
-    },
-    "wezterm": {
-      "rev": "032c33b",
-      "src": "https://github.com/willothy/wezterm.nvim"
     }
   }
 }

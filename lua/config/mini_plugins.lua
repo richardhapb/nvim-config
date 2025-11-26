@@ -8,6 +8,7 @@ vim.pack.add {
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
+  { src = "https://github.com/shortcuts/no-neck-pain.nvim" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
@@ -186,6 +187,8 @@ for km, direction in pairs(tn) do
   vim.keymap.set("n", km, "<cmd><C-U>TmuxNavigate" .. direction,
     { desc = "TmuxNav navigate " .. direction, silent = true })
 end
+
+vim.keymap.set("n", "<localleader>N", ":NoNeckPain<CR>", { silent = true, noremap = true })
 
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })

@@ -6,15 +6,10 @@ if vim.fn.executable(path) == 0 then
   return {}
 end
 
-local projects = { "kitchen", "development" }
+local projects = { "main", "development" }
 
 return {
   cmd = { path, 'serve' },
   filetypes = { "htmldjango", "html", "python" },
-  root_dir = function()
-    if vim.fn.executable(path) == 0 then
-      return -- Disabled
-    end
-    return lsputils.root_dir({ 'manage.py', 'pyproject.toml', '.git' }, { projects = projects })
-  end
+  root_dir = lsputils.root_dir({ 'manage.py', 'pyproject.toml', '.git' }, { projects = projects })
 }
