@@ -32,6 +32,10 @@
       "rev": "d871043",
       "src": "https://github.com/shortcuts/no-neck-pain.nvim"
     },
+    "nvim": {
+      "rev": "193e123cdbc4dd3e86db883d55349e9587f0ded6",
+      "src": "https://github.com/catppuccin/nvim"
+    },
     "nvim-treesitter": {
       "rev": "42fc28ba",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"

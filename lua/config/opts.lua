@@ -32,6 +32,9 @@ if vim.fn.has('nvim-0.11') == 1 then
   vim.o.pumblend = 0 -- crisp
 end
 
+vim.opt.updatetime = 50
+vim.opt.timeoutlen = 300
+
 vim.opt.wrap = false
 vim.g.mapleader = " "
 

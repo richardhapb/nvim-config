@@ -15,10 +15,14 @@ local function custom_hl()
       local visual = { bg = "#993333" }
 
       -- Transparency
-      hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
-      hl(0, 'NormalNC', { bg = "NONE", fg = "#CCCCCC" })
+      -- hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
+      -- hl(0, 'NormalNC', { bg = "NONE", fg = "#CCCCCC" })
       hl(0, 'NormalFloat', { bg = "NONE" })
       hl(0, 'FloatBorder', { bg = 'NONE' })
+      hl(0, 'SignColumn', { bg = "NONE" })
+      hl(0, 'VertSplit', { bg = "NONE" })
+      hl(0, 'FoldColumn', { bg = "NONE" })
+      hl(0, 'Folded', { bg = "NONE" })
 
       -- LSP autocompletion
       vim.o.pumborder = 'rounded'
@@ -58,12 +62,6 @@ local function custom_hl()
       hl(0, 'DiffAdd', { bg = "#004000" })
       hl(0, 'DiffChange', { bg = "#000040" })
       hl(0, 'DiffDelete', { bg = "#400000" })
-
-      -- Transparent
-      hl(0, 'SignColumn', { bg = "NONE" })
-      hl(0, 'VertSplit', { bg = "NONE" })
-      hl(0, 'FoldColumn', { bg = "NONE" })
-      hl(0, 'Folded', { bg = "NONE" })
 
       -- Mode
       hl(0, 'ModeMsg', { bg = "NONE", fg = "#FFCC00" })

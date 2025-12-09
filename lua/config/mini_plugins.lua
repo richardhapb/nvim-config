@@ -1,6 +1,9 @@
 vim.pack.add {
-  { src = "https://github.com/nvim-mini/mini.nvim",                             name = "mini" },
+  -- Colorscheme
   { src = "https://github.com/rose-pine/neovim" },
+
+  -- Tools
+  { src = "https://github.com/nvim-mini/mini.nvim",                             name = "mini" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/ibhagwan/fzf-lua" },
