@@ -15,9 +15,10 @@ local function custom_hl()
       local visual = { bg = "#993333" }
 
       -- Transparency
-      -- hl(0, 'Normal', { bg = "NONE", fg = "#CCCCCC" })
-      -- hl(0, 'NormalNC', { bg = "NONE", fg = "#CCCCCC" })
-      hl(0, 'NormalFloat', { bg = "NONE" })
+      hl(0, 'Normal', { bg = "NONE", ctermbg = "None" })
+      hl(0, 'FzfLuaNormal', { bg = "NONE", ctermbg = "None" })
+      hl(0, 'NormalNC', { bg = "NONE", ctermbg = "None" })
+      hl(0, 'NormalFloat', { bg = "NONE", ctermbg = "None" })
       hl(0, 'FloatBorder', { bg = 'NONE' })
       hl(0, 'SignColumn', { bg = "NONE" })
       hl(0, 'VertSplit', { bg = "NONE" })
@@ -51,6 +52,8 @@ local function custom_hl()
       hl(0, 'Comment', { fg = "#ffcc00" })
       hl(0, 'LspReferenceTarget', { bg = "#111111" })
       hl(0, 'LspReferenceText', { bg = "#111111" })
+
+      -- Rose pine
       hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
       hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
 

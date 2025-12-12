@@ -91,7 +91,6 @@ local function process_buffer(node_name)
       local range = { node:range() }
       local indentation = vim.fn.getline(range[1] + 1)
 
-      ---@diagnostic disable-next-line: undefined-field
       indentation = indentation:match("^%s+") or ""
 
       local delimiters = { open = '{', close = '}' }
