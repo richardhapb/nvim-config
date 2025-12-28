@@ -31,7 +31,6 @@ keymap('n', 'de', '"_de', { silent = true })
 keymap('n', 'dw', '"_dw', { silent = true })
 keymap('n', '<leader>sa', 'ggVG', { silent = true, desc = 'Select all' })
 keymap('n', 'D', '"_d$', { silent = true })
-keymap('x', 'p', '"_xP', { silent = true })
 keymap('v', 'J', ':m \'>+1<CR>gv=gv', { silent = true })
 keymap('v', 'K', ':m \'<-2<CR>gv=gv', { silent = true })
 keymap('n', '*', '*N', { noremap = true, silent = true })
@@ -131,13 +130,14 @@ local create_note = function(note, work)
   if note == '' then
     return
   end
+  local date = os.date('%y%m%d')
 
   local base_path = vim.fs.joinpath(vim.fn.expand('$NOTES'))
   if work then
     base_path = vim.fs.joinpath(base_path, "work")
   end
 
-  local path = vim.fs.joinpath(base_path, 'inbox', note .. '.md')
+  local path = vim.fs.joinpath(base_path, 'inbox', date .. "-" .. note .. '.md')
 
   vim.cmd('edit ' .. path)
   vim.notify('Note ' .. path .. ' loaded successfully', vim.log.levels.INFO)

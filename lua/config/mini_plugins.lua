@@ -14,7 +14,6 @@ vim.pack.add {
   { src = "https://github.com/shortcuts/no-neck-pain.nvim" },
 
   -- Jupyter-Notebooks
-  { src = "https://github.com/GCBallesteros/jupytext.nvim",                     name = "jupytext" },
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
 
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
@@ -195,8 +194,6 @@ vim.keymap.set("n", "<localleader>N", ":NoNeckPain<CR>", { silent = true, norema
 
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
-
-require 'jupytext'.setup()
 
 --- My plugins
 --

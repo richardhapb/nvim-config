@@ -32,9 +32,6 @@ if vim.fn.has('nvim-0.11') == 1 then
   vim.o.pumblend = 0 -- crisp
 end
 
-vim.opt.updatetime = 50
-vim.opt.timeoutlen = 300
-
 vim.opt.wrap = false
 vim.g.mapleader = " "
 
@@ -45,6 +42,7 @@ vim.opt.fileencoding = "utf-8"
 
 vim.opt.mouse = ''
 vim.opt.cursorline = true
+vim.colorcolumn = 100
 
 vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
 
