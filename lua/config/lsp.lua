@@ -30,7 +30,7 @@ local lsp_elements = {
   "ty",
   -- "harper_ls",
   "djls",
-  "pydj",
+  "djch",
   "bashls",
   "jsonls",
   'gopls',
