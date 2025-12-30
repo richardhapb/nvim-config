@@ -288,7 +288,7 @@ function M.send_to_copilot(content, start, last)
       M.copilot_handler_port = available_port
 
       M.copilot_handler = vim.fn.jobstart(
-        { "copilot-chat", "tcp", "--port", tostring(available_port), "--model", "claude-3.7-sonnet" },
+        { "copilot-chat", "tcp", "--port", tostring(available_port) },
         {
           cwd = vim.fn.getcwd(),
           env = { ["RUST_LOG"] = "copilot_chat=trace" },
