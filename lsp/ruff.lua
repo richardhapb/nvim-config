@@ -1,7 +1,7 @@
-local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "lspdock", "target", "release", "lspdock")
+local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "cont", "ruff", "target", "release", "ruff")
 
 return {
-  cmd = { path, "--exec", "ruff", "--", 'server' },
+  cmd = { path, 'server' },
   filetypes = { 'python' },
   root_markers = {
     'pyproject.toml',

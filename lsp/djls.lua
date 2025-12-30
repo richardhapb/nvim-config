@@ -10,6 +10,6 @@ local projects = { "main", "development" }
 
 return {
   cmd = { path, 'serve' },
-  filetypes = { "htmldjango", "html", "python" },
+  filetypes = { "htmldjango" },
   root_dir = lsputils.root_dir({ 'manage.py', 'pyproject.toml', '.git' }, { projects = projects })
 }
