@@ -8,7 +8,7 @@ end
 
 return {
   cmd = { path, 'server' },
-  cmd_env = { RUST_LOG = "tower_lsp=none,django-check=trace" },
+  cmd_env = { RUST_LOG = "tower_lsp=off,django_check=trace" },
   filetypes = { "python" },
   root_dir = lsputils.root_dir({ 'manage.py', 'pyproject.toml', '.git' })
 }
