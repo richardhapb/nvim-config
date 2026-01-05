@@ -13,17 +13,20 @@ return {
   },
   settings = {
     ["rust-analyzer"] = {
+      diagnostics = {
+        disabled = { "inactive-code" },
+      },
       cargo = {
         features = "all",
         targetDir = "target/ra",
-        allTargets = true
+        allTargets = true,
       },
       checkOnSave = {
         enable = true,
       },
       check = {
         command = "clippy",
-        allTargets = true
+        allTargets = true,
       },
       files = {
         exclude = {

@@ -1,5 +1,5 @@
 local lsputils = require 'functions.lsp'
-local path = vim.fs.joinpath(vim.fn.expand("$HOME"), ".local", "bin", "djch")
+local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "django-check", "target", "debug", "djch")
 
 if vim.fn.executable(path) == 0 then
   vim.lsp.enable("djch", false)
