@@ -12,7 +12,7 @@ local function custom_hl()
     callback = function()
       local hl = vim.api.nvim_set_hl
 
-      local visual = { bg = "#993333" }
+      local visual = { bg = "#5194af" }
 
       -- Transparency
       hl(0, 'Normal', { bg = "NONE", ctermbg = "None" })
@@ -49,7 +49,7 @@ local function custom_hl()
       hl(0, 'StatusLine', { bg = "#333333", fg = "#CCCCCC" })
       hl(0, 'StatusLineNC', { bg = "#333333", fg = "#BBBBBB" })
       hl(0, 'DiagnosticUnnecessary', { fg = "#cccccc" })
-      hl(0, 'Comment', { fg = "#ffcc00" })
+      hl(0, 'Comment', { fg = "#9999cc" })
       hl(0, 'LspReferenceTarget', { bg = "#111111" })
       hl(0, 'LspReferenceText', { bg = "#111111" })
 

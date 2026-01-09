@@ -67,6 +67,9 @@ vim.opt.endofline = false
 vim.opt.eol = false
 vim.opt.eof = false
 
+-- netwr awful banner
+vim.g.netrw_banner = false
+
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
 

@@ -1,6 +1,6 @@
 local path = vim.fs.joinpath(vim.fn.expand("$DEV"), "lspdock", "target", "release", "lspdock")
 local lsputils = require 'functions.lsp'
-local projects = { "development" }
+local projects = { "nothing" }
 
 return {
   cmd = { path, "--exec", "pyright-langserver", "--", '--stdio' },
