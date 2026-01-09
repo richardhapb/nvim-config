@@ -31,6 +31,7 @@ local lsp_elements = {
   -- "harper_ls",
   "djls",
   "djch",
+  "zls",
   "bashls",
   "jsonls",
   'gopls',
