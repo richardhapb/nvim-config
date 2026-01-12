@@ -25,6 +25,7 @@ keymap('n', '<leader>dq', vim.diagnostic.setloclist, { noremap = true, desc = 'S
 
 -- Edit
 keymap('n', '<C-s>', '<cmd>Explore<cr>', { silent = true })
+keymap('n', ';;', '<cmd>:w<cr>', { silent = true })
 keymap('n', 'x', '"_x', { silent = true })
 keymap('x', 'p', '"_xP', { silent = true })
 keymap('n', 'db', '"_db', { silent = true })
