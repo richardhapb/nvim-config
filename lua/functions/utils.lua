@@ -303,6 +303,15 @@ local function is_raspberry_pi()
   return false
 end
 
+local function create_worktree(wt_name, branch_name)
+  vim.system({"git", "worktree", "add", wt_name, branch_name}, function(out)
+    if out.code ~= 0 then
+      vim.notify("Error creating worktree: ", out.stdout, vim.log.levels.ERROR)
+      return
+    end
+  end):wait()
+end
+
 return {
   get_root_cwd_dir = get_root_cwd_dir,
   get_git_cwd = get_git_cwd,
@@ -316,5 +325,6 @@ return {
   buffer_log = buffer_log,
   is_raspberry_pi = is_raspberry_pi,
   is_ssh = is_ssh,
-  safe_pattern = safe_pattern
+  safe_pattern = safe_pattern,
+  create_worktree = create_worktree,
 }

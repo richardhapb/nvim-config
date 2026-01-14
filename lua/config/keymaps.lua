@@ -246,7 +246,7 @@ keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true,
 -- New worktree with branch name
 keymap('n', '<leader>gw', function()
   local name = vim.fn.input('Worktree name: ')
-  require 'git-worktree'.create_worktree(name, name)
+  utils.create_worktree(name, name)
 end, { silent = true, desc = 'Git worktree' })
 
 
@@ -279,7 +279,7 @@ keymap('n', '<leader>g+', function()
     vim.notify('Branch ' .. branch_name .. ' set upstream successfully', vim.log.levels.INFO)
   end
 
-  require 'plugin.pickers.git'.worktree_action(worktree_name, "add", branch_name)
+  utils.create_worktree(worktree_name, branch_name)
 
   vim.notify('Branch ' .. branch_name .. ' created successfully', vim.log.levels.INFO)
 end, { silent = true, desc = 'Git add a branch and switch' })
