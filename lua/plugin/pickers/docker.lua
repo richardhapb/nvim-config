@@ -332,8 +332,9 @@ M.docker_containers = function(opts)
         ["ctrl-r"] = function(_, args)
           local q = args and args.query and vim.trim(args.query) or ""
           if q == "" then return end
+          local escaped = utils.safe_pattern(q)
           for _, c in pairs(container_map) do
-            if c.State ~= "running" and c.State ~= "restarting" and c.Names:match("^" .. q) then
+            if c.State ~= "running" and c.State ~= "restarting" and c.Names:match("^" .. escaped) then
               container_action(c.ID, "start")
             end
           end
@@ -341,8 +342,8 @@ M.docker_containers = function(opts)
         ["ctrl-c"] = function(_, args)
           local q = args and args.query and vim.trim(args.query) or ""
           if q == "" then return end
+          local escaped = utils.safe_pattern(q)
           for _, c in pairs(container_map) do
-            local escaped = utils.safe_pattern(q)
             if (c.State == "running" or c.State == "restarting") and c.Names:match("^" .. escaped) then
               container_action(c.ID, "stop")
             end
