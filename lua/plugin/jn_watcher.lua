@@ -14,8 +14,8 @@ M.setup = function()
     return vim.notify("Error setting timer")
   end
 
-  -- Start timer with 0ms delay, 5m interval
-  timer:start(0, 300000, vim.schedule_wrap(function()
+  -- Start timer with 0ms delay, 11m interval
+  timer:start(0, 700000, vim.schedule_wrap(function()
     if running then
       if vim.system({ "pgrep", "jn" }):wait().code ~= 0 then
         vim.notify("jn is not running", vim.log.levels.WARN)
