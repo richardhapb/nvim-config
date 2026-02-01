@@ -1,6 +1,5 @@
 return {
-  init_options = { hostInfo = 'neovim' },
-  cmd = { 'typescript-language-server', '--stdio' },
+  cmd = { 'bunx', 'typescript-language-server', '--stdio' },
   filetypes = {
     'javascript',
     'javascriptreact',
@@ -23,4 +22,31 @@ return {
     on_dir(project_root)
   end,
   single_file_support = true,
+
+  init_options = {
+    hostInfo = "neovim",
+    preferences = {
+      quotePreference = "single",
+    },
+  },
+
+  settings = {
+    -- this is the workspace/didChangeConfiguration payload!
+    -- https://github.com/typescript-language-server/typescript-language-server/blob/master/docs/configuration.md#preferences-options
+    typescript = {
+      format = {
+        tabSize = 2,
+        indentSize = 2,
+        convertTabsToSpaces = true,
+      }
+    },
+    javascript = {
+      format = {
+        tabSize = 2,
+        indentSize = 2,
+        convertTabsToSpaces = true,
+      }
+    },
+  },
+
 }

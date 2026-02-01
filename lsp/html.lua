@@ -1,5 +1,5 @@
 return {
-  cmd = { 'vscode-html-language-server', '--stdio' },
+  cmd = { "bunx", 'vscode-html-language-server', '--stdio' },
   filetypes = { 'html', "htmldjango" },
   root_markers = { 'package.json', '.git' },
   single_file_support = true,

@@ -1,5 +1,5 @@
 return {
-  cmd = { 'bash-language-server', 'start' },
+  cmd = { 'bunx', 'bash-language-server', 'start' },
   settings = {
     bashIde = {
       -- Glob pattern for finding and parsing shell script files in the workspace.

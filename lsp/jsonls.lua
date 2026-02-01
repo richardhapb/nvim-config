@@ -1,5 +1,5 @@
 return {
-  cmd = { 'vscode-json-language-server', '--stdio' },
+  cmd = { 'bunx', 'vscode-json-languageserver', '--stdio' },
   filetypes = { 'json', 'jsonc' },
   init_options = {
     provideFormatter = true,

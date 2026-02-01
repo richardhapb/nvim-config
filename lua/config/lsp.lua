@@ -37,6 +37,7 @@ local lsp_elements = {
   'gopls',
   "astro",
   "rust_analyzer",
+  "tailwind"
 }
 
 if not utils.is_raspberry_pi() then

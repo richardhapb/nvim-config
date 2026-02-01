@@ -71,7 +71,7 @@ require 'nvim-treesitter.configs'.setup {
     "markdown", "markdown_inline", "html", "css", "json",
     "sql", "gitignore", "dockerfile", "rust", "c", "go", "make",
     "mermaid", "astro", "yaml", "xml", "bash", "toml", "htmldjango",
-    "latex"
+    "latex", "tsx"
   },
   highlight = {
     enable = true,
