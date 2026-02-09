@@ -18,15 +18,13 @@ return {
       },
       cargo = {
         features = "all",
-        targetDir = "target/ra",
-        allTargets = true,
+        targetDir = "target/debug",
       },
       checkOnSave = {
         enable = true,
       },
       check = {
         command = "clippy",
-        allTargets = true,
       },
       files = {
         exclude = {
