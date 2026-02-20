@@ -147,7 +147,8 @@ end
 ---@param args table Docker command arguments
 ---@param callback? function Callback to execute on success
 local function docker_exec(args, callback)
-  local cmd = vim.list_extend({ "docker" }, args or {})
+  -- Include timeout to avoid orphan command executions
+  local cmd = vim.list_extend({ "timeout", "10", "docker" }, args or {})
   vim.system(cmd, {
     text = true
   }, function(result)

@@ -20,7 +20,7 @@ if vim.fn.has("linux") then
 end
 
 -- Load environment variables
-require("config.colorscheme").enable_custom("rose-pine")
+require("config.colorscheme").enable_custom("gruvbox-dark-hard")
 pcall(dofile, vim.fs.joinpath(vim.fn.stdpath("config"), ".env.lua"))
 
 vim.api.nvim_create_autocmd("VimEnter", {

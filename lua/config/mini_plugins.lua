@@ -1,6 +1,7 @@
 vim.pack.add {
   -- Colorscheme
   { src = "https://github.com/rose-pine/neovim" },
+  { src = "https://github.com/wincent/base16-nvim" },
 
   -- Tools
   { src = "https://github.com/nvim-mini/mini.nvim",                             name = "mini" },
@@ -13,6 +14,7 @@ vim.pack.add {
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
   { src = "https://github.com/shortcuts/no-neck-pain.nvim" },
+  { src = "https://github.com/folke/trouble.nvim" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -116,6 +118,10 @@ require "treesitter-context".setup({
 require "gitsigns".setup()
 vim.cmd "packadd fugitive"
 
+-- Trouble
+
+require "trouble".setup()
+
 -- Picker
 
 local fzf = require "fzf-lua"
@@ -136,6 +142,10 @@ local fzf_files = {
     ["--layout"] = "default",
   },
 }
+
+local config = require("fzf-lua.config")
+local actions = require("trouble.sources.fzf").actions
+config.defaults.actions.files["ctrl-t"] = actions.open
 
 --  files auto-completion with fzf
 vim.keymap.set({ "n", "v", "i" }, "<C-x><C-f>",

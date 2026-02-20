@@ -1,6 +1,6 @@
 local M = {}
 
-local function custom_hl()
+local function custom_hl(cs)
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
       vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
@@ -12,7 +12,13 @@ local function custom_hl()
     callback = function()
       local hl = vim.api.nvim_set_hl
 
-      local visual = { bg = "#5194af" }
+      if cs == "rose-pine" then
+        local visual = { bg = "#5194af" }
+
+        -- Visual
+        hl(0, 'Visual', visual)
+        hl(0, 'VisualNOS', visual)
+      end
 
       -- Transparency
       hl(0, 'Normal', { bg = "NONE", ctermbg = "None" })
@@ -49,13 +55,30 @@ local function custom_hl()
       hl(0, 'StatusLine', { bg = "#333333", fg = "#CCCCCC" })
       hl(0, 'StatusLineNC', { bg = "#333333", fg = "#BBBBBB" })
       hl(0, 'DiagnosticUnnecessary', { fg = "#cccccc" })
-      hl(0, 'Comment', { fg = "#9999cc" })
       hl(0, 'LspReferenceTarget', { bg = "#111111" })
       hl(0, 'LspReferenceText', { bg = "#111111" })
 
+      local comment = "#99aa99"
+      if cs == "rose-pine" then
+        comment = "#9999cc"
+      end
+      hl(0, 'Comment', { fg = comment })
+
       -- Rose pine
-      hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
-      hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
+      if cs == "rose-pine" then
+        hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
+        hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
+      end
+
+      -- Soft colors
+      if cs ~= "rose-pine" then
+        local python_var_fg = "#bbbbbb"
+        hl(0, '@variable.python', { fg = python_var_fg, bg = nil })
+        hl(0, '@variable.parameter.python', { fg = python_var_fg, bg = nil })
+        hl(0, '@lsp.type.variable.python', { fg = python_var_fg, bg = nil })
+        hl(0, '@lsp.type.parameter.python', { fg = python_var_fg, bg = nil })
+      end
+
 
       hl(0, "NonText", { fg = "#999999" })
       hl(0, "SpecialKey", { fg = "#444444" })
@@ -69,10 +92,6 @@ local function custom_hl()
       -- Mode
       hl(0, 'ModeMsg', { bg = "NONE", fg = "#FFCC00" })
 
-      -- Visual
-      hl(0, 'Visual', visual)
-      hl(0, 'VisualNOS', visual)
-
       -- Diagnostics
       hl(0, 'DiagnosticError', { fg = "#CC0000", bg = nil })
       hl(0, 'DiagnosticWarn', { fg = "#FFFF00", bg = nil })
@@ -84,11 +103,12 @@ local function custom_hl()
       hl(0, 'DiagnosticVirtualTextInfo', { fg = "#AAAAAA", bg = nil })
     end
   })
+
+  vim.cmd("colorscheme " .. cs)
 end
 
 function M.enable_custom(cs)
-  custom_hl()
-  vim.cmd("colorscheme " .. cs)
+  custom_hl(cs)
 end
 
 return M

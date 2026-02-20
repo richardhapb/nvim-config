@@ -1,5 +1,9 @@
 {
   "plugins": {
+    "base16-nvim": {
+      "rev": "f64e38de3ca77735303f83ef149ecec1c106d488",
+      "src": "https://github.com/wincent/base16-nvim"
+    },
     "fugitive": {
       "rev": "61b51c0",
       "src": "https://github.com/tpope/vim-fugitive"
@@ -67,6 +71,10 @@
     "tokyonight.nvim": {
       "rev": "5da1b76e64daf4c5d410f06bcb6b9cb640da7dfd",
       "src": "https://github.com/folke/tokyonight.nvim"
+    },
+    "trouble.nvim": {
+      "rev": "bd67efe408d4816e25e8491cc5ad4088e708a69a",
+      "src": "https://github.com/folke/trouble.nvim"
     },
     "undotree": {
       "rev": "1c3e753",
