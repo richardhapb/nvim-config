@@ -276,6 +276,10 @@ M.on_attach = function(client, bufnr)
     M.setup_ltex(client, bufnr)
   end
 
+  -- Less highlight bullshit from the LSP
+  -- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
+  client.server_capabilities.semanticTokensProvider = nil
+
   M.set_keymaps(bufnr)
 end
 

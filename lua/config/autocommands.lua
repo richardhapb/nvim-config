@@ -15,6 +15,14 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end
 })
 
+vim.api.nvim_create_autocmd("BufEnter", {
+  group = vim.api.nvim_create_augroup("Simplicity", { clear = true }),
+  callback = function()
+    -- Less highlight bullshit
+    vim.treesitter.stop()
+  end
+})
+
 vim.api.nvim_create_autocmd("FileType", {
   callback = function()
     pcall(vim.treesitter.start)

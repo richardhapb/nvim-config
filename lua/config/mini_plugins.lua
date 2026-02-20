@@ -77,7 +77,7 @@ require 'nvim-treesitter.configs'.setup {
     "latex", "tsx"
   },
   highlight = {
-    enable = true,
+    enable = false,
   },
   indent = {
     enable = true,

@@ -70,16 +70,6 @@ local function custom_hl(cs)
         hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
       end
 
-      -- Soft colors
-      if cs ~= "rose-pine" then
-        local python_var_fg = "#bbbbbb"
-        hl(0, '@variable.python', { fg = python_var_fg, bg = nil })
-        hl(0, '@variable.parameter.python', { fg = python_var_fg, bg = nil })
-        hl(0, '@lsp.type.variable.python', { fg = python_var_fg, bg = nil })
-        hl(0, '@lsp.type.parameter.python', { fg = python_var_fg, bg = nil })
-      end
-
-
       hl(0, "NonText", { fg = "#999999" })
       hl(0, "SpecialKey", { fg = "#444444" })
       hl(0, "Whitespace", { fg = "#282828" })
