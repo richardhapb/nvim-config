@@ -1,6 +1,7 @@
+local utils = require "functions.utils"
 local M = {}
 
-local function custom_hl(cs)
+local function custom_hl()
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
       vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
@@ -9,16 +10,10 @@ local function custom_hl(cs)
 
   vim.api.nvim_create_autocmd('ColorScheme', {
     group = vim.api.nvim_create_augroup("Colorscheme", { clear = true }),
-    callback = function()
+    callback = function(args)
+      local cs = args.match
+      local rose_pine = utils.safe_pattern("rose-pine")
       local hl = vim.api.nvim_set_hl
-
-      if cs == "rose-pine" then
-        local visual = { bg = "#5194af" }
-
-        -- Visual
-        hl(0, 'Visual', visual)
-        hl(0, 'VisualNOS', visual)
-      end
 
       -- Transparency
       hl(0, 'Normal', { bg = "NONE", ctermbg = "None" })
@@ -59,16 +54,22 @@ local function custom_hl(cs)
       hl(0, 'LspReferenceText', { bg = "#111111" })
 
       local comment = "#99aa99"
-      if cs == "rose-pine" then
-        comment = "#9999cc"
-      end
-      hl(0, 'Comment', { fg = comment })
 
       -- Rose pine
-      if cs == "rose-pine" then
+      if cs:find(rose_pine) then
+        local visual = { bg = "#5194af" }
+
+        -- Visual
+        hl(0, 'Visual', visual)
+        hl(0, 'VisualNOS', visual)
+
+        -- Tokens
+        comment = "#9999cc"
         hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
+        hl(0, 'String', { fg = "#ddaa00", bg = nil })
         hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
       end
+      hl(0, 'Comment', { fg = comment })
 
       hl(0, "NonText", { fg = "#999999" })
       hl(0, "SpecialKey", { fg = "#444444" })
@@ -93,12 +94,12 @@ local function custom_hl(cs)
       hl(0, 'DiagnosticVirtualTextInfo', { fg = "#AAAAAA", bg = nil })
     end
   })
-
-  vim.cmd("colorscheme " .. cs)
 end
 
 function M.enable_custom(cs)
-  custom_hl(cs)
+  custom_hl()
+
+  vim.cmd("colorscheme " .. cs)
 end
 
 return M

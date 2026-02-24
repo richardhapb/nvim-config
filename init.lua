@@ -19,7 +19,7 @@ if vim.fn.has("linux") then
   require("config.linux")
 end
 
-require("config.colorscheme").enable_custom("gruvbox-dark-hard")
+require("config.colorscheme").enable_custom("rose-pine-main")
 
 -- Load environment variables
 pcall(dofile, vim.fs.joinpath(vim.fn.stdpath("config"), ".env.lua"))
