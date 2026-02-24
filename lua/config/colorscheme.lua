@@ -56,19 +56,20 @@ local function custom_hl()
       local comment = "#99aa99"
 
       -- Rose pine
+      local visual = { bg = "#5194af" }
       if cs:find(rose_pine) then
-        local visual = { bg = "#5194af" }
-
-        -- Visual
-        hl(0, 'Visual', visual)
-        hl(0, 'VisualNOS', visual)
-
+        visual = { bg = "#ab4f52" }
         -- Tokens
         comment = "#9999cc"
         hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
         hl(0, 'String', { fg = "#ddaa00", bg = nil })
         hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
       end
+
+      -- Visual
+      hl(0, 'Visual', visual)
+      hl(0, 'VisualNOS', visual)
+
       hl(0, 'Comment', { fg = comment })
 
       hl(0, "NonText", { fg = "#999999" })
