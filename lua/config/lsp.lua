@@ -6,7 +6,7 @@ pcall(vim.diagnostic.config, {
   signs = true,
   float = {
     border = lsp_utils.border,
-},
+  },
   virtual_lines = false,
   update_in_insert = false,
   virtual_text = lsp_utils.virtual_text
@@ -83,6 +83,10 @@ vim.lsp.config("pyright", {
 ------------------------------------------------------------------------------------------------------------------------
 
 for _, name in ipairs(lsp_elements) do
+  if name:find("^zls") then
+    -- ZLS snippets are annoying
+    capabilities.textDocument.completion.completionItem.snippetSupport = false
+  end
   local config = {
     on_attach = lsp_utils.on_attach,
     capabilities = capabilities,

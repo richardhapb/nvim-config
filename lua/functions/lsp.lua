@@ -213,13 +213,9 @@ M.setup_ltex = function(client, bufnr)
 
     vim.keymap.set({ "n", "x" }, "zg", function()
       language = ltex_config.ltex.language or "en-US"
-      local vim_lang = language
-
       if language == "en-US" then
         vim_lang = "en"
       end
-
-      local file = vim.fn.stdpath("config") .. "/spell/" .. vim_lang .. ".utf-8.add"
 
       vim.opt.spelllang = vim_lang
       vim.opt.spellfile = file
