@@ -26,7 +26,7 @@
     },
     "neospeller.nvim": {
       "rev": "b68f35d49b44d89ba45371045c5980601ffd6a14",
-      "src": "/home/richard/plugins/neospeller.nvim"
+      "src": "/Users/richard.penabonifaz/plugins/neospeller.nvim"
     },
     "neovim": {
       "rev": "72a04c4",
@@ -58,7 +58,7 @@
     },
     "pytest.nvim": {
       "rev": "697405d5fb4620db5154ae2212bae6c4c1f41afb",
-      "src": "/home/richard/plugins/pytest.nvim"
+      "src": "/Users/richard.penabonifaz/plugins/pytest.nvim"
     },
     "slime": {
       "rev": "67b24bf",

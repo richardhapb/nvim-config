@@ -28,7 +28,7 @@ vim.cmd "packadd! termdebug"
 vim.cmd "packadd! cfilter"
 
 -- Mini plugins for specific tasks
-local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', 'jn_watcher', "executor",
+local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
   "aligner", "statusline", "jupyter", "fstring" }
 
 for _, plugin in ipairs(plugins) do
@@ -74,7 +74,7 @@ require 'nvim-treesitter.configs'.setup {
     "markdown", "markdown_inline", "html", "css", "json",
     "sql", "gitignore", "dockerfile", "rust", "c", "go", "make",
     "mermaid", "astro", "yaml", "xml", "bash", "toml", "htmldjango",
-    "latex", "tsx", "zig"
+    "tsx", "zig", "ruby"
   },
   highlight = {
     enable = false,
