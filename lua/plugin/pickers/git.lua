@@ -149,10 +149,12 @@ local function format_entry(branch, max_ref)
   local ref = branch.ref or ""
   local date = branch.date or ""
 
+  local ref_padded = ref .. string.rep(" ", math.max(0, max_ref - #ref))
+
   local colorized = string.format(
-    "%-5s %-" .. max_ref + 11 .. "s %-50s",
+    "%-5s %s %s",
     fzfutils.ansi_codes.cyan(active),
-    fzfutils.ansi_codes.green(ref),
+    fzfutils.ansi_codes.green(ref_padded),
     fzfutils.ansi_codes.red(date)
   )
 
