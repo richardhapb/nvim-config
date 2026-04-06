@@ -1,19 +1,19 @@
 {
   "plugins": {
     "base16-nvim": {
-      "rev": "f64e38de3ca77735303f83ef149ecec1c106d488",
+      "rev": "389f1c9af5dc9e3e32ae674e66f57c53383da9c8",
       "src": "https://github.com/wincent/base16-nvim"
     },
     "fugitive": {
-      "rev": "61b51c0",
+      "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
       "src": "https://github.com/tpope/vim-fugitive"
     },
     "fzf-lua": {
-      "rev": "c0c0926",
+      "rev": "9f0432fdd7825ab163520045831a40b6df82ea28",
       "src": "https://github.com/ibhagwan/fzf-lua"
     },
     "gitsigns.nvim": {
-      "rev": "1ee5c1f",
+      "rev": "db486b42299b2e3f5831809617af21becf268a39",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "jupytext": {
@@ -21,35 +21,35 @@
       "src": "https://github.com/GCBallesteros/jupytext.nvim"
     },
     "mini": {
-      "rev": "fbb6ad0",
+      "rev": "402ee6c6ec8ea44b22330446c8fb4e615fd3953e",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "neospeller.nvim": {
       "rev": "b68f35d49b44d89ba45371045c5980601ffd6a14",
-      "src": "/Users/richard.penabonifaz/plugins/neospeller.nvim"
+      "src": "/Users/richard/plugins/neospeller.nvim"
     },
     "neovim": {
-      "rev": "72a04c4",
+      "rev": "cf2a288696b03d0934da713d66c6d71557b5c997",
       "src": "https://github.com/rose-pine/neovim"
     },
     "no-neck-pain.nvim": {
-      "rev": "d871043",
+      "rev": "4bc52782524fd50c5658685d584df6fa48fe49f9",
       "src": "https://github.com/shortcuts/no-neck-pain.nvim"
     },
     "nvim": {
-      "rev": "193e123cdbc4dd3e86db883d55349e9587f0ded6",
+      "rev": "df2a1f9f3392d688397e945544a30aec8fc9b4c7",
       "src": "https://github.com/catppuccin/nvim"
     },
     "nvim-treesitter": {
-      "rev": "42fc28ba",
+      "rev": "cf12346a3414fa1b06af75c79faebe7f76df080a",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "nvim-treesitter-context": {
-      "rev": "64dd4cf3f6fd0ab17622c5ce15c91fc539c3f24a",
+      "rev": "b0c45cefe2c8f7b55fc46f34e563bc428ef99636",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-context"
     },
     "nvim-treesitter-textobjects": {
-      "rev": "71385f1",
+      "rev": "5ca4aaa6efdcc59be46b95a3e876300cfead05ef",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-textobjects"
     },
     "plenary": {
@@ -58,18 +58,18 @@
     },
     "pytest.nvim": {
       "rev": "697405d5fb4620db5154ae2212bae6c4c1f41afb",
-      "src": "/Users/richard.penabonifaz/plugins/pytest.nvim"
+      "src": "/Users/richard/plugins/pytest.nvim"
     },
     "slime": {
-      "rev": "67b24bf",
+      "rev": "2cfdc3b24e7ebaa64f5a1a04b00555600c622b79",
       "src": "https://github.com/jpalardy/vim-slime.git"
     },
     "tmux-navigator": {
-      "rev": "c45243d",
+      "rev": "e41c431a0c7b7388ae7ba341f01a0d217eb3a432",
       "src": "https://github.com/christoomey/vim-tmux-navigator"
     },
     "tokyonight.nvim": {
-      "rev": "5da1b76e64daf4c5d410f06bcb6b9cb640da7dfd",
+      "rev": "cdc07ac78467a233fd62c493de29a17e0cf2b2b6",
       "src": "https://github.com/folke/tokyonight.nvim"
     },
     "trouble.nvim": {
@@ -77,7 +77,7 @@
       "src": "https://github.com/folke/trouble.nvim"
     },
     "undotree": {
-      "rev": "1c3e753",
+      "rev": "0e6d41d55ad147407e4ba00a292973de8db0b836",
       "src": "https://github.com/jiaoshijie/undotree"
     }
   }
