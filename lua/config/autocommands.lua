@@ -37,6 +37,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
     -- :h LspProgress
     vim.api.nvim_echo({ { msg } }, false, {
       id = "lsp",
+      source = "lsp-loading",
       kind = "progress",
       title = value.title,
       status = value.kind ~= "end" and "running" or "success",

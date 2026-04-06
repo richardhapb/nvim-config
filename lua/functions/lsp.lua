@@ -265,7 +265,11 @@ M.on_attach = function(client, bufnr)
   end
 
   if client and client:supports_method('textDocument/documentColor') then
-    vim.lsp.document_color.enable(true, bufnr, { style = 'background' })
+    local filter = bufnr
+    if vim.fn.has("0.12.0") then
+      filter = { bufnr = bufnr }
+    end
+    vim.lsp.document_color.enable(true, filter, { style = 'background' })
   end
 
   if client.name and client.name:find("^ltex") then
