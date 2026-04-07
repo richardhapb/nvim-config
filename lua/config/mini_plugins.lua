@@ -14,7 +14,7 @@ vim.pack.add {
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
   { src = "https://github.com/shortcuts/no-neck-pain.nvim" },
-  { src = "https://github.com/folke/trouble.nvim" },
+  -- { src = "https://github.com/folke/trouble.nvim" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -68,14 +68,7 @@ end
 
 -- Treesitter
 
-require 'nvim-treesitter.configs'.setup {
-  ensure_installed = {
-    "lua", "bash", "vim", "python", "javascript", "typescript",
-    "markdown", "markdown_inline", "html", "css", "json",
-    "sql", "gitignore", "dockerfile", "rust", "c", "go", "make",
-    "mermaid", "astro", "yaml", "xml", "bash", "toml", "htmldjango",
-    "tsx", "zig", "ruby"
-  },
+require 'nvim-treesitter.config'.setup {
   highlight = {
     enable = false,
   },
@@ -120,7 +113,6 @@ vim.cmd "packadd fugitive"
 
 -- Trouble
 
-require "trouble".setup()
 
 -- Picker
 
@@ -143,9 +135,6 @@ local fzf_files = {
   },
 }
 
-local config = require("fzf-lua.config")
-local actions = require("trouble.sources.fzf").actions
-config.defaults.actions.files["ctrl-t"] = actions.open
 
 --  files auto-completion with fzf
 vim.keymap.set({ "n", "v", "i" }, "<C-x><C-f>",
