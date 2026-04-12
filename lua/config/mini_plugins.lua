@@ -70,7 +70,7 @@ end
 
 require 'nvim-treesitter.config'.setup {
   highlight = {
-    enable = false,
+    enable = true,
   },
   indent = {
     enable = true,
