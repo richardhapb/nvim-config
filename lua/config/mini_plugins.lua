@@ -29,7 +29,7 @@ vim.cmd "packadd! cfilter"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
-  "aligner", "statusline", "jupyter", "fstring", "gitlab_link" }
+  "aligner", "statusline", "jupyter", "fstring", "git_link" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
