@@ -22,7 +22,7 @@ local function parse_remote(url)
     host, path = url:match("^ssh://git@([^/]+)/(.+)$")
   end
   if not host then
-    host, path = url:match("^https?://[^/]*@?([^/]+)/(.+)$")
+    host, path = url:match("^https?://([^/]+)/(.+)$")
   end
   if not path then return nil, nil end
   path = path:gsub("%.git/?$", "")
