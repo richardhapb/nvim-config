@@ -49,6 +49,8 @@ local function git_diff_name_only(branch)
 
     vim.keymap.set('n', '<CR>', function() utils.git_curr_line_diff_split(branch, buffer) end, { buffer = buffer })
     vim.keymap.set('n', 'R', function() utils.git_restore_curr_line(branch) end, { buffer = buffer })
+    vim.keymap.set('n', ']f', function() utils.git_nav_diff_file(branch, buffer, 1) end, { buffer = buffer })
+    vim.keymap.set('n', '[f', function() utils.git_nav_diff_file(branch, buffer, -1) end, { buffer = buffer })
   end)
 end
 

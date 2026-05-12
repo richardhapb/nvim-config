@@ -121,7 +121,15 @@ local function git_diff_name_only(branch_name)
   vim.cmd('G diff ' .. branch_name .. ' --name-only')
 end
 
-local function git_curr_line_diff_split(branch_name, main_buffer)
+local git_curr_line_diff_split
+local git_nav_diff_file
+
+local function set_nav_keymaps(buf, branch_name, main_buffer)
+  vim.keymap.set('n', ']f', function() git_nav_diff_file(branch_name, main_buffer, 1) end, { buffer = buf })
+  vim.keymap.set('n', '[f', function() git_nav_diff_file(branch_name, main_buffer, -1) end, { buffer = buf })
+end
+
+git_curr_line_diff_split = function(branch_name, main_buffer)
   if main_buffer == nil or not vim.api.nvim_buf_is_valid(main_buffer) then
     main_buffer = vim.api.nvim_get_current_buf()
   else
@@ -142,19 +150,62 @@ local function git_curr_line_diff_split(branch_name, main_buffer)
     local file = vim.split(filename, '/')
     filename = file[#file]
 
-    local branch_buffer = vim.api.nvim_create_buf(false, true)
     local branch_file_content = vim.system({ 'git', 'show', branch_name .. ':' .. current_line_text }, { text = true })
         :wait()
 
-    if branch_file_content.stderr ~= '' then
-      vim.notify('Error: ' .. branch_file_content.stderr, vim.log.levels.ERROR, { title = 'Git Diff' })
+    if branch_file_content.code ~= 0 then
+      vim.notify(branch_name .. ':' .. current_line_text .. ' does not exist', vim.log.levels.WARN,
+        { title = 'Git Diff' })
+      vim.api.nvim_buf_set_var(main_buffer, 'diff_buffers', { current_buffer })
+      set_nav_keymaps(current_buffer, branch_name, main_buffer)
       return
     end
 
+    local branch_buffer = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(branch_buffer, 0, -1, false, vim.split(branch_file_content.stdout, '\n'))
     diff_buffers(current_buffer, branch_buffer, nil, branch_name .. ':' .. filename)
 
     vim.api.nvim_buf_set_var(main_buffer, 'diff_buffers', { current_buffer, branch_buffer })
+    set_nav_keymaps(current_buffer, branch_name, main_buffer)
+    set_nav_keymaps(branch_buffer, branch_name, main_buffer)
+  end
+end
+
+---@param branch_name string
+---@param main_buffer integer
+---@param direction 1 | -1
+git_nav_diff_file = function(branch_name, main_buffer, direction)
+  if not vim.api.nvim_buf_is_valid(main_buffer) then
+    return
+  end
+
+  local main_win
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_buf(win) == main_buffer then
+      main_win = win
+      break
+    end
+  end
+
+  if not main_win then
+    vim.api.nvim_set_current_buf(main_buffer)
+    main_win = vim.api.nvim_get_current_win()
+  end
+
+  vim.api.nvim_set_current_win(main_win)
+
+  local line_count = vim.api.nvim_buf_line_count(main_buffer)
+  local cursor_line = vim.api.nvim_win_get_cursor(main_win)[1]
+  local target = cursor_line + direction
+
+  while target >= 1 and target <= line_count do
+    local line = vim.api.nvim_buf_get_lines(main_buffer, target - 1, target, false)[1]
+    if line and line ~= '' then
+      vim.api.nvim_win_set_cursor(main_win, { target, 0 })
+      git_curr_line_diff_split(branch_name, main_buffer)
+      return
+    end
+    target = target + direction
   end
 end
 
@@ -320,6 +371,7 @@ return {
   diff_buffers = diff_buffers,
   git_diff_name_only = git_diff_name_only,
   git_curr_line_diff_split = git_curr_line_diff_split,
+  git_nav_diff_file = git_nav_diff_file,
   git_restore_curr_line = git_restore_curr_line,
   buf_delete_line = buf_delete_line,
   buffer_log = buffer_log,
