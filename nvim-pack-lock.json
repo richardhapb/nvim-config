@@ -4,6 +4,10 @@
       "rev": "389f1c9af5dc9e3e32ae674e66f57c53383da9c8",
       "src": "https://github.com/wincent/base16-nvim"
     },
+    "fff.nvim": {
+      "rev": "19ca421550782066660d941dd11e7e8e853dcb19",
+      "src": "https://github.com/dmtrKovalenko/fff.nvim"
+    },
     "fugitive": {
       "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
       "src": "https://github.com/tpope/vim-fugitive"

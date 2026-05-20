@@ -14,6 +14,7 @@ vim.pack.add {
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
   { src = "https://github.com/jiaoshijie/undotree" },
   { src = "https://github.com/shortcuts/no-neck-pain.nvim" },
+  { src = 'https://github.com/dmtrKovalenko/fff.nvim' },
   -- { src = "https://github.com/folke/trouble.nvim" },
 
   -- Jupyter-Notebooks
@@ -21,6 +22,21 @@ vim.pack.add {
 
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
+}
+
+vim.api.nvim_create_autocmd('PackChanged', {
+  callback = function(ev)
+    local name, kind = ev.data.spec.name, ev.data.kind
+    if name == 'fff.nvim' and (kind == 'install' or kind == 'update') then
+      if not ev.data.active then vim.cmd.packadd('fff.nvim') end
+      require('fff.download').download_or_build_binary()
+    end
+  end,
+})
+
+vim.g.fff = {
+  lazy_sync = true,
+  debug = { enabled = false, show_scores = true },
 }
 
 -- Builtins
@@ -158,11 +174,16 @@ end
 
 local fzf_docker = require 'plugin.pickers.docker'
 local fzf_git = require 'plugin.pickers.git'
+local fff = require 'fff'
 
-vim.keymap.set("n", "<leader><leader>", function() fzf.files(fzf_files) end, { desc = "Find Files" })
+vim.keymap.set('n', '<leader><leader>', fff.find_files, { desc = 'FFFind files' })
+vim.keymap.set('n', '<leader>fg', fff.live_grep, { desc = 'FFFind Live Grep' })
+vim.keymap.set('n', '<leader>G', fff.refresh_git_status, { desc = 'FFFind Refresh git' })
+vim.keymap.set('n', '<leader>R', fff.scan_files, { desc = 'FFFind force re-scan files' })
 vim.keymap.set("n", "<localleader><localleader>", fzf.buffers, { desc = "Find Buffers" })
 vim.keymap.set("n", "<leader>fl", fzf.grep, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ff", fzf.builtin, { desc = "FzfLua builtins" })
+
 vim.keymap.set("n", "<leader>fm", fzf.manpages, { desc = "Man pages" })
 vim.keymap.set("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "LSP doc symbols" })
 vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live Grep" })
