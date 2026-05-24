@@ -74,7 +74,7 @@ matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdit-py-plugins==0.4.2
 mdurl==0.1.2
-mistune==3.1.0
+mistune==3.2.1
 msgpack==1.1.0
 mypy-extensions==1.0.0
 nbclient==0.10.2
