@@ -186,7 +186,6 @@ vim.keymap.set("n", "<leader>ff", fzf.builtin, { desc = "FzfLua builtins" })
 
 vim.keymap.set("n", "<leader>fm", fzf.manpages, { desc = "Man pages" })
 vim.keymap.set("n", "<leader>fs", fzf.lsp_document_symbols, { desc = "LSP doc symbols" })
-vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live Grep" })
 vim.keymap.set("n", "<leader>fw", fzf.git_worktrees, { desc = "Git Worktrees" })
 vim.keymap.set("n", "<leader>fd", fzf_docker.docker_containers, { desc = "Docker containers" })
 vim.keymap.set("n", "<leader>fi", fzf_git.git_branches_diff, { desc = "Git branches diff" })
