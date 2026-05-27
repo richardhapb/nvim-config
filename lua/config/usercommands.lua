@@ -41,7 +41,6 @@ vim.api.nvim_create_user_command(
   { desc = 'Set current working directory' }
 )
 
--- Take Richard or Syzlab arguments
 vim.api.nvim_create_user_command(
   'GitHubLogin',
   function(opts)
@@ -51,13 +50,7 @@ vim.api.nvim_create_user_command(
       return
     end
 
-    local token = ""
-
-    if user == 'richard' then
-      token = vim.env.GH_RICHARD_TOKEN
-    else
-      token = vim.env.GH_SYZLAB_TOKEN
-    end
+    local token = vim.env.GH_RICHARD_TOKEN
 
     if not token or token == '' then
       print('No token found')
@@ -75,11 +68,8 @@ vim.api.nvim_create_user_command(
     })
   end,
   {
-    nargs = 1,
+    nargs = 0,
     desc = 'Login to GitHub',
-    complete = function(_, _, _)
-      return { 'richard', 'syzlab' }
-    end
   }
 )
 
