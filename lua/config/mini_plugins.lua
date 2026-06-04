@@ -45,7 +45,7 @@ vim.cmd "packadd! cfilter"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
-  "aligner", "statusline", "jupyter", "fstring", "git_link" }
+  "aligner", "statusline", "jupyter", "fstring", "git_link", "term", "session" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
@@ -181,6 +181,9 @@ vim.keymap.set('n', '<leader>fg', fff.live_grep, { desc = 'FFFind Live Grep' })
 vim.keymap.set('n', '<leader>G', fff.refresh_git_status, { desc = 'FFFind Refresh git' })
 vim.keymap.set('n', '<leader>R', fff.scan_files, { desc = 'FFFind force re-scan files' })
 vim.keymap.set("n", "<localleader><localleader>", fzf.buffers, { desc = "Find Buffers" })
+vim.keymap.set("n", "<leader>fo", function() fzf.oldfiles({ cwd_only = true }) end,
+  { desc = "Recent files (cwd)" })
+vim.keymap.set("n", "<leader>fO", fzf.oldfiles, { desc = "Recent files (global)" })
 vim.keymap.set("n", "<leader>fl", fzf.grep, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ff", fzf.builtin, { desc = "FzfLua builtins" })
 

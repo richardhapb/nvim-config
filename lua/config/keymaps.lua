@@ -18,7 +18,10 @@ keymap('n', '<leader>do', ':DiffOrig<CR>', { silent = true, desc = 'Compare with
 
 -- Lua dev
 keymap('n', '<C-x>', '<cmd>.lua<CR>', { desc = 'Execute lua line' })
-keymap('n', '<leader>I', '<cmd>source ~/nvim/init.lua<CR>', { desc = 'Source init file' })
+keymap('n', '<leader>I', function()
+  vim.cmd.source(vim.fs.joinpath(vim.fn.stdpath('config'), 'init.lua'))
+  vim.notify('Sourced init.lua', vim.log.levels.INFO)
+end, { desc = 'Source init file' })
 
 -- Diagostic
 keymap('n', '<leader>dq', vim.diagnostic.setloclist, { noremap = true, desc = 'Send diagnostics to qf' })
@@ -334,14 +337,12 @@ keymap('n', '<leader>rt', ':!cargo test<CR>', { silent = true, desc = 'Test carg
 -- Terminal
 keymap('t', '<esc><esc>', "<C-\\><C-n>", { silent = true, desc = 'Normal mode in terminal' })
 
-keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, desc = 'Open terminal' })
-keymap('n', '<leader>cb', function()
-  vim.cmd.vnew()
-  vim.cmd.term()
-  vim.cmd.wincmd 'J'
-  vim.api.nvim_win_set_height(0, 10)
-  vim.cmd.startinsert()
-end, { silent = true, desc = 'Open terminal on bottom' })
+-- Throwaway scratch shell (a brand-new terminal each time).
+keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, desc = 'Open scratch terminal' })
+
+-- Jump to / open the persistent toggle terminal (see lua/plugin/term.lua).
+keymap('n', '<leader>j', function() require('plugin.term').focus() end,
+  { silent = true, desc = 'Focus persistent terminal' })
 
 
 -- Arglist
