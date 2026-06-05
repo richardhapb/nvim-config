@@ -213,21 +213,79 @@ keymap('n', '<leader>gc', function()
     end, "Close without commit" } },
     title = "Git commit"
   }
-  if vim.fn.executable("copilot-chat") == 1 then
-    local buf = utils.buffer_log({}, opts)
-    vim.system({ "copilot-chat", "commit" }, { text = true }, function(obj)
-      vim.schedule(function()
-        if obj.stdout ~= "" then
-          vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(obj.stdout, "\n", { plain = true }))
-          return
-        end
-
-        if obj.stderr ~= "" then
-          vim.notify(obj.stderr, vim.log.levels.WARN)
-        end
-      end)
-    end)
+  -- Pick an AI CLI to draft the message: prefer Claude Code, fall back to Codex.
+  -- Both read the prompt (instruction + staged diff) from stdin in print mode.
+  local gen_cmd
+  if vim.fn.executable("claude") == 1 then
+    gen_cmd = { "claude", "-p" }
+  elseif vim.fn.executable("codex") == 1 then
+    gen_cmd = { "codex", "exec", "-" }
   end
+
+  if not gen_cmd then
+    vim.notify("Neither 'claude' nor 'codex' found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  local diff = vim.system({ "git", "diff", "--staged" }, { text = true }):wait().stdout or ""
+  if vim.trim(diff) == "" then
+    vim.notify("No staged changes to commit", vim.log.levels.WARN)
+    return
+  end
+
+  local prompt = table.concat({
+    "You are writing a git commit message for the staged diff below.",
+    "",
+    "Rules:",
+    "- Subject line: conventional-commit style `type(scope): summary`,",
+    "  imperative mood, <= 72 chars. Choose a meaningful scope, not a raw",
+    "  directory or module path.",
+    "- Then a blank line, then a body that explains WHY the change is made and",
+    "  what behaviour it affects -- not a restatement of the file list. Wrap at",
+    "  ~72 cols. Use bullet points only if there are distinct changes.",
+    "- Skip the body if the change is genuinely trivial.",
+    "- Do NOT include any trailers, sign-offs, attribution, co-author lines, or",
+    "  references to AI/Claude/Codex. Do NOT wrap output in code fences.",
+    "- Output ONLY the raw commit message, nothing else.",
+    "",
+    "Staged diff:",
+    diff,
+  }, "\n")
+
+  -- Drop attribution/trailer lines the model may append regardless of prompt.
+  local function strip_trailers(text)
+    local lines = vim.split(vim.trim(text), "\n", { plain = true })
+    local out = {}
+    for _, line in ipairs(lines) do
+      local l = line:lower()
+      local is_trailer = l:match("^co%-authored%-by:")
+        or l:match("^signed%-off%-by:")
+        or l:match("generated with") ~= nil
+        or line:match("^%s*🤖")
+      if not is_trailer then
+        table.insert(out, line)
+      end
+    end
+    -- Trim trailing blank lines left behind.
+    while #out > 0 and vim.trim(out[#out]) == "" do
+      table.remove(out)
+    end
+    return out
+  end
+
+  local buf = utils.buffer_log({}, opts)
+  vim.system(gen_cmd, { text = true, stdin = prompt }, function(obj)
+    vim.schedule(function()
+      if obj.stdout and obj.stdout ~= "" then
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, strip_trailers(obj.stdout))
+        return
+      end
+
+      if obj.stderr and obj.stderr ~= "" then
+        vim.notify(obj.stderr, vim.log.levels.WARN)
+      end
+    end)
+  end)
 end, { silent = true, desc = 'Git commit' })
 keymap('n', '<leader>gC', ':G commit --amend --no-edit<CR>', { silent = true, desc = 'Git commit --amend --no-edit' })
 keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
