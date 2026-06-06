@@ -16,6 +16,7 @@ vim.pack.add {
   { src = "https://github.com/shortcuts/no-neck-pain.nvim" },
   { src = 'https://github.com/dmtrKovalenko/fff.nvim' },
   -- { src = "https://github.com/folke/trouble.nvim" },
+  { src = "https://github.com/dlyongemallo/diffview-plus.nvim",                 name = "diffview" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -45,7 +46,7 @@ vim.cmd "packadd! cfilter"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
-  "aligner", "statusline", "jupyter", "fstring", "git_link", "term", "session", "git_panel" }
+  "aligner", "statusline", "jupyter", "fstring", "git_link", "term", "session" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
@@ -143,15 +144,6 @@ fzf.setup {
   },
 }
 
-local fzf_files = {
-  fd_opts = [[--color=never --type f --type l --exclude .git --exclude .venv]],
-  fzf_opts = {
-    -- no reverse view
-    ["--layout"] = "default",
-  },
-}
-
-
 --  files auto-completion with fzf
 vim.keymap.set({ "n", "v", "i" }, "<C-x><C-f>",
   function() fzf.complete_path() end,
@@ -223,6 +215,8 @@ vim.keymap.set("n", "<localleader>N", ":NoNeckPain<CR>", { silent = true, norema
 
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
+
+require "diffview".setup()
 
 --- My plugins
 --
