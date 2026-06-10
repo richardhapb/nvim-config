@@ -218,6 +218,9 @@ vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, s
 
 require "diffview".setup()
 
+vim.keymap.set("n", "<leader>F", ":DiffviewOpen<CR>", { desc = "Open diff view" })
+vim.keymap.set("n", "<leader>H", ":DiffviewOpen HEAD~1<CR>", { desc = "Open diff view for last commit" })
+
 --- My plugins
 --
 require 'neospeller'.setup()
