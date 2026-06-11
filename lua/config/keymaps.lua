@@ -403,11 +403,6 @@ keymap('n', '<leader>j', function() require('plugin.term').focus() end,
   { silent = true, desc = 'Focus persistent terminal' })
 
 
--- Arglist
-
--- append
-keymap('n', '<leader>H', "<CMD>$arga<CR>", { silent = true, desc = "Add current file to arg list" })
-
 -- to qf, TODO: Add dynamic line number and edit capatility
 keymap('n', '<leader>hq', function()
   local list = vim.fn.argv()
