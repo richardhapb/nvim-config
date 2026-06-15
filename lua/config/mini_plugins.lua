@@ -18,6 +18,11 @@ vim.pack.add {
   -- { src = "https://github.com/folke/trouble.nvim" },
   { src = "https://github.com/dlyongemallo/diffview-plus.nvim",                 name = "diffview" },
   { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",       name = "render-markdown" },
+  -- GitLab MR review (diff, inline comments, approve). Needs the Go binary
+  -- built on install (see PackChanged below) and plenary, already vendored.
+  { src = "https://github.com/nvim-lua/plenary.nvim",                           name = "plenary" },
+  { src = "https://github.com/MunifTanjim/nui.nvim",                            name = "nui" },
+  { src = "https://github.com/harrisoncramer/gitlab.nvim",                      name = "gitlab.nvim" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -32,6 +37,11 @@ vim.api.nvim_create_autocmd('PackChanged', {
     if name == 'fff.nvim' and (kind == 'install' or kind == 'update') then
       if not ev.data.active then vim.cmd.packadd('fff.nvim') end
       require('fff.download').download_or_build_binary()
+    end
+    if name == 'gitlab.nvim' and (kind == 'install' or kind == 'update') then
+      if not ev.data.active then vim.cmd.packadd('gitlab.nvim') end
+      -- Compile the Go server gitlab.nvim talks to.
+      require('gitlab.server').build(true)
     end
   end,
 })
@@ -48,7 +58,7 @@ vim.cmd "packadd! cfilter"
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
   "aligner", "statusline", "jupyter", "fstring", "git_link", "term", "pandoc_div",
-  "mermaid_ascii", "heramty" }
+  "mermaid_ascii", "heramty", "checkr_mr" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
@@ -146,6 +156,11 @@ fzf.setup {
   },
 }
 
+-- Route every `vim.ui.select` through fzf-lua. This is what makes gitlab.nvim's
+-- `choose_merge_request` (and any other ui.select caller) use fzf instead of
+-- the built-in numbered prompt.
+fzf.register_ui_select()
+
 --  files auto-completion with fzf
 vim.keymap.set({ "n", "v", "i" }, "<C-x><C-f>",
   function() fzf.complete_path() end,
@@ -222,6 +237,41 @@ require "diffview".setup()
 
 vim.keymap.set("n", "<leader>F", ":DiffviewOpen<CR>", { desc = "Open diff view" })
 vim.keymap.set("n", "<leader>H", ":DiffviewOpen HEAD~1<CR>", { desc = "Open diff view for last commit" })
+
+-- GitLab MR review (harrisoncramer/gitlab.nvim).
+-- Auth reuses the already-authenticated `glab` token instead of a GITLAB_TOKEN
+-- env var: derive the host from origin and ask glab for its stored token.
+require("gitlab").setup {
+  auth_provider = function()
+    local host = "gitlab.checkrhq.net"
+    local origin = vim.system({ "git", "remote", "get-url", "origin" }, { text = true }):wait()
+    if origin.code == 0 then
+      local h = origin.stdout:match("@([^:/]+)") or origin.stdout:match("https?://([^/]+)")
+      if h then host = vim.trim(h) end
+    end
+
+    -- NOTE: the host flag is `--host`; `-h` is `--help` and prints help text.
+    local tok = vim.system({ "glab", "config", "get", "--host", host, "token" }, { text = true }):wait()
+    local token = vim.trim(tok.stdout or "")
+    if tok.code ~= 0 or token == "" then
+      return nil, nil, "no glab token for " .. host .. " (run: glab auth login)"
+    end
+    return token, "https://" .. host .. "/", nil
+  end,
+}
+
+local gitlab = require("gitlab")
+-- Entry points: <leader>M (in checkr_mr.lua) picks the repo first; these act on
+-- the repo/MR you're already in.
+vim.keymap.set("n", "<leader>glr", gitlab.review, { desc = "GitLab: review current MR" })
+vim.keymap.set("n", "<leader>glc", gitlab.choose_merge_request, { desc = "GitLab: choose MR to review" })
+vim.keymap.set("n", "<leader>gla", gitlab.approve, { desc = "GitLab: approve MR" })
+vim.keymap.set("n", "<leader>glA", gitlab.add_assignee, { desc = "GitLab: add assignee" })
+-- Inline comments: in the diff, `gln` comments on the cursor line, or use it
+-- over a visual selection for a multi-line note; `gls` starts a review thread.
+vim.keymap.set({ "n", "v" }, "<leader>gln", gitlab.create_comment, { desc = "GitLab: comment on diff line(s)" })
+vim.keymap.set({ "n", "v" }, "<leader>gls", gitlab.create_multiline_comment, { desc = "GitLab: multiline comment" })
+vim.keymap.set("n", "<leader>gld", gitlab.toggle_discussions, { desc = "GitLab: toggle discussions panel" })
 
 --- My plugins
 --

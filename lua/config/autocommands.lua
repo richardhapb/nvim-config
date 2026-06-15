@@ -30,6 +30,24 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- gitlab.nvim comment/reply popups are floating markdown scratch buffers. The
+-- markdown ftplugin sets `wrap`, but that's window-local and the float is
+-- created after FileType fires, so it never reaches the popup window. Set wrap
+-- directly when such a window opens.
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  group = vim.api.nvim_create_augroup("FloatMarkdownWrap", { clear = true }),
+  callback = function(ev)
+    if vim.bo[ev.buf].filetype ~= "markdown" or vim.bo[ev.buf].buftype ~= "nofile" then
+      return
+    end
+    local win = vim.fn.bufwinid(ev.buf)
+    if win ~= -1 and vim.api.nvim_win_get_config(win).relative ~= "" then
+      vim.wo[win].wrap = true
+      vim.wo[win].linebreak = true
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd('PackChanged', {
   callback = function(ev)
     local name, kind = ev.data.spec.name, ev.data.kind

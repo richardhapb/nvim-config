@@ -20,6 +20,10 @@
       "rev": "9f0432fdd7825ab163520045831a40b6df82ea28",
       "src": "https://github.com/ibhagwan/fzf-lua"
     },
+    "gitlab.nvim": {
+      "rev": "2295d1e85c5e4d79c49cadda36b9848a3ffed4e2",
+      "src": "https://github.com/harrisoncramer/gitlab.nvim"
+    },
     "gitsigns.nvim": {
       "rev": "db486b42299b2e3f5831809617af21becf268a39",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
@@ -43,6 +47,10 @@
     "no-neck-pain.nvim": {
       "rev": "4bc52782524fd50c5658685d584df6fa48fe49f9",
       "src": "https://github.com/shortcuts/no-neck-pain.nvim"
+    },
+    "nui": {
+      "rev": "de740991c12411b663994b2860f1a4fd0937c130",
+      "src": "https://github.com/MunifTanjim/nui.nvim"
     },
     "nvim": {
       "rev": "df2a1f9f3392d688397e945544a30aec8fc9b4c7",
