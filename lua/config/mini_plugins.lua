@@ -17,6 +17,7 @@ vim.pack.add {
   { src = 'https://github.com/dmtrKovalenko/fff.nvim' },
   -- { src = "https://github.com/folke/trouble.nvim" },
   { src = "https://github.com/dlyongemallo/diffview-plus.nvim",                 name = "diffview" },
+  { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",       name = "render-markdown" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -46,7 +47,7 @@ vim.cmd "packadd! cfilter"
 
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
-  "aligner", "statusline", "jupyter", "fstring", "git_link", "term" }
+  "aligner", "statusline", "jupyter", "fstring", "git_link", "term", "pandoc_div" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
