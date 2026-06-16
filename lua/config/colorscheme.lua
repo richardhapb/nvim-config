@@ -64,6 +64,10 @@ local function custom_hl()
         hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
         hl(0, 'String', { fg = "#ddaa00", bg = nil })
         hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
+
+        -- Diffs
+        hl(0, "DiffText", { bg = "#111111" })
+        hl(0, "DiffTextAdd", { bg = "#111111" })
       end
 
       -- Visual
