@@ -138,28 +138,14 @@ local function find_clone(host, project)
   return nil
 end
 
----Open a specific MR straight from its web URL, handing off to gitlab.nvim's
----reviewer. Accepts the bare URL or a "MR <url>" paste.
----
----The Go server resolves the MR by *source branch AND iid* (see gitlab.nvim's
----withMrMiddleware), so we must check out the source branch before opening —
----which is also what gitlab.nvim's own choose_merge_request does.
----@param input string
-function M.open_url(input)
-  -- Drop an optional leading "MR " label, then isolate the URL.
-  local url = vim.trim((input or ""):gsub("^%s*[Mm][Rr]%s+", ""))
-
-  local host, project, iid = url:match("https?://([^/]+)/(.-)/%-/merge_requests/(%d+)")
-  if not iid then
-    notify("Not a GitLab MR URL: " .. url, vim.log.levels.ERROR)
-    return
-  end
-
-  local repo = find_clone(host, project)
-  if not repo then
-    notify(("No local clone of %s/%s under %s"):format(host, project, M.repos_dir), vim.log.levels.WARN)
-    return
-  end
+---Check out MR <iid>'s source branch in `repo` and open gitlab.nvim's
+---reviewer there. The Go server resolves the MR by *source branch AND iid*
+---(see gitlab.nvim's withMrMiddleware), so the branch must be checked out
+---before opening — which is also what gitlab.nvim's own chooser does.
+---@param repo string  absolute path to the repo / worktree to review in
+---@param iid string|number  MR internal id
+function M.review_in(repo, iid)
+  iid = tostring(iid)
 
   local ok, gitlab = pcall(require, "gitlab")
   if not ok then
@@ -228,6 +214,28 @@ function M.open_url(input)
   end)
 end
 
+---Open a specific MR straight from its web URL, handing off to gitlab.nvim's
+---reviewer. Accepts the bare URL or a "MR <url>" paste.
+---@param input string
+function M.open_url(input)
+  -- Drop an optional leading "MR " label, then isolate the URL.
+  local url = vim.trim((input or ""):gsub("^%s*[Mm][Rr]%s+", ""))
+
+  local host, project, iid = url:match("https?://([^/]+)/(.-)/%-/merge_requests/(%d+)")
+  if not iid then
+    notify("Not a GitLab MR URL: " .. url, vim.log.levels.ERROR)
+    return
+  end
+
+  local repo = find_clone(host, project)
+  if not repo then
+    notify(("No local clone of %s/%s under %s"):format(host, project, M.repos_dir), vim.log.levels.WARN)
+    return
+  end
+
+  M.review_in(repo, iid)
+end
+
 function M.setup()
   vim.api.nvim_create_user_command("CheckrMR", M.pick,
     { desc = "Pick a Checkr repo and choose an MR to review" })
@@ -239,6 +247,17 @@ function M.setup()
     if arg == "" then arg = vim.fn.getreg("+") end
     M.open_url(arg)
   end, { nargs = "*", desc = "Open a GitLab MR by URL in gitlab.nvim" })
+
+  -- `:CheckrMRReview <iid>` — review MR <iid> in the CURRENT repo/worktree.
+  -- Used by the `tmux-mr` script, which opens nvim inside a per-MR worktree.
+  vim.api.nvim_create_user_command("CheckrMRReview", function(opts)
+    local iid = vim.trim(opts.args)
+    if iid == "" then
+      notify("CheckrMRReview needs an MR number", vim.log.levels.ERROR)
+      return
+    end
+    M.review_in(vim.fn.getcwd(), iid)
+  end, { nargs = 1, desc = "Review a GitLab MR by number in the current repo" })
 
   vim.keymap.set("n", "<leader>M", M.pick,
     { silent = true, desc = "Pick a Checkr repo + MR to review" })
