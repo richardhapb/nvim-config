@@ -92,12 +92,137 @@ function M.pick()
   })
 end
 
+---Locate the local clone whose `origin` points at `host`/`project`. Scans
+---every repo under `M.repos_dir`, so it works no matter which Checkr repo the
+---MR lives in.
+---@param host string e.g. "gitlab.checkrhq.net"
+---@param project string e.g. "platform/checkr"
+---@return string? path
+local function find_clone(host, project)
+  for name, type_ in vim.fs.dir(M.repos_dir) do
+    if type_ == "directory" then
+      local path = vim.fs.joinpath(M.repos_dir, name)
+      local url = origin_url(path)
+      -- origin is either git@host:project.git or https://host/project.git;
+      -- a containment check on both host and project handles both forms.
+      if url
+        and url:find(host, 1, true)
+        and url:lower():find(project:lower(), 1, true)
+      then
+        return path
+      end
+    end
+  end
+  return nil
+end
+
+---Open a specific MR straight from its web URL, handing off to gitlab.nvim's
+---reviewer. Accepts the bare URL or a "MR <url>" paste.
+---
+---The Go server resolves the MR by *source branch AND iid* (see gitlab.nvim's
+---withMrMiddleware), so we must check out the source branch before opening —
+---which is also what gitlab.nvim's own choose_merge_request does.
+---@param input string
+function M.open_url(input)
+  -- Drop an optional leading "MR " label, then isolate the URL.
+  local url = vim.trim((input or ""):gsub("^%s*[Mm][Rr]%s+", ""))
+
+  local host, project, iid = url:match("https?://([^/]+)/(.-)/%-/merge_requests/(%d+)")
+  if not iid then
+    notify("Not a GitLab MR URL: " .. url, vim.log.levels.ERROR)
+    return
+  end
+
+  local repo = find_clone(host, project)
+  if not repo then
+    notify(("No local clone of %s/%s under %s"):format(host, project, M.repos_dir), vim.log.levels.WARN)
+    return
+  end
+
+  local ok, gitlab = pcall(require, "gitlab")
+  if not ok then
+    notify("gitlab.nvim is not available", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Keep the cwd change tab-local so gitlab.nvim and glab both resolve here.
+  vim.cmd.tcd(repo)
+
+  -- Ask glab (run inside the repo) for the MR's source branch.
+  local res = vim.system({ "glab", "mr", "view", iid, "-F", "json" }, { text = true, cwd = repo }):wait()
+  if res.code ~= 0 then
+    notify(("glab mr view %s failed: %s"):format(iid, vim.trim(res.stderr or "")), vim.log.levels.ERROR)
+    return
+  end
+  local jok, mr = pcall(vim.json.decode, res.stdout or "")
+  if not jok or type(mr) ~= "table" or not mr.source_branch then
+    notify("Could not read source branch for MR " .. iid, vim.log.levels.ERROR)
+    return
+  end
+  local branch = mr.source_branch
+
+  local git = require("gitlab.git")
+  local reviewer = require("gitlab.reviewer")
+  local state = require("gitlab.state")
+
+  if reviewer.is_open then reviewer.close() end
+
+  if branch ~= git.get_current_branch() then
+    local clean, clean_err = git.has_clean_tree()
+    if clean_err ~= nil then return end
+    if not clean then
+      notify("Working tree has changes; stash or commit before switching to " .. branch, vim.log.levels.ERROR)
+      return
+    end
+    -- Make sure the branch exists locally, then check it out.
+    vim.system({ "git", "fetch", "origin", branch }, { cwd = repo }):wait()
+    local _, switch_err = git.switch_branch(branch)
+    if switch_err ~= nil then
+      notify("Could not check out " .. branch, vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  vim.schedule(function()
+    -- gitlab.nvim resolves auth_provider (gitlab_url/auth_token) lazily inside
+    -- its async sequences. We start the server directly, so do it ourselves —
+    -- otherwise the Go server dies with "GitLab instance URL cannot be empty".
+    if not state.set_plugin_configuration() then return end
+
+    state.chosen_mr_iid = tonumber(iid)
+    local server = require("gitlab.server")
+    local function open()
+      gitlab.review()
+      notify(("Reviewing MR !%s (%s)"):format(iid, branch))
+    end
+    -- restart() picks up the new cwd/branch/iid when the server is already
+    -- up; but on the first MR of a session it isn't running yet (the chooser
+    -- only works because its dependency fetch boots it first), so start it.
+    if state.go_server_running then
+      server.restart(open)
+    else
+      server.build_and_start(open)
+    end
+  end)
+end
+
 function M.setup()
   vim.api.nvim_create_user_command("CheckrMR", M.pick,
     { desc = "Pick a Checkr repo and choose an MR to review" })
 
+  -- `:CheckrMROpen <url>` — or run it with no argument to use the URL on the
+  -- system clipboard. The "MR " prefix is stripped either way.
+  vim.api.nvim_create_user_command("CheckrMROpen", function(opts)
+    local arg = vim.trim(opts.args)
+    if arg == "" then arg = vim.fn.getreg("+") end
+    M.open_url(arg)
+  end, { nargs = "*", desc = "Open a GitLab MR by URL in gitlab.nvim" })
+
   vim.keymap.set("n", "<leader>M", M.pick,
     { silent = true, desc = "Pick a Checkr repo + MR to review" })
+
+  vim.keymap.set("n", "<leader>mo", function() M.open_url(vim.fn.getreg("+")) end,
+    { silent = true, desc = "Open GitLab MR from clipboard URL" })
 end
 
 return M
