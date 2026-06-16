@@ -34,15 +34,37 @@ local function origin_url(dir)
   return vim.trim(res.stdout or "")
 end
 
----Open gitlab.nvim's MR chooser for the current working directory.
+---MR chooser for the current working directory. gitlab.nvim's own
+---choose_merge_request hardcodes its format_item and omits the MR number, so
+---we list MRs via glab ourselves to show "!<iid>" in the list, then hand the
+---chosen MR's URL to open_url (same checkout + reviewer handoff).
 local function choose_mr()
-  local ok, gitlab = pcall(require, "gitlab")
-  if not ok then
-    notify("gitlab.nvim is not available", vim.log.levels.ERROR)
+  local res = vim.system(
+    { "glab", "mr", "list", "-F", "json", "-P", "50" },
+    { text = true, cwd = vim.fn.getcwd() }
+  ):wait()
+  if res.code ~= 0 then
+    notify("glab mr list failed: " .. vim.trim(res.stderr or ""), vim.log.levels.ERROR)
     return
   end
-  -- Lists open MRs, checks out the chosen branch, and opens the reviewer pane.
-  gitlab.choose_merge_request()
+
+  local ok, mrs = pcall(vim.json.decode, res.stdout or "")
+  if not ok or type(mrs) ~= "table" or #mrs == 0 then
+    notify("No open merge requests in this repo", vim.log.levels.WARN)
+    return
+  end
+
+  vim.ui.select(mrs, {
+    prompt = "Choose Merge Request",
+    format_item = function(mr)
+      local author = (mr.author and (mr.author.name or mr.author.username)) or "?"
+      return string.format("!%d  %s  [%s → %s]  (%s)",
+        mr.iid, mr.title, mr.source_branch, mr.target_branch, author)
+    end,
+  }, function(choice)
+    if not choice then return end
+    M.open_url(choice.web_url)
+  end)
 end
 
 ---fzf-lua picker over local GitLab clones under `M.repos_dir`. Selecting one
