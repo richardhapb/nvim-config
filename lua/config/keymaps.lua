@@ -173,14 +173,14 @@ keymap('n', '<leader>gc', function()
   -- Pick an AI CLI to draft the message: prefer Claude Code, fall back to Codex.
   -- Both read the prompt (instruction + staged diff) from stdin in print mode.
   local gen_cmd
-  if vim.fn.executable("claude") == 1 then
-    gen_cmd = { "claude", "-p" }
-  elseif vim.fn.executable("codex") == 1 then
+  if vim.fn.executable("codex") == 1 then
     gen_cmd = { "codex", "exec", "-" }
+  elseif vim.fn.executable("claude") == 1 then
+    gen_cmd = { "claude", "-p" }
   end
 
   if not gen_cmd then
-    vim.notify("Neither 'claude' nor 'codex' found in PATH", vim.log.levels.ERROR)
+    vim.notify("Neither 'codex' nor 'claude' found in PATH", vim.log.levels.ERROR)
     return
   end
 
@@ -204,6 +204,7 @@ keymap('n', '<leader>gc', function()
     "- Do NOT include any trailers, sign-offs, attribution, co-author lines, or",
     "  references to AI/Claude/Codex. Do NOT wrap output in code fences.",
     "- Output ONLY the raw commit message, nothing else.",
+    "- Don't explain the commit message, just ouput it",
     "",
     "Staged diff:",
     diff,
