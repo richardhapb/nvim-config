@@ -243,7 +243,10 @@ vim.keymap.set("n", "<leader>H", ":DiffviewOpen HEAD~1<CR>", { desc = "Open diff
 -- env var: derive the host from origin and ask glab for its stored token.
 require("gitlab").setup {
   auth_provider = function()
-    local host = "gitlab.checkrhq.net"
+    local host = vim.env["CHECKR_GL_HOST"]
+    if not host then
+      vim.notify("Checkr gitlab host not defined -- set the CHECKR_GL_HOST env var", vim.log.levels.ERROR)
+    end
     local origin = vim.system({ "git", "remote", "get-url", "origin" }, { text = true }):wait()
     if origin.code == 0 then
       local h = origin.stdout:match("@([^:/]+)") or origin.stdout:match("https?://([^/]+)")
