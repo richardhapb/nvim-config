@@ -11,10 +11,26 @@
 --     ```
 --
 -- Rendering is delegated to the `mermaid-ascii` binary
--- (github.com/AlexanderGrooff/mermaid-ascii), which only understands
--- `graph TD/TB/LR` and `flowchart TD/TB/LR`. Any other diagram type
--- (sequence, class, state, ...) fails to parse; those blocks are left as plain
--- source, so nothing breaks — they simply aren't rendered.
+-- (github.com/AlexanderGrooff/mermaid-ascii), which understands
+-- `graph TD/TB/LR`, `flowchart TD/TB/LR`, and `sequenceDiagram`. Any other
+-- diagram type (class, state, ...) fails to parse; those blocks are left as
+-- plain source, so nothing breaks — they simply aren't rendered.
+--
+-- The binary speaks only a subset of mermaid, so preprocess() rewrites each
+-- block into that subset before rendering:
+--
+--   * graph/flowchart: it only recognizes the `[label]` node shape. Other shapes
+--     — `{decision}`, `(rounded)`, `((circle))`, `([stadium])`, `{{hexagon}}`,
+--     `[(cylinder)]`, `[[subroutine]]`, `[/parallelogram/]`, `>asymmetric]` — are
+--     otherwise taken literally, which splits a node (`B{x}` ≠ `B`) and breaks the
+--     graph. normalize_shapes() rewrites them all to `[label]`.
+--
+--   * sequenceDiagram: it knows `participant [... as ...]` and message arrows, but
+--     chokes on `actor`, `Note`, and blocks (`alt`/`else`/`opt`/`loop`/...).
+--     normalize_sequence() maps `actor`→`participant`, turns notes and block
+--     conditions into self-message annotations (so their text survives), flattens
+--     block bodies, and folds wrapped continuation lines back onto their label.
+--     The flow renders; visual branching/note boxes don't (the binary has none).
 --
 -- Work is async (vim.system) and cached by block content, so typing stays
 -- responsive and a diagram is only re-rendered when its text actually changes.
@@ -84,6 +100,135 @@ local function find_blocks(lines)
   return blocks
 end
 
+-- Node-shape rewrites: { lua pattern capturing (id)(label), replacement }.
+-- Ordered so compound delimiters (`((`, `([`, `{{`, ...) are tried before the
+-- single-char ones they contain, otherwise `B((x))` would match `(...)` first.
+local shape_subs = {
+  { "([%w_]+)%(%((.-)%)%)", "%1[%2]" }, -- ((circle))
+  { "([%w_]+)%(%[(.-)%]%)", "%1[%2]" }, -- ([stadium])
+  { "([%w_]+)%[%((.-)%)%]", "%1[%2]" }, -- [(cylinder)]
+  { "([%w_]+)%[%[(.-)%]%]", "%1[%2]" }, -- [[subroutine]]
+  { "([%w_]+){{(.-)}}", "%1[%2]" },     -- {{hexagon}}
+  { "([%w_]+)%[/(.-)/%]", "%1[%2]" },   -- [/parallelogram/]
+  { "([%w_]+)%[\\(.-)\\%]", "%1[%2]" }, -- [\trapezoid\]
+  { "([%w_]+){(.-)}", "%1[%2]" },       -- {decision}
+  { "([%w_]+)%((.-)%)", "%1[%2]" },     -- (rounded)
+  { "([%w_]+)>(.-)%]", "%1[%2]" },      -- >asymmetric]
+}
+
+---Rewrite mermaid node shapes the binary can't parse into `[label]` form.
+---@param body string[]
+---@return string[]
+local function normalize_shapes(body)
+  local out = {}
+  for _, line in ipairs(body) do
+    for _, s in ipairs(shape_subs) do line = line:gsub(s[1], s[2]) end
+    out[#out + 1] = line
+  end
+  return out
+end
+
+-- The binary's sequence parser only knows `participant [... as ...]` and message
+-- arrows. These keywords open statements it rejects outright; block keywords are
+-- flattened (their body messages kept) while their condition text is preserved as
+-- a self-message annotation so nothing is silently lost.
+local seq_block_kw = {
+  alt = true, ["else"] = true, opt = true, loop = true, par = true,
+  ["and"] = true, rect = true, ["end"] = true, critical = true,
+  ["break"] = true, activate = true, deactivate = true, autonumber = true,
+  box = true,
+}
+local seq_stmt_kw = { participant = true, actor = true, note = true }
+for k in pairs(seq_block_kw) do seq_stmt_kw[k] = true end
+
+-- A physical line starts a new statement if it leads with a known keyword or
+-- contains a message arrow (`->`, `-->>`, `-x`, `-)`, ...). Anything else is a
+-- continuation of the previous label (mermaid uses <br/>, but pasted diagrams
+-- often wrap mid-label onto a bare line).
+local function seq_is_stmt(line)
+  local t = vim.trim(line)
+  if t == "" then return false end
+  local kw = t:match("^(%a+)")
+  if kw and seq_stmt_kw[kw:lower()] then return true end
+  return t:find("%-%-?[>x%)]") ~= nil
+end
+
+---Rewrite a sequenceDiagram into the subset the binary understands.
+---@param body string[]
+---@return string[]
+local function normalize_sequence(body)
+  -- 1. fold wrapped continuation lines back onto their statement.
+  local joined = {}
+  for _, line in ipairs(body) do
+    if vim.trim(line) == "" then
+      -- drop blank lines
+    elseif #joined == 0 or seq_is_stmt(line) then
+      joined[#joined + 1] = line
+    else
+      joined[#joined] = joined[#joined] .. " " .. vim.trim(line)
+    end
+  end
+
+  -- sender of the next real message at or after index i (for placing block labels).
+  local function next_actor(from)
+    for k = from, #joined do
+      local a = vim.trim(joined[k]):match("^([%w_]+)%s*%-%-?[>x%)]")
+      if a then return a end
+    end
+  end
+
+  -- 2. rewrite each statement into something the binary accepts.
+  local out, last = {}, nil
+  for i, line in ipairs(joined) do
+    local indent = line:match("^(%s*)")
+    local rest = vim.trim(line)
+    local kw = (rest:match("^(%a+)") or ""):lower()
+
+    if kw == "actor" then -- actor X  ->  participant X
+      out[#out + 1] = indent .. "participant " .. vim.trim(rest:sub(6))
+      last = rest:match("^actor%s+([%w_]+)")
+    elseif kw == "participant" then
+      out[#out + 1] = line
+      last = rest:match("^participant%s+([%w_]+)")
+    elseif kw == "note" then -- preserve note text as a self-message
+      local who, text = rest:match("^[Nn]ote%s+%a+%s+of%s+([%w_]+)%s*:%s*(.*)$")
+      if not who then who, text = rest:match("^[Nn]ote%s+over%s+([%w_]+)[^:]*:%s*(.*)$") end
+      who = who or last
+      if who then
+        out[#out + 1] = indent .. who .. "->>" .. who .. ": " .. (text or "")
+        last = who
+      end
+    elseif seq_block_kw[kw] then -- flatten block; keep condition as annotation
+      local cond = vim.trim(rest:sub(#kw + 1)):gsub("^%[(.*)%]$", "%1")
+      local who = next_actor(i + 1) or last
+      if cond ~= "" and who then
+        out[#out + 1] = indent .. who .. "->>" .. who .. ": [" .. kw .. "] " .. cond
+      end
+      -- end/activate/deactivate/autonumber/rect/box with no condition: dropped.
+    else
+      out[#out + 1] = line
+      last = rest:match("^([%w_]+)%s*%-%-?[>x%)]") or last
+    end
+  end
+  return out
+end
+
+---Rewrite a block into the dialect the binary understands, by diagram type.
+---@param body string[]
+---@return string[]
+local function preprocess(body)
+  local first = ""
+  for _, line in ipairs(body) do
+    if vim.trim(line) ~= "" then first = vim.trim(line) break end
+  end
+  if first:match("^graph%f[%s]") or first:match("^flowchart%f[%s]") then
+    return normalize_shapes(body)
+  elseif first:match("^sequenceDiagram") then
+    return normalize_sequence(body)
+  end
+  return body
+end
+
 ---Split rendered stdout into lines, trimming trailing blanks.
 ---@param stdout string
 ---@return string[]
@@ -127,7 +272,8 @@ local function request(buf, key, body)
   if config.padding_x then vim.list_extend(cmd, { "-x", tostring(config.padding_x) }) end
   if config.padding_y then vim.list_extend(cmd, { "-y", tostring(config.padding_y) }) end
 
-  vim.system(cmd, { stdin = table.concat(body, "\n"), text = true }, function(res)
+  local stdin = table.concat(preprocess(body), "\n")
+  vim.system(cmd, { stdin = stdin, text = true }, function(res)
     pending[key] = nil
     -- Exit code is unreliable (some unsupported diagrams still exit 0), so also
     -- check for the binary's fatal log line and require non-empty output.
@@ -174,6 +320,7 @@ local function schedule_render(buf)
   end
   local timer = vim.uv.new_timer()
   timers[buf] = timer
+  if not timer then return end
   timer:start(config.debounce, 0, function()
     timer:stop()
     timer:close()
