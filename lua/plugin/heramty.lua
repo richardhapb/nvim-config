@@ -24,6 +24,8 @@ M.config = {
 M.cache = { index = nil }
 
 local LEVELS = vim.log.levels
+local DAILY_BOARD = "dde4e100-0980-4e59-9647-860055848327"
+local LISTS_BOARD = "5949751d-c2c9-4470-8be8-e26f5e65086a"
 
 local function notify(msg, level)
   vim.notify(msg, level or LEVELS.INFO, { title = 'HeraMty' })
@@ -103,7 +105,8 @@ local function api(method, path, opts, cb)
       -- Honour rate limiting: back off once, then give up.
       if status == 429 and not opts._retried then
         opts._retried = true
-        return vim.defer_fn(function() api(method, path, opts, cb) end, 1000)
+        vim.defer_fn(function() api(method, path, opts, cb) end, 1000)
+        return
       end
 
       local data = nil
@@ -434,6 +437,26 @@ local function create_note(board_id, title)
   end)
 end
 
+---Find a note by title within a board. Async: the result is delivered to `cb`.
+---@param board string
+---@param note_title string
+---@param cb fun(note_id: string?)
+function M.search_note(board, note_title, cb)
+  api("GET", "/boards/" .. board .. "/notes", {}, function(err, notes)
+    if err or type(notes) ~= 'table' then
+      notify("Error retrieving notes for the board: " .. (err or '?'), LEVELS.ERROR)
+      return cb(nil)
+    end
+
+    for _, note in ipairs(notes) do
+      if note.title == note_title then
+        return cb(note.id)
+      end
+    end
+    cb(nil)
+  end)
+end
+
 ---@param bang boolean  pick a board first instead of dropping into Inbox
 ---@param title string?
 function M.new_note(bang, title)
@@ -442,6 +465,31 @@ function M.new_note(bang, title)
   else
     create_note(nil, title)
   end
+end
+
+---Create or open daily note
+function M.daily_note()
+  local title = os.date("%Y-%m-%d", os.time())
+  M.search_note(DAILY_BOARD, title, function(daily_note)
+    if daily_note then
+      notify('Loaded "' .. title .. '"')
+      M.open_note(daily_note)
+    else
+      create_note(DAILY_BOARD, title)
+    end
+  end)
+end
+
+---Open groceries note
+function M.groceries_note()
+  M.search_note(LISTS_BOARD, "Groceries", function(daily_note)
+    if daily_note then
+      notify('Loaded "Groceries"')
+      M.open_note(daily_note)
+    else
+      notify('Note not found', LEVELS.ERROR)
+    end
+  end)
 end
 
 function M.rename()
@@ -540,7 +588,10 @@ function M.follow_link()
     if wall_name then
       wall_id = nil
       for _, w in ipairs(index.walls) do
-        if ci_eq(w.name, wall_name) then wall_id = w.id break end
+        if ci_eq(w.name, wall_name) then
+          wall_id = w.id
+          break
+        end
       end
       if not wall_id then return notify('Wall "' .. wall_name .. '" not found', LEVELS.WARN) end
     end
@@ -585,9 +636,11 @@ function M.setup(opts)
   cmd('HeramtyRefresh', function() M.refresh() end, { desc = 'HeraMty: refresh cached note list' })
 
   if M.config.keymaps then
-    vim.keymap.set('n', '<leader>nn', M.pick_notes, { silent = true, desc = 'HeraMty notes' })
-    vim.keymap.set('n', '<leader>nb', function() M.new_note(false) end,
+    vim.keymap.set('n', '<leader>nf', M.pick_notes, { silent = true, desc = 'HeraMty notes' })
+    vim.keymap.set('n', '<leader>nn', function() M.new_note(false) end,
       { silent = true, desc = 'HeraMty new note' })
+    vim.keymap.set('n', '<leader>nd', M.daily_note, { silent = true, desc = 'HeraMty daily note' })
+    vim.keymap.set('n', '<leader>ng', M.groceries_note, { silent = true, desc = 'HeraMty groceries note' })
   end
 end
 
