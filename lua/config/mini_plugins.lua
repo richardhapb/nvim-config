@@ -69,7 +69,13 @@ end
 local opts = {
   surround = {},
   icons = {},
-  completion = {}
+  completion = {},
+  -- File explorer: miller-column navigator (Zed-ish quick drill-in, edit FS as
+  -- a buffer). Uses mini.icons (already enabled above).
+  files = {
+    windows = { preview = true, width_focus = 25, width_preview = 60 },
+    options = { use_as_default_explorer = true },
+  },
 }
 
 for name, config in pairs(opts) do
@@ -86,6 +92,21 @@ for name, config in pairs(opts) do
   end)())
 end
 
+
+-- mini.files keymaps.
+-- `-` toggles the explorer at the current file (vim-vinegar style); reopening
+-- closes it. `<leader>-` opens rooted at cwd for top-down codebase browsing.
+local mini_files = require 'mini.files'
+vim.keymap.set('n', '-', function()
+  if not mini_files.close() then
+    mini_files.open(vim.api.nvim_buf_get_name(0))
+    mini_files.reveal_cwd()
+  end
+end, { desc = 'File explorer (current file)' })
+
+vim.keymap.set('n', '<leader>-', function()
+  mini_files.open(vim.uv.cwd(), true)
+end, { desc = 'File explorer (cwd)' })
 
 -- Monkey patch the float `info` window, because is displayed behind the dmenu.
 local mini_completion = require 'mini.completion'
