@@ -231,7 +231,16 @@ vim.keymap.set("n", "<leader>ft", fzf.colorschemes, { desc = "Colorschemes" })
 vim.keymap.set("n", "<leader>fq", fzf.quickfix, { desc = "Quickfix" })
 vim.keymap.set("n", "<leader>gf", fzf.git_files, { desc = "Git Files" })
 vim.keymap.set("n", "<leader>fr", fzf.registers, { desc = "Registers" })
-vim.keymap.set("n", "<leader>fb", fzf.git_branches, { desc = "Git branches" })
+vim.keymap.set("n", "<leader>fb", function()
+  fzf.git_branches({
+    -- Clean list: just the branch name (current marked with "* "), no leading
+    -- indent and no trailing commit subject. The log lives in the preview.
+    cmd = "git branch --all --color "
+      .. "--sort=-committerdate --sort=refname:rstrip=-2 --sort=-HEAD "
+      .. "--format='%(if)%(HEAD)%(then)%(color:yellow)* %(else)%(end)"
+      .. "%(color:green)%(refname:short)%(color:reset)'",
+  })
+end, { desc = "Git branches" })
 vim.keymap.set("n", "<leader>fB", fzf.git_blame, { desc = "Git blame" })
 
 -- Misc
