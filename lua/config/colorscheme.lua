@@ -61,6 +61,10 @@ local function custom_hl()
         visual = { bg = "#ab4f52" }
         -- Tokens
         comment = "#9999cc"
+        -- Soften the default text: rose-pine's Normal fg (#e0def4) reads too
+        -- bright/heavy. Dim it to a softer gray, closer to plain-vim's tone.
+        hl(0, 'Normal', { fg = "#bbbac7", bg = "NONE", ctermbg = "None" })
+        hl(0, 'NormalNC', { fg = "#bbbac7", bg = "NONE", ctermbg = "None" })
         hl(0, '@markup.raw.markdown_inline', { fg = "#9999FF", bg = nil })
         hl(0, 'String', { fg = "#ddaa00", bg = nil })
         hl(0, '@lsp.type.typeParameter.python', { fg = "#eb6f92", bg = nil })
