@@ -236,6 +236,7 @@ local function render_note(note)
   vim.b[buf].heramty_wall_id = loc and loc.wall_id or nil
 
   vim.api.nvim_set_current_buf(buf)
+  vim.opt_local.wrap = true
   vim.bo[buf].modified = false
 end
 
@@ -536,9 +537,62 @@ function M.delete()
   end)
 end
 
-function M.refresh()
+---Re-fetch a single open note buffer's content from the server, in place.
+---Skips buffers with unsaved changes so local edits are never clobbered,
+---unless `force` is set, in which case local edits are discarded.
+---@param buf integer
+---@param force boolean
+---@param cb fun(reloaded: boolean)
+local function reload_buf(buf, force, cb)
+  local id = vim.b[buf].heramty_note_id
+  if not id then return cb(false) end
+  if vim.bo[buf].modified and not force then
+    notify('Skipped unsaved note "' .. (vim.b[buf].heramty_title or id) .. '"', LEVELS.WARN)
+    return cb(false)
+  end
+  api('GET', '/notes/' .. id, {}, function(err, note)
+    if err or not note then return cb(false) end
+    local lines = vim.split(note.content or '', '\n', { plain = true })
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+    vim.b[buf].heramty_title = note.title
+    vim.b[buf].heramty_updated_at = note.updated_at
+    vim.b[buf].heramty_board_id = note.board_id
+    local loc = M.cache.index and M.cache.index.boards[note.board_id]
+    vim.b[buf].heramty_wall_id = loc and loc.wall_id or nil
+    vim.bo[buf].modified = false
+    cb(true)
+  end)
+end
+
+---Rebuild the cached index, then re-fetch every open note buffer from the
+---server. Buffers with unsaved changes are left untouched unless `force`
+---is set (`:HeramtyRefresh!`), which discards local edits.
+---@param force boolean?
+function M.refresh(force)
   bust_cache()
-  build_index(function() notify('Refreshed') end)
+  build_index(function()
+    local bufs = {}
+    for _, b in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_is_valid(b) and is_note_buf(b) then
+        table.insert(bufs, b)
+      end
+    end
+
+    if #bufs == 0 then return notify('Refreshed') end
+
+    local pending = #bufs
+    local reloaded = 0
+    for _, b in ipairs(bufs) do
+      reload_buf(b, force or false, function(ok)
+        if ok then reloaded = reloaded + 1 end
+        pending = pending - 1
+        if pending == 0 then
+          notify(('Refreshed (%d/%d note%s)'):format(
+            reloaded, #bufs, #bufs == 1 and '' or 's'))
+        end
+      end)
+    end
+  end)
 end
 
 -- ── wiki-links ───────────────────────────────────────────────────────────────
@@ -633,7 +687,8 @@ function M.setup(opts)
   cmd('HeramtyMove', function() M.move() end, { desc = 'HeraMty: move note to a board' })
   cmd('HeramtyDelete', function() M.delete() end, { desc = 'HeraMty: delete note' })
   cmd('HeramtyDiff', function() M.diff() end, { desc = 'HeraMty: diff against server version' })
-  cmd('HeramtyRefresh', function() M.refresh() end, { desc = 'HeraMty: refresh cached note list' })
+  cmd('HeramtyRefresh', function(a) M.refresh(a.bang) end,
+    { bang = true, desc = 'HeraMty: refresh cached note list and reload open notes (! discards unsaved edits)' })
 
   if M.config.keymaps then
     vim.keymap.set('n', '<leader>nf', M.pick_notes, { silent = true, desc = 'HeraMty notes' })

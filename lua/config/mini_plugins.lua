@@ -23,6 +23,9 @@ vim.pack.add {
   { src = "https://github.com/nvim-lua/plenary.nvim",                           name = "plenary" },
   { src = "https://github.com/MunifTanjim/nui.nvim",                            name = "nui" },
   { src = "https://github.com/harrisoncramer/gitlab.nvim",                      name = "gitlab.nvim" },
+  -- GitHub PR review (the octo.nvim counterpart to gitlab.nvim). Auth comes
+  -- from the already-authenticated `gh` CLI; reuses plenary/nui/fzf-lua above.
+  { src = "https://github.com/pwntester/octo.nvim",                             name = "octo" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -58,7 +61,7 @@ vim.cmd "packadd! cfilter"
 -- Mini plugins for specific tasks
 local plugins = { 'FormatDicts', 'LatexPreview', 'sqlquery', "executor",
   "aligner", "statusline", "jupyter", "fstring", "git_link", "term", "pandoc_div",
-  "mermaid_ascii", "heramty", "checkr_mr" }
+  "mermaid_ascii", "heramty", "checkr_mr", "gh_pr" }
 
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
@@ -91,6 +94,11 @@ for name, config in pairs(opts) do
     return {}
   end)())
 end
+
+-- Serve `require('nvim-web-devicons')` from mini.icons so plugins that hardcode
+-- that dependency work without pulling in the extra plugin (octo.nvim's review
+-- file panel calls it directly).
+require('mini.icons').mock_nvim_web_devicons()
 
 
 -- mini.files keymaps.
@@ -305,6 +313,20 @@ vim.keymap.set("n", "<leader>glA", gitlab.add_assignee, { desc = "GitLab: add as
 vim.keymap.set({ "n", "v" }, "<leader>gln", gitlab.create_comment, { desc = "GitLab: comment on diff line(s)" })
 vim.keymap.set({ "n", "v" }, "<leader>gls", gitlab.create_multiline_comment, { desc = "GitLab: multiline comment" })
 vim.keymap.set("n", "<leader>gld", gitlab.toggle_discussions, { desc = "GitLab: toggle discussions panel" })
+
+-- GitHub PR review (pwntester/octo.nvim). Auth comes from the `gh` CLI (personal
+-- account). Pickers reuse fzf-lua, matching fzf.register_ui_select() above.
+require("octo").setup { picker = "fzf-lua" }
+
+-- Entry points: <leader>P (in gh_pr.lua) picks the repo first; these act on
+-- the PR you're already in, mirroring the <leader>gl* GitLab maps. octo's own
+-- buffer-local maps cover the rest (e.g. add comment, react, resolve thread).
+vim.keymap.set("n", "<leader>ghr", "<cmd>Octo review start<cr>", { desc = "GitHub: start PR review" })
+vim.keymap.set("n", "<leader>ghs", "<cmd>Octo review submit<cr>", { desc = "GitHub: submit PR review" })
+vim.keymap.set("n", "<leader>ghc", "<cmd>Octo review commit<cr>", { desc = "GitHub: pick review commit" })
+vim.keymap.set("n", "<leader>gha", "<cmd>Octo pr checks<cr>", { desc = "GitHub: PR checks" })
+vim.keymap.set({ "n", "v" }, "<leader>ghn", "<cmd>Octo comment add<cr>", { desc = "GitHub: comment on diff line(s)" })
+vim.keymap.set("n", "<leader>ghd", "<cmd>Octo pr changes<cr>", { desc = "GitHub: toggle changed files" })
 
 --- My plugins
 --

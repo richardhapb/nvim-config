@@ -262,8 +262,18 @@ function M.setup()
   vim.keymap.set("n", "<leader>M", M.pick,
     { silent = true, desc = "Pick a Checkr repo + MR to review" })
 
-  vim.keymap.set("n", "<leader>mo", function() M.open_url(vim.fn.getreg("+")) end,
-    { silent = true, desc = "Open GitLab MR from clipboard URL" })
+  -- Host-aware open-from-clipboard: a GitHub PR URL goes to octo.nvim
+  -- (gh_pr), anything else to gitlab.nvim. One keystroke, either platform.
+  vim.keymap.set("n", "<leader>mo", function()
+    local clip = vim.fn.getreg("+")
+    local pr = require("plugin.gh_pr")
+    local host = (clip or ""):match("https?://([^/]+)/")
+    if pr.is_github(host) then
+      pr.open_url(clip)
+    else
+      M.open_url(clip)
+    end
+  end, { silent = true, desc = "Open MR/PR from clipboard URL (gitlab or github)" })
 end
 
 return M
