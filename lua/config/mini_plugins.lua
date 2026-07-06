@@ -73,12 +73,6 @@ local opts = {
   surround = {},
   icons = {},
   completion = {},
-  -- File explorer: miller-column navigator (Zed-ish quick drill-in, edit FS as
-  -- a buffer). Uses mini.icons (already enabled above).
-  files = {
-    windows = { preview = true, width_focus = 25, width_preview = 60 },
-    options = { use_as_default_explorer = true },
-  },
 }
 
 for name, config in pairs(opts) do

@@ -27,7 +27,7 @@ end, { desc = 'Source init file' })
 keymap('n', '<leader>dq', vim.diagnostic.setloclist, { noremap = true, desc = 'Send diagnostics to qf' })
 
 -- Edit
-keymap('n', '<C-s>', '<cmd>Explore<cr>', { silent = true })
+keymap('n', '<C-s>', '<cmd>edit .<cr>', { silent = true })
 keymap('n', ';;', '<cmd>:w<cr>', { silent = true })
 keymap('n', 'x', '"_x', { silent = true })
 keymap('x', 'p', '"_xP', { silent = true })
