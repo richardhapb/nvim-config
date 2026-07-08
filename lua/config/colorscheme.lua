@@ -107,7 +107,7 @@ end
 
 function M.enable_custom(cs)
   custom_hl()
-
+  vim.o.background = "dark"
   vim.cmd("colorscheme " .. cs)
 end
 

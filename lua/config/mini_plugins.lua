@@ -26,6 +26,9 @@ vim.pack.add {
   -- GitHub PR review (the octo.nvim counterpart to gitlab.nvim). Auth comes
   -- from the already-authenticated `gh` CLI; reuses plenary/nui/fzf-lua above.
   { src = "https://github.com/pwntester/octo.nvim",                             name = "octo" },
+  -- Tree-style file explorer. Reuses plenary/nui above; icons come from the
+  -- mini.icons devicons mock.
+  { src = "https://github.com/nvim-neo-tree/neo-tree.nvim",                     name = "neo-tree" },
 
   -- Jupyter-Notebooks
   { src = "https://github.com/jpalardy/vim-slime.git",                          name = "slime" },
@@ -95,20 +98,9 @@ end
 require('mini.icons').mock_nvim_web_devicons()
 
 
--- mini.files keymaps.
--- `-` toggles the explorer at the current file (vim-vinegar style); reopening
--- closes it. `<leader>-` opens rooted at cwd for top-down codebase browsing.
-local mini_files = require 'mini.files'
-vim.keymap.set('n', '-', function()
-  if not mini_files.close() then
-    mini_files.open(vim.api.nvim_buf_get_name(0))
-    mini_files.reveal_cwd()
-  end
-end, { desc = 'File explorer (current file)' })
-
-vim.keymap.set('n', '<leader>-', function()
-  mini_files.open(vim.uv.cwd(), true)
-end, { desc = 'File explorer (cwd)' })
+-- Neo-tree file explorer. `<leader>t` toggles it as a sidebar rooted at cwd.
+require("neo-tree").setup {}
+vim.keymap.set("n", "<leader>t", "<cmd>Neotree toggle<cr>", { desc = "Toggle Neo-tree" })
 
 -- Monkey patch the float `info` window, because is displayed behind the dmenu.
 local mini_completion = require 'mini.completion'

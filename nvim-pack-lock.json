@@ -36,6 +36,10 @@
       "rev": "402ee6c6ec8ea44b22330446c8fb4e615fd3953e",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
+    "neo-tree": {
+      "rev": "b01ee1769144c4491ea44bc329cb84040e9793be",
+      "src": "https://github.com/nvim-neo-tree/neo-tree.nvim"
+    },
     "neospeller.nvim": {
       "rev": "b68f35d49b44d89ba45371045c5980601ffd6a14",
       "src": "/Users/richard/plugins/neospeller.nvim"
