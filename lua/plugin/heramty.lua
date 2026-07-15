@@ -8,15 +8,23 @@
 -- Auth: `HERAMTY_API_KEY` (an `hmt_live_…` key) from the environment — add it
 -- to the `envs` table in `.env.lua`. Base URL defaults to the hosted instance
 -- and is overridable with `HERAMTY_URL`.
+--
+-- Images: attachment links (`![…](/api/attachments/<id>/download)`) render
+-- inline below their line via plugin.heramty_image; `<leader>np` pastes the
+-- clipboard image as a new attachment. See that module for the protocol
+-- details and terminal requirements.
 
 local M = {}
 
 local fzf = require('fzf-lua')
+local image = require('plugin.heramty_image')
 
 M.config = {
   url = 'https://heramty.richardhapb.com',
   key_env = 'HERAMTY_API_KEY',
   keymaps = true,
+  -- Inline image rendering (see plugin/heramty_image.lua).
+  images = { enabled = true, max_cols = 60, max_rows = 24 },
 }
 
 -- Session cache: { notes = Note[], walls = Wall[], boards = { [board_id] = Loc } }
@@ -62,7 +70,7 @@ local WRITE_METHODS = { POST = true, PUT = true, PATCH = true, DELETE = true }
 ---Async HTTP call against /api/v1. cb(err, data, status, raw).
 ---@param method string
 ---@param path string  e.g. "/notes/123"
----@param opts table?  { body = table?, query = string?, _retried = boolean? }
+---@param opts table?  { body = table?, query = string?, form = { path, mime, filename }?, _retried = boolean? }
 ---@param cb fun(err: string?, data: any, status: integer?, raw: string?)
 local function api(method, path, opts, cb)
   opts = opts or {}
@@ -86,6 +94,12 @@ local function api(method, path, opts, cb)
     vim.list_extend(args, {
       '-H', 'Content-Type: application/json',
       '--data-binary', '@-',
+    })
+  elseif opts.form then
+    -- Multipart file upload (attachments endpoint).
+    vim.list_extend(args, {
+      '-F', ('file=@%s;type=%s;filename=%s')
+        :format(opts.form.path, opts.form.mime, opts.form.filename),
     })
   end
 
@@ -223,6 +237,8 @@ local function render_note(note)
       { buffer = buf, silent = true, desc = 'HeraMty: follow wiki-link' })
     vim.keymap.set('n', 'gf', M.follow_link,
       { buffer = buf, silent = true, desc = 'HeraMty: follow wiki-link' })
+    vim.keymap.set('n', '<leader>np', image.paste,
+      { buffer = buf, silent = true, desc = 'HeraMty: paste image from clipboard' })
   end
 
   local lines = vim.split(note.content or '', '\n', { plain = true })
@@ -238,6 +254,7 @@ local function render_note(note)
   vim.api.nvim_set_current_buf(buf)
   vim.opt_local.wrap = true
   vim.bo[buf].modified = false
+  image.render(buf)
 end
 
 ---@param id string
@@ -274,6 +291,8 @@ function M.save(buf)
       vim.b[buf].heramty_updated_at = note.updated_at
       vim.bo[buf].modified = false
       bust_cache()
+      -- Picks up attachment links typed/edited by hand since the last render.
+      image.render(buf)
       return notify('Saved')
     end
     -- Optimistic-lock conflict: the server returns 500 "Conflicted note".
@@ -560,6 +579,7 @@ local function reload_buf(buf, force, cb)
     local loc = M.cache.index and M.cache.index.boards[note.board_id]
     vim.b[buf].heramty_wall_id = loc and loc.wall_id or nil
     vim.bo[buf].modified = false
+    image.render(buf)
     cb(true)
   end)
 end
@@ -679,6 +699,8 @@ function M.setup(opts)
   M.config = vim.tbl_extend('force', M.config, opts or {})
   pcall(math.randomseed, os.time())
 
+  image.setup({ api = api, get_key = get_key, config = M.config })
+
   local cmd = vim.api.nvim_create_user_command
   cmd('Heramty', function() M.pick_notes() end, { desc = 'HeraMty: open note picker' })
   cmd('HeramtyNew', function(a) M.new_note(a.bang, a.args) end,
@@ -689,6 +711,15 @@ function M.setup(opts)
   cmd('HeramtyDiff', function() M.diff() end, { desc = 'HeraMty: diff against server version' })
   cmd('HeramtyRefresh', function(a) M.refresh(a.bang) end,
     { bang = true, desc = 'HeraMty: refresh cached note list and reload open notes (! discards unsaved edits)' })
+  cmd('HeramtyPasteImage', function() image.paste() end,
+    { desc = 'HeraMty: paste clipboard image as an attachment' })
+  cmd('HeramtyImages', function(a)
+    if a.bang then
+      image.toggle()
+    else
+      image.render(vim.api.nvim_get_current_buf())
+    end
+  end, { bang = true, desc = 'HeraMty: re-render note images (! toggles rendering)' })
 
   if M.config.keymaps then
     vim.keymap.set('n', '<leader>nf', M.pick_notes, { silent = true, desc = 'HeraMty notes' })
