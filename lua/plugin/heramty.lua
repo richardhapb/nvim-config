@@ -2,8 +2,13 @@
 --
 -- Notes open as `acwrite` scratch buffers named `heramty://<id>/<slug>.md`;
 -- plain `:w` PUTs them back (honouring the optimistic lock). Navigation is an
--- fzf-lua picker over every note, labelled `wall/board — title`. `[[…]]`
--- wiki-links follow with <CR>, mirroring the web UI's scoped resolution.
+-- fzf-lua picker that fuzzy-matches over every note's `wall/board — title`
+-- label; the previewed note's content is fetched lazily. `[[…]]` wiki-links
+-- follow with <CR>, mirroring the web UI's scoped resolution.
+--
+-- `GET /notes` is keyset-paginated and metadata-only by default, so the index
+-- walks the `next_cursor` (see fetch_all_notes) to gather every note's
+-- metadata, and content is fetched per-id on demand (preview / open).
 --
 -- Auth: `HERAMTY_API_KEY` (an `hmt_live_…` key) from the environment — add it
 -- to the `envs` table in `.env.lua`. Base URL defaults to the hosted instance
@@ -137,6 +142,55 @@ local function api(method, path, opts, cb)
   end)
 end
 
+---Percent-encode a query-parameter value (RFC 3986 unreserved set kept).
+---`vim.uri_encode` leaves `+ / =` untouched, which corrupts base64 cursors.
+---@param s string
+---@return string
+local function urlencode(s)
+  return (s:gsub('[^%w%-._~]', function(c)
+    return string.format('%%%02X', string.byte(c))
+  end))
+end
+
+---Build the query string for a `GET /notes` page (keyset pagination).
+---@param opts { limit: integer?, after: string?, include_content: boolean? }
+---@return string
+local function notes_query(opts)
+  local parts = { 'limit=' .. (opts.limit or 200) }
+  if opts.include_content then table.insert(parts, 'include_content=true') end
+  if opts.after and opts.after ~= vim.NIL and opts.after ~= '' then
+    table.insert(parts, 'after=' .. urlencode(opts.after))
+  end
+  return table.concat(parts, '&')
+end
+M._notes_query = notes_query
+
+---Walk the whole `/notes` list by following the keyset cursor. Metadata-only
+---unless `include_content` is set. Delivers the merged array, or nil on error.
+---@param include_content boolean
+---@param cb fun(notes: table[]?)
+local function fetch_all_notes(include_content, cb)
+  local acc = {}
+  local function page(after)
+    api('GET', '/notes',
+      { query = notes_query({ after = after, include_content = include_content }) },
+      function(err, data)
+        if err or type(data) ~= 'table' or type(data.notes) ~= 'table' then
+          return cb(nil)
+        end
+        vim.list_extend(acc, data.notes)
+        local nc = data.next_cursor
+        if nc and nc ~= vim.NIL and nc ~= '' then
+          page(nc)
+        else
+          cb(acc)
+        end
+      end)
+  end
+  page(nil)
+end
+M._fetch_all_notes = fetch_all_notes
+
 ---Build (or return cached) the note list + board→location index.
 ---@param cb fun(index: table)
 local function build_index(cb)
@@ -150,9 +204,11 @@ local function build_index(cb)
     local boards = {}
 
     local function finish()
-      api('GET', '/notes', {}, function(e2, notes)
-        if e2 or type(notes) ~= 'table' then
-          return notify('Failed to list notes: ' .. (e2 or '?'), LEVELS.ERROR)
+      -- Metadata only: the index just resolves ids/titles for wiki-links; the
+      -- picker fetches content itself, note buffers fetch per-id.
+      fetch_all_notes(false, function(notes)
+        if not notes then
+          return notify('Failed to list notes', LEVELS.ERROR)
         end
         M.cache.index = { notes = notes, walls = walls, boards = boards }
         cb(M.cache.index)
@@ -343,14 +399,15 @@ local function extract_key(line)
   return line and line:match('\t([^\t]+)$') or nil
 end
 
----Open the note picker (every note, labelled `wall/board — title`).
+---Open the note picker: fzf fuzzy-matches over `wall/board — title` labels
+---(all notes, metadata only). Note content is fetched lazily — only when a
+---note is previewed — and cached for the session.
 function M.pick_notes()
   build_index(function(index)
     if #index.notes == 0 then
       return notify('No notes yet — :HeramtyNew to create one', LEVELS.WARN)
     end
     local entries = {}
-    local content_map = {}
     for _, n in ipairs(index.notes) do
       local loc = index.boards[n.board_id]
       local label = ('%s/%s — %s'):format(
@@ -358,12 +415,13 @@ function M.pick_notes()
         loc and loc.board_name or '?',
         n.title)
       table.insert(entries, label .. '\t' .. n.id)
-      content_map[n.id] = n.content or ''
     end
 
-    -- In-memory markdown previewer: the note content is already cached, so no
-    -- extra request per selection. Degrades gracefully if the previewer API is
+    -- Lazy markdown previewer: fetch the note's content the first time it is
+    -- previewed (the list holds metadata only), then cache it by id for the
+    -- rest of the session. Degrades gracefully if the previewer API is
     -- unavailable on this fzf-lua version.
+    local content_cache = {}
     local previewer
     local ok_b, builtin = pcall(require, 'fzf-lua.previewer.builtin')
     if ok_b then
@@ -377,11 +435,27 @@ function M.pick_notes()
       function Note:populate_preview_buf(entry_str)
         local id = extract_key(entry_str)
         local buf = self:get_tmp_buffer()
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false,
-          vim.split(content_map[id] or '', '\n', { plain = true }))
         vim.bo[buf].filetype = 'markdown'
+
+        local function fill(content)
+          if not vim.api.nvim_buf_is_valid(buf) then return end
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false,
+            vim.split(content or '', '\n', { plain = true }))
+          pcall(function() self.win:update_preview_scrollbar() end)
+        end
+
+        if content_cache[id] then
+          fill(content_cache[id])
+        else
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, { 'Loading…' })
+          api('GET', '/notes/' .. id, {}, function(err, note)
+            if not err and note then
+              content_cache[id] = note.content or ''
+              fill(content_cache[id])
+            end
+          end)
+        end
         self:set_preview_buf(buf)
-        pcall(function() self.win:update_preview_scrollbar() end)
       end
 
       function Note:gen_winopts()
