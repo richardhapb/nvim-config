@@ -227,12 +227,16 @@ vim.keymap.set("n", "<leader>gf", fzf.git_files, { desc = "Git Files" })
 vim.keymap.set("n", "<leader>fr", fzf.registers, { desc = "Registers" })
 vim.keymap.set("n", "<leader>fb", function()
   fzf.git_branches({
-    -- Clean list: just the branch name (current marked with "* "), no leading
-    -- indent and no trailing commit subject. The log lives in the preview.
+    -- Clean list: just the branch name (current marked with "* "), no trailing
+    -- commit subject. The log lives in the preview.
+    -- Note: fzf-lua's switch action parses "<indent>[*] <branch>", so
+    -- non-current branches need the two-space indent, and remote refs must
+    -- keep the "remotes/" prefix for it to strip when switching.
     cmd = "git branch --all --color "
       .. "--sort=-committerdate --sort=refname:rstrip=-2 --sort=-HEAD "
-      .. "--format='%(if)%(HEAD)%(then)%(color:yellow)* %(else)%(end)"
-      .. "%(color:green)%(refname:short)%(color:reset)'",
+      .. "--format='%(if)%(HEAD)%(then)%(color:yellow)* %(else)  %(end)"
+      .. "%(color:green)%(if:equals=refs/remotes)%(refname:rstrip=-2)"
+      .. "%(then)%(refname:lstrip=1)%(else)%(refname:short)%(end)%(color:reset)'",
   })
 end, { desc = "Git branches" })
 vim.keymap.set("n", "<leader>fB", fzf.git_blame, { desc = "Git blame" })
