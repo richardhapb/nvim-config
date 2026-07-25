@@ -112,38 +112,57 @@ end
 
 -- Treesitter
 
-require 'nvim-treesitter.config'.setup {
-  highlight = {
-    enable = true,
-  },
-  indent = {
-    enable = true,
-    disable = { "python", "yaml", "markdown" }, -- common offenders
-  },
-  textobjects = {
-    select = {
-      enable = true,
-      lookahead = true,
-      keymaps = {
-        ["af"] = "@function.outer",
-        ["if"] = "@function.inner",
-        ["ac"] = "@class.outer",
-        ["ic"] = "@class.inner",
-        ["ab"] = "@block.outer",
-        ["ib"] = "@block.inner",
-        ["al"] = "@loop.outer",
-        ["il"] = "@loop.inner",
-        ["ai"] = "@conditional.outer",
-        ["ii"] = "@conditional.inner",
-        ["ad"] = "@comment.outer",
-        ["id"] = "@comment.inner",
-        ["i="] = "@assignment.lhs",
-        ["a="] = "@assignment.rhs",
-        ["a/"] = "@statement.outer"
-      }
-    }
+-- On nvim-treesitter `main`, `config.setup` only accepts `install_dir`.
+-- Highlighting is started by the FileType autocmd in `config.autocommands`;
+-- indent and textobjects are wired up manually below.
+
+-- Indent is experimental upstream, so keep it off for the common offenders.
+local indent_disabled = { python = true, yaml = true, markdown = true }
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("TreesitterIndent", { clear = true }),
+  callback = function(args)
+    if indent_disabled[args.match] then
+      return
+    end
+    local lang = vim.treesitter.language.get_lang(args.match) or args.match
+    local ok, added = pcall(vim.treesitter.language.add, lang)
+    if not (ok and added) then
+      return
+    end
+    vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+  end
+})
+
+require "nvim-treesitter-textobjects".setup {
+  select = {
+    lookahead = true,
   }
 }
+
+local textobjects = {
+  ["af"] = "@function.outer",
+  ["if"] = "@function.inner",
+  ["ac"] = "@class.outer",
+  ["ic"] = "@class.inner",
+  ["ab"] = "@block.outer",
+  ["ib"] = "@block.inner",
+  ["al"] = "@loop.outer",
+  ["il"] = "@loop.inner",
+  ["ai"] = "@conditional.outer",
+  ["ii"] = "@conditional.inner",
+  ["ad"] = "@comment.outer",
+  ["id"] = "@comment.inner",
+  ["i="] = "@assignment.lhs",
+  ["a="] = "@assignment.rhs",
+  ["a/"] = "@statement.outer",
+}
+
+for lhs, query in pairs(textobjects) do
+  vim.keymap.set({ "x", "o" }, lhs, function()
+    require "nvim-treesitter-textobjects.select".select_textobject(query, "textobjects")
+  end, { desc = "Select " .. query })
+end
 
 require "treesitter-context".setup({
   max_lines = 4
