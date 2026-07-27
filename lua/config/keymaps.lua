@@ -70,6 +70,11 @@ keymap('n', 'ss', ':split<CR><C-w>j', { silent = true })
 keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 
 -- Explorer
+-- Neovim's default `-` opens the parent dir with the new `nvim.dir` explorer.
+-- Keep the behaviour, but route it through netrw like <C-s> does. Inside a
+-- netrw buffer its own buffer-local `-` (NetrwBrowseUpDir) takes over.
+keymap('n', '-', '<cmd>Explore<cr>', { silent = true, desc = 'Open parent directory' })
+
 keymap('n', '<leader>\\', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<C-n>', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
 keymap('n', '<C-p>', ':tabprevious<CR>', { silent = true, desc = 'Previous tab' })
