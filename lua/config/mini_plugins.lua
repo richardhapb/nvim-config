@@ -280,10 +280,65 @@ vim.keymap.set("n", "<localleader>N", ":NoNeckPain<CR>", { silent = true, norema
 require "undotree".setup()
 vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
 
-require "diffview".setup()
+-- On the laptop screen side-by-side leaves ~55 usable columns per pane, so
+-- anything long runs off the edge. Below NARROW_COLUMNS use the single-window
+-- unified layout (`diff1_inline`): full width *and* full height, git-diff style
+-- with deletions as virtual lines. Side-by-side comes back on a monitor.
+-- `followwrap` is what stops diff mode from forcing 'nowrap' back on.
+vim.opt.diffopt:append("followwrap")
 
-vim.keymap.set("n", "<leader>F", ":DiffviewOpen<CR>", { desc = "Open diff view" })
-vim.keymap.set("n", "<leader>H", ":DiffviewOpen HEAD~1<CR>", { desc = "Open diff view for last commit" })
+local NARROW_COLUMNS = 190
+
+local function diff_layout()
+  return vim.o.columns < NARROW_COLUMNS and "diff1_inline" or "diff2_horizontal"
+end
+
+require "diffview".setup {
+  enhanced_diff_hl = true,
+  view = {
+    -- winbar_info labels each window with its revision -- needed once panes
+    -- stack (or collapse into one) and "left/right" stops telling you which.
+    default = { layout = diff_layout(), winbar_info = true },
+    file_history = { layout = diff_layout(), winbar_info = true },
+    merge_tool = { layout = "diff3_mixed" },
+    -- `g<C-x>` cycles these in-view when the width guess is wrong for a file.
+    cycle_layouts = { default = { "diff1_inline", "diff2_vertical", "diff2_horizontal" } },
+    -- Added/deleted files have nothing to compare against; skip the empty pane.
+    one_sided_layout = "raw",
+    inline = { deletion_highlight = "hanging" },
+  },
+  file_panel = {
+    win_config = { position = "left", width = 28 },
+  },
+  hooks = {
+    -- Reclaim the gutters and wrap, so the diff itself gets the columns.
+    diff_buf_win_enter = function(_, winid)
+      vim.wo[winid].wrap = true
+      vim.wo[winid].linebreak = true
+      vim.wo[winid].breakindent = true
+      vim.wo[winid].number = false
+      vim.wo[winid].relativenumber = false
+      vim.wo[winid].signcolumn = "no"
+      vim.wo[winid].foldcolumn = "0"
+    end,
+  },
+}
+
+-- Resolve the layout from the current width at open time, not at startup, so
+-- plugging into a monitor mid-session picks side-by-side. Mutate the resolved
+-- config instead of calling setup() again -- setup() rebuilds from defaults and
+-- would drop the hooks above.
+local function diffview_open(rev)
+  return function()
+    local view = require("diffview.config").get_config().view
+    view.default.layout = diff_layout()
+    view.file_history.layout = view.default.layout
+    vim.cmd("DiffviewOpen" .. (rev and (" " .. rev) or ""))
+  end
+end
+
+vim.keymap.set("n", "<leader>F", diffview_open(), { desc = "Open diff view" })
+vim.keymap.set("n", "<leader>H", diffview_open("HEAD~1"), { desc = "Open diff view for last commit" })
 
 -- GitLab MR review (harrisoncramer/gitlab.nvim).
 -- Auth reuses the already-authenticated `glab` token instead of a GITLAB_TOKEN
