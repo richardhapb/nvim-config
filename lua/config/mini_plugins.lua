@@ -338,7 +338,8 @@ local function diffview_open(rev)
 end
 
 vim.keymap.set("n", "<leader>F", diffview_open(), { desc = "Open diff view" })
-vim.keymap.set("n", "<leader>H", diffview_open("HEAD~1"), { desc = "Open diff view for last commit" })
+vim.keymap.set("n", "<leader>L", ":DiffviewFileHistory", { desc = "Open file history" })
+vim.keymap.set("n", "<leader>H", diffview_open("HEAD^!"), { desc = "Open diff view for last commit" })
 
 -- GitLab MR review (harrisoncramer/gitlab.nvim).
 -- Auth reuses the already-authenticated `glab` token instead of a GITLAB_TOKEN
