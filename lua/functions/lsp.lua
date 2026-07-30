@@ -1,6 +1,39 @@
 local utils = require 'functions.utils'
 local M = {}
 
+---Walk up from `bufpath` looking for any of `markers`.
+---Stops at the filesystem root, so files living outside `cwd` (gems, stdlib,
+---anything reached through `gd`) terminate instead of spinning on "/".
+---@param markers string[]
+---@param bufpath string?
+---@return string? root
+M._search_upward = function(markers, bufpath)
+  if not bufpath or bufpath == "" then
+    return nil
+  end
+
+  -- Markers live next to the file, not inside it
+  local dir = vim.fn.isdirectory(bufpath) == 1 and bufpath or vim.fs.dirname(bufpath)
+
+  while dir and dir ~= "" do
+    for _, marker in ipairs(markers) do
+      local marker_path = vim.fs.joinpath(dir, marker)
+      if vim.fn.filereadable(marker_path) == 1 or vim.fn.isdirectory(marker_path) == 1 then
+        return dir
+      end
+    end
+
+    -- Go up one level. dirname("/") == "/", which is the root sentinel.
+    local parent = vim.fs.dirname(dir)
+    if parent == dir then
+      return nil
+    end
+    dir = parent
+  end
+
+  return nil
+end
+
 ---Locate the root directory and optionally enable the LSP
 ---only for determinated projects
 ---Allowed opts for projects:
@@ -15,25 +48,7 @@ M.root_dir = function(markers, opts)
     local cwd = vim.fn.getcwd()
     local bufpath = vim.api.nvim_buf_get_name(bufnr)
 
-    local function search_upward(dir)
-      -- Check current directory for markers
-      for _, marker in ipairs(markers) do
-        local marker_path = vim.fs.joinpath(dir, marker)
-        if vim.fn.filereadable(marker_path) == 1 or vim.fn.isdirectory(marker_path) == 1 then
-          return dir
-        end
-      end
-
-      -- Go up one level
-      local parent = vim.fs.dirname(dir)
-      if parent == cwd:match("(.*)/.-$") then -- Reached cwd
-        return nil
-      end
-
-      return search_upward(parent)
-    end
-
-    local root = search_upward(bufpath)
+    local root = M._search_upward(markers, bufpath)
     -- If projects are passed, match that is in an allowed project
     if root then
       -- Check for included projects
