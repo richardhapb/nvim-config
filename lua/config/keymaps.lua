@@ -4,13 +4,7 @@ local keymap = vim.keymap.set
 local k = vim.keycode
 
 local function _verify_tmux()
-  local tmux_running = false
-  if vim.fn.executable 'tmux' == 1 then
-    vim.cmd('silent !tmux info')
-    tmux_running = vim.v.shell_error == 0
-  end
-
-  return tmux_running
+  return os.getenv('TMUX') ~= nil
 end
 
 -- Usercommands
