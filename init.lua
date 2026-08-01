@@ -11,11 +11,13 @@ require("config.usercommands")
 require("config.keymaps")
 
 
-if vim.fn.has("mac") then
+-- `has()` returns 0 or 1, and 0 is truthy in Lua -- without `== 1` both of
+-- these always fired and every machine loaded both platform files.
+if vim.fn.has("mac") == 1 then
   require("config.macos")
 end
 
-if vim.fn.has("linux") then
+if vim.fn.has("linux") == 1 then
   require("config.linux")
 end
 

@@ -15,7 +15,10 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end
 })
 
+-- Grouped so re-sourcing init.lua (<leader>I) replaces these rather than
+-- stacking another copy on every source.
 vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
   callback = function()
     pcall(vim.treesitter.start)
   end
@@ -41,6 +44,7 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 
 -- Prograss bar in Ghostty and nvim msg when LSP load
 vim.api.nvim_create_autocmd("LspProgress", {
+  group = vim.api.nvim_create_augroup("LspProgressBar", { clear = true }),
   callback = function(ev)
     local value = ev.data.params.value or {}
     local msg = value.message or "done"

@@ -77,9 +77,19 @@ M.root_dir = function(markers, opts)
   end
 end
 
+---First `python` or `python3` on PATH, or nil if neither resolves.
+---The old one-liner could not fall back: `which` returns an empty stdout on
+---failure, and "" is truthy in Lua, so the `or` branch was unreachable.
+---@return string?
 M.search_python_path = function()
-  return vim.system({ "which", "python" }):wait().stdout:gsub('\n', '') or
-      vim.system({ "which", "python3" }):wait().stdout:gsub('\n', '')
+  for _, exe in ipairs({ "python", "python3" }) do
+    local res = vim.system({ "which", exe }, { text = true }):wait()
+    local path = vim.trim(res.stdout or "")
+    if res.code == 0 and path ~= "" then
+      return path
+    end
+  end
+  return nil
 end
 
 local _border = "single"
@@ -115,7 +125,10 @@ M.set_keymaps = function(bufnr)
 
   keymap('n', 'gL', function()
     ---@type boolean | table
-    local vt_new_config = not type(vim.diagnostic.config().virtual_text) == "table"
+    -- Was `not type(x) == "table"`, which Lua parses as `(not x) == "table"`,
+    -- i.e. `false == "table"` -- always false, so gL only ever turned virtual
+    -- text off and never back on.
+    local vt_new_config = type(vim.diagnostic.config().virtual_text) ~= "table"
     if vt_new_config then
       vt_new_config = _virtual_text
     end
@@ -243,17 +256,19 @@ M.setup_ltex = function(client, bufnr)
 
       local word
 
-      if vim.tbl_contains(current_words, word) then
-        vim.notify("Word already added to dictionary", vim.log.levels.INFO)
-        return
-      end
-
       if vim.fn.mode() == "n" then
         word = vim.fn.expand("<cword>")
         vim.cmd.normal { 'zg', bang = true }
       else
         vim.cmd.normal { 'zggv"zy', bang = true }
         word = vim.fn.getreg("z")
+      end
+
+      -- This check used to sit above the assignment, so it always tested nil
+      -- and never matched -- duplicates went into the dictionary every time.
+      if word == "" or vim.tbl_contains(current_words, word) then
+        vim.notify("Word already added to dictionary", vim.log.levels.INFO)
+        return
       end
 
       if not ltex_config.ltex.dictionary then
@@ -287,7 +302,10 @@ M.on_attach = function(client, bufnr)
 
   if client and client:supports_method('textDocument/documentColor') then
     local filter = bufnr
-    if vim.fn.has("0.12.0") then
+    -- "0.12.0" is not a feature name, so has() returned 0 -- which is truthy in
+    -- Lua, so this branch was taken unconditionally. It happens to be the right
+    -- branch on 0.12+, but it would have been wrong on anything older.
+    if vim.fn.has("nvim-0.12") == 1 then
       filter = { bufnr = bufnr }
     end
     vim.lsp.document_color.enable(true, filter, { style = 'background' })

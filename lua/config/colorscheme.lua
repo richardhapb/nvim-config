@@ -3,6 +3,7 @@ local M = {}
 
 local function custom_hl()
   vim.api.nvim_create_autocmd("VimEnter", {
+    group = vim.api.nvim_create_augroup("ColorschemeWinSeparator", { clear = true }),
     callback = function()
       vim.api.nvim_set_hl(0, 'WinSeparator', { fg = "#AAAAAA" })
     end

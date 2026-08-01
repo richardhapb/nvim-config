@@ -150,18 +150,25 @@ vim.keymap.set({ "n", "v", "i" }, "<C-x><C-f>",
   { silent = true, desc = "Fuzzy complete path" })
 
 -- Handle the case when it is not in a worktree, which occurres in bare repos.
--- git rev-parse --show-toplevel must be executed in a worktree. As a fallback
--- I use vim cwd, that is the most common case.
+-- git rev-parse --show-toplevel must be executed in a worktree, so probe first
+-- and fall back to the directory we were asked about.
+--
+-- fzf-lua passes `opts.cwd`, and the probe used to ignore it -- it always ran
+-- in Neovim's cwd and fell back to `vim.fn.getcwd()`. Any picker scoped to
+-- another directory (`files({ cwd = ... })`, the git providers) could then get
+-- the wrong root, or be told "not a worktree" while its own cwd was one.
 local git_root = fzf.path.git_root
-fzf.path.git_root = function(args, noerr)
-  local result = vim.system({ "git", "rev-parse", "--show-toplevel" }):wait()
+fzf.path.git_root = function(opts, noerr)
+  opts = opts or {}
+  local cwd = opts.cwd or vim.fn.getcwd()
+  local result = vim.system({ "git", "-C", cwd, "rev-parse", "--show-toplevel" }):wait()
 
   if result.code ~= 0 then
     -- Fallback
-    return vim.fn.getcwd()
+    return cwd
   end
 
-  return git_root(args, noerr)
+  return git_root(opts, noerr)
 end
 
 local fzf_docker = require 'plugin.pickers.docker'
