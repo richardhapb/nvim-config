@@ -112,6 +112,23 @@ end
 -- times a day. The builtins live on their own keys right next to it (see
 -- config/keymaps.lua) so both stay in the fingers.
 
+-- $FZF_DEFAULT_OPTS (set in ~/.zprofile) is written for fzf in a shell, and two
+-- of its flags break fzf-lua, which runs fzf *inside* a Neovim terminal buffer:
+--
+--   --tmux    fzf relaunches itself in a tmux popup, so keystrokes go to the
+--             popup while the terminal buffer renders stale and accepts no
+--             input -- it looks exactly like a freeze, and only inside tmux.
+--   --height  fights fzf-lua for control of the window size.
+--
+-- fzf-lua forwards the variable verbatim (it only strips `--preview-window`,
+-- see fzf.lua), so strip these two here. Only this nvim process is affected;
+-- a shell started from nvim re-reads the profile and gets the full value.
+if vim.env.FZF_DEFAULT_OPTS then
+  vim.env.FZF_DEFAULT_OPTS = vim.env.FZF_DEFAULT_OPTS
+      :gsub("%-%-tmux[=%s]+%S+", "")
+      :gsub("%-%-height[=%s]+%S+", "")
+end
+
 local fzf = require "fzf-lua"
 
 fzf.setup {
