@@ -1,5 +1,5 @@
 require("config.opts")
-require("config.mini_plugins")
+require("config.plugins")
 
 local lsp_enabled = os.getenv("NVIM_LSP_ENABLED")
 if not lsp_enabled or lsp_enabled ~= "0" then

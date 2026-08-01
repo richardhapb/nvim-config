@@ -249,22 +249,13 @@ keymap('n', '<leader>gc', function()
     end)
   end)
 end, { silent = true, desc = 'Git commit' })
-keymap('n', '<leader>gC', ':G commit --amend --no-edit<CR>', { silent = true, desc = 'Git commit --amend --no-edit' })
-keymap('n', '<leader>gP', ':G push<CR>', { silent = true, desc = 'Git push' })
-keymap('n', '<leader>gp', ':G pull --rebase<CR>', { silent = true, desc = 'Git pull --rebase' })
-keymap('n', '<leader>gS', ':G stash<CR>', { silent = true, desc = 'Git stash' })
-keymap('n', '<leader>gA', ':G add .<CR>', { silent = true, desc = 'Git add .' })
-keymap('n', '<leader>gdd', ':G diff<CR>', { silent = true, desc = 'Git diff' })
-keymap('n', '<leader>gf', ':G fetch --all<CR>', { silent = true, desc = 'Git fetch' })
-keymap('n', '<leader>gF', ':G push --force-with-lease<CR>', { silent = true, desc = 'Git push force with lease' })
-keymap('n', '<leader>gb', ':Gitsigns blame<CR>', { silent = true, desc = 'Git blame' })
-keymap('n', '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
-keymap('n', '<leader>gdv', ':Gvdiffsplit<CR>', { silent = true, desc = 'Git vertical diff split' })
-keymap('n', '<leader>gds', ':Gdiffsplit<CR>', { silent = true, desc = 'Git horizontal diff split' })
-keymap({ 'n', 'x' }, '<leader>ghh', ':Gitsigns preview_hunk<CR>', { silent = true, desc = 'Git preview hunk' })
-keymap({ 'n', 'x' }, '[g', ':Gitsigns prev_hunk<CR>', { silent = true, desc = 'Git previous hunk' })
-keymap({ 'n', 'x' }, ']g', ':Gitsigns next_hunk<CR>', { silent = true, desc = 'Git next hunk' })
-keymap({ 'n', 'x' }, '<leader>ghr', ':Gitsigns reset_hunk<CR>', { silent = true, desc = 'Git reset hunk' })
+-- fugitive, gitsigns and diffview are gone on purpose: git happens in a shell
+-- (`<leader>cc`, or a tmux pane) where the real flags and real completion are.
+-- The only things kept here are the ones that are genuinely Neovim's job:
+-- diff mode, the quickfix list, and the worktree helpers below.
+--
+-- `:h :diffsplit` / `:h :diffthis` -- then `]c` `[c` `do` `dp` `:diffoff!`.
+keymap('n', '<leader>gdd', ':vertical diffsplit #<CR>', { silent = true, desc = 'Diff against alternate buffer' })
 
 -- New worktree with branch name
 keymap('n', '<leader>gw', function()
@@ -326,10 +317,6 @@ end, { silent = true, desc = 'Git diff HEAD --name-only' })
 keymap('n', 'gh', '<CMD>diffget //2<CR>', { silent = true, desc = 'Git diff get left' })
 keymap('n', 'gl', '<CMD>diffget //3<CR>', { silent = true, desc = 'Git diff get right' })
 
--- Latex
-keymap('n', '<leader>lb', ':LatexBuild<CR>', { silent = true, desc = 'Latex build' })
-keymap('n', '<leader>lp', ':TeXpresso %<CR>', { silent = true, desc = 'Latex preview' })
-
 -- Spanish
 keymap('i', '<A-e>a', 'á', { silent = true })
 keymap('i', '<A-e>e', 'é', { silent = true })
@@ -360,10 +347,9 @@ keymap('t', '<esc><esc>', "<C-\\><C-n>", { silent = true, desc = 'Normal mode in
 -- Throwaway scratch shell (a brand-new terminal each time).
 keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, desc = 'Open scratch terminal' })
 
--- Jump to / open the persistent toggle terminal (see lua/plugin/term.lua).
-keymap('n', '<leader>j', function() require('plugin.term').focus() end,
-  { silent = true, desc = 'Focus persistent terminal' })
-
+-- The persistent toggle terminal is gone -- a terminal buffer is just a buffer,
+-- so `<localleader><localleader>` (buffers) reaches an existing one, and tmux
+-- is the better place for a shell that has to outlive the editor anyway.
 
 -- to qf, TODO: Add dynamic line number and edit capatility
 keymap('n', '<leader>hq', function()

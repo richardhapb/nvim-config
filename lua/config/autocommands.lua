@@ -21,17 +21,8 @@ vim.api.nvim_create_autocmd("FileType", {
   end
 })
 
--- Disable mini.completion in the fff.nvim picker prompt
-vim.api.nvim_create_autocmd("FileType", {
-  group = vim.api.nvim_create_augroup("FffNoCompletion", { clear = true }),
-  pattern = "fff_input",
-  callback = function()
-    vim.b.minicompletion_disable = true
-  end,
-})
-
--- gitlab.nvim comment/reply popups are floating markdown scratch buffers. The
--- markdown ftplugin sets `wrap`, but that's window-local and the float is
+-- Floating markdown scratch buffers (LSP hover, my own float helpers) get
+-- `wrap` from the markdown ftplugin, but that's window-local and the float is
 -- created after FileType fires, so it never reaches the popup window. Set wrap
 -- directly when such a window opens.
 vim.api.nvim_create_autocmd("BufWinEnter", {
@@ -44,16 +35,6 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     if win ~= -1 and vim.api.nvim_win_get_config(win).relative ~= "" then
       vim.wo[win].wrap = true
       vim.wo[win].linebreak = true
-    end
-  end,
-})
-
-vim.api.nvim_create_autocmd('PackChanged', {
-  callback = function(ev)
-    local name, kind = ev.data.spec.name, ev.data.kind
-    if name == 'fff.nvim' and (kind == 'install' or kind == 'update') then
-      if not ev.data.active then vim.cmd.packadd('fff.nvim') end
-      require('fff.download').download_or_build_binary()
     end
   end,
 })

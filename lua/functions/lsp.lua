@@ -276,7 +276,13 @@ M.on_attach = function(client, bufnr)
     return
   end
   if client.server_capabilities and client:supports_method('textDocument/completion') then
+    -- `<C-x><C-o>` on demand...
     vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+    -- ...plus as-you-type completion. This is Neovim's own completion engine
+    -- (`:h vim.lsp.completion`), which is what replaced mini.completion here:
+    -- same popup, driven by 'completeopt' in config/opts.lua, no plugin.
+    -- `<C-n>`/`<C-p>` move, `<C-y>` accepts, `<C-e>` dismisses.
+    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
   end
 
   if client and client:supports_method('textDocument/documentColor') then
