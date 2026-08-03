@@ -29,7 +29,10 @@ vim.pack.add {
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/ibhagwan/fzf-lua" },
-  { src = "https://github.com/christoomey/vim-tmux-navigator",                   name = "tmux-navigator" },
+  { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
+  { src = 'https://github.com/dmtrKovalenko/fff.nvim' },
+  { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
+  { src = "https://github.com/lewis6991/gitsigns.nvim" },
 
   -- Mine (local checkouts)
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
@@ -50,6 +53,29 @@ local plugins = {
 for _, plugin in ipairs(plugins) do
   require('plugin.' .. plugin).setup()
 end
+
+--- fff ------
+
+vim.api.nvim_create_autocmd('PackChanged', {
+  callback = function(ev)
+    local name, kind = ev.data.spec.name, ev.data.kind
+    if name == 'fff.nvim' and (kind == 'install' or kind == 'update') then
+      if not ev.data.active then vim.cmd.packadd('fff.nvim') end
+      require('fff.download').download_or_build_binary()
+    end
+    if name == 'gitlab.nvim' and (kind == 'install' or kind == 'update') then
+      if not ev.data.active then vim.cmd.packadd('gitlab.nvim') end
+      -- Compile the Go server gitlab.nvim talks to.
+      require('gitlab.server').build(true)
+    end
+  end,
+})
+
+vim.g.fff = {
+  lazy_sync = true,
+  debug = { enabled = false, show_scores = true },
+}
+
 
 -- Treesitter ------------------------------------------------------------------
 
@@ -171,13 +197,14 @@ fzf.path.git_root = function(opts, noerr)
   return git_root(opts, noerr)
 end
 
+local fff = require 'fff'
 local fzf_docker = require 'plugin.pickers.docker'
 local fzf_git = require 'plugin.pickers.git'
 
--- The two daily drivers. These keep the keys fff.nvim used to own, so muscle
--- memory carries over unchanged.
-vim.keymap.set("n", "<leader><leader>", fzf.files, { desc = "Find files" })
-vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Live grep" })
+vim.keymap.set('n', '<leader><leader>', fff.find_files, { desc = 'FFFind files' })
+vim.keymap.set('n', '<leader>fg', fff.live_grep, { desc = 'FFFind Live Grep' })
+vim.keymap.set('n', '<leader>G', fff.refresh_git_status, { desc = 'FFFind Refresh git' })
+vim.keymap.set('n', '<leader>R', fff.scan_files, { desc = 'FFFind force re-scan files' })
 
 vim.keymap.set("n", "<localleader><localleader>", fzf.buffers, { desc = "Find Buffers" })
 vim.keymap.set("n", "<leader>fo", function() fzf.oldfiles({ cwd_only = true }) end,
@@ -207,10 +234,10 @@ vim.keymap.set("n", "<leader>fb", function()
     -- non-current branches need the two-space indent, and remote refs must
     -- keep the "remotes/" prefix for it to strip when switching.
     cmd = "git branch --all --color "
-      .. "--sort=-committerdate --sort=refname:rstrip=-2 --sort=-HEAD "
-      .. "--format='%(if)%(HEAD)%(then)%(color:yellow)* %(else)  %(end)"
-      .. "%(color:green)%(if:equals=refs/remotes)%(refname:rstrip=-2)"
-      .. "%(then)%(refname:lstrip=1)%(else)%(refname:short)%(end)%(color:reset)'",
+        .. "--sort=-committerdate --sort=refname:rstrip=-2 --sort=-HEAD "
+        .. "--format='%(if)%(HEAD)%(then)%(color:yellow)* %(else)  %(end)"
+        .. "%(color:green)%(if:equals=refs/remotes)%(refname:rstrip=-2)"
+        .. "%(then)%(refname:lstrip=1)%(else)%(refname:short)%(end)%(color:reset)'",
   })
 end, { desc = "Git branches" })
 vim.keymap.set("n", "<leader>fB", fzf.git_blame, { desc = "Git blame" })

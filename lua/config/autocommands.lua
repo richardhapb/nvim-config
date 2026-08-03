@@ -42,6 +42,26 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
   end,
 })
 
+--- fff ------
+-- Disable mini.completion in the fff.nvim picker prompt
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("FffNoCompletion", { clear = true }),
+  pattern = "fff_input",
+  callback = function()
+    vim.b.minicompletion_disable = true
+  end,
+})
+
+vim.api.nvim_create_autocmd('PackChanged', {
+  callback = function(ev)
+    local name, kind = ev.data.spec.name, ev.data.kind
+    if name == 'fff.nvim' and (kind == 'install' or kind == 'update') then
+      if not ev.data.active then vim.cmd.packadd('fff.nvim') end
+      require('fff.download').download_or_build_binary()
+    end
+  end,
+})
+
 -- Prograss bar in Ghostty and nvim msg when LSP load
 vim.api.nvim_create_autocmd("LspProgress", {
   group = vim.api.nvim_create_augroup("LspProgressBar", { clear = true }),
