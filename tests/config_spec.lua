@@ -62,4 +62,28 @@ dofile(vim.fs.joinpath(cfg, 'init.lua'))
 eq(count('FileType', 'TreesitterStart'), before, 'TreesitterStart does not duplicate on re-source')
 eq(count('LspProgress', 'LspProgressBar'), 1, 'LspProgressBar does not duplicate on re-source')
 
+-- trouble.nvim keymaps. Two things can go wrong silently: a second `keymap()`
+-- with the same lhs overwrites the first without a word, and a typo in `mode`
+-- only surfaces as a "Invalid mode" notification the moment the key is pressed.
+local trouble_modes = require('trouble.config').modes()
+local function n_maps(lhs)
+  local hits = 0
+  for _, m in ipairs(vim.api.nvim_get_keymap('n')) do
+    if m.lhs == lhs then hits = hits + 1 end
+  end
+  return hits
+end
+
+for lhs, mode in pairs({
+  [' tt'] = 'diagnostics',
+  [' tx'] = 'diagnostics',
+  [' ts'] = 'symbols',
+  [' tl'] = 'lsp',
+  [' tL'] = 'loclist',
+  [' tQ'] = 'qflist',
+}) do
+  eq(n_maps(lhs), 1, ('%s is mapped exactly once'):format(lhs))
+  eq(vim.tbl_contains(trouble_modes, mode), true, ('%q is a real trouble mode'):format(mode))
+end
+
 print(('ok - %d checks passed'):format(checks))

@@ -8,16 +8,18 @@
 --   fzf-lua                    file picker + live grep, the two used daily
 --   tmux-navigator             needs the tmux side to cooperate
 --   rose-pine                  cosmetic only, hides nothing
+--   fff.nvim                   frecency ranking `:find` has no answer for
+--   fugitive, gitsigns         staging and hunk ops without leaving the buffer
+--   trouble                    diagnostics grouped, folded and live-refreshed;
+--                              the quickfix list is flat and only a snapshot
 --
 -- Deliberately absent, with the builtin that replaces it:
---   neo-tree, fff.nvim   -> netrw (`-`, `<C-s>`), `:find`, fzf-lua files
---   fugitive, gitsigns   -> git in a shell, `:Gd` diff mode, `]c`/`[c`/`do`/`dp`
+--   neo-tree             -> netrw (`-`, `<C-s>`), `:find`, fzf-lua files
 --   diffview             -> `git diff`, `git log -p`, `:Gd`
 --   octo, gitlab.nvim    -> `gh pr` / `glab mr` in a terminal
 --   undotree             -> `g-` / `g+` / `:earlier 10m` / `:undolist`
 --   mini.completion      -> `vim.lsp.completion.enable` (see config/lsp.lua)
 --   mini.icons           -> nothing; fzf-lua degrades to no icons
---   trouble              -> quickfix + `:cfilter`, `vim.diagnostic.setqflist`
 --   render-markdown      -> `conceallevel`, treesitter markdown highlights
 --   no-neck-pain         -> `:vsplit` + `:vertical resize`
 
@@ -33,6 +35,7 @@ vim.pack.add {
   { src = 'https://github.com/dmtrKovalenko/fff.nvim' },
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
+  { src = "https://github.com/folke/trouble.nvim" },
 
   -- Mine (local checkouts)
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
@@ -255,6 +258,34 @@ local tn = {
 for km, direction in pairs(tn) do
   vim.keymap.set("n", km, "<cmd><C-U>TmuxNavigate" .. direction .. "<cr>",
     { desc = "TmuxNav navigate " .. direction, silent = true })
+end
+
+-- Trouble ---------------------------------------------------------------------
+
+require 'trouble'.setup()
+
+-- The `<leader>t` prefix is free: the only other `<leader>tl`/`<leader>td` live
+-- in plugin/mermaid.lua, buffer-local to its diagram buffer, and that module is
+-- not in the loaded list above. Everything else here is a fresh lhs.
+--
+-- Window shapes: lists go in a bottom split, tree-shaped views on the right.
+local tr_bottom = { type = "split", position = "bottom", size = { height = 20 } }
+local tr_right = { type = "split", position = "right", size = { width = 80 } }
+
+local trouble_views = {
+  { "tt", { mode = "diagnostics", win = tr_bottom },                    "Diagnostics (Trouble)" },
+  { "tx", { mode = "diagnostics", filter = { buf = 0 }, win = tr_bottom }, "Buffer diagnostics (Trouble)" },
+  { "ts", { mode = "symbols", win = tr_right },                         "Symbols (Trouble)" },
+  { "tl", { mode = "lsp", focus = false, win = tr_right },              "LSP definitions / references (Trouble)" },
+  { "tL", { mode = "loclist", win = tr_bottom },                        "Location list (Trouble)" },
+  { "tQ", { mode = "qflist", win = tr_bottom },                         "Quickfix list (Trouble)" },
+}
+
+for _, view in ipairs(trouble_views) do
+  local lhs, opts, desc = view[1], view[2], view[3]
+  vim.keymap.set("n", "<leader>" .. lhs, function()
+    require 'trouble'.toggle(opts)
+  end, { silent = true, desc = desc })
 end
 
 --- My plugins ----------------------------------------------------------------
