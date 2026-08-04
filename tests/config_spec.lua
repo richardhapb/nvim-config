@@ -249,8 +249,43 @@ if vim.fn.executable('mermaid-ascii') == 1 then
   mermaid.float()
   eq(#open_floats(), 1, 'a second float() reuses the window instead of stacking')
   vim.api.nvim_win_close(win, true)
+
+  -- A diagram under the cap is drawn whole, with no hint row bolted on.
+  local ns_mermaid = namespaces['mermaid_ascii']
+  local small = vim.api.nvim_buf_get_extmarks(md, ns_mermaid, 0, -1, { details = true })[1]
+  eq(small ~= nil, true, 'the short diagram renders inline')
+  local small_rows = small[4].virt_lines
+  eq(#small_rows < 10, true, 'a diagram under the cap is not truncated')
+  eq(small_rows[#small_rows][1][2], 'MermaidAscii', 'no hint row on an untruncated diagram')
+
+  -- Over the cap it becomes a teaser. These get tall fast -- this six-node
+  -- `graph TD` renders 55 rows, which would bury the rest of the file. The cap
+  -- counts the hint row, so the footprint is never more than max_lines.
+  local tall = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(tall, 0, -1, false, {
+    '```mermaid', 'graph TD', '  A[Start] --> B[Step one]', '  B --> C[Step two]',
+    '  C --> D[Step three]', '  D --> E[Step four]', '  E --> F[Done]', '```',
+  })
+  vim.api.nvim_win_set_buf(0, tall)
+  vim.bo[tall].filetype = 'markdown'
+  eq(vim.wait(20000, function()
+    return #vim.api.nvim_buf_get_extmarks(tall, ns_mermaid, 0, -1, {}) > 0
+  end, 100), true, 'the tall diagram renders inline')
+
+  local rows = vim.api.nvim_buf_get_extmarks(tall, ns_mermaid, 0, -1, { details = true })[1][4].virt_lines
+  eq(#rows, 10, 'inline preview is capped at 10 rows, hint row included')
+  eq(rows[#rows][1][2], 'MermaidAsciiTruncated', 'the last row is the truncation hint')
+  eq(rows[#rows][1][1]:find('more rows') ~= nil, true, 'the hint says how many rows are hidden')
+
+  -- The cap is on the inline preview only -- the float is why truncating is safe.
+  vim.api.nvim_win_set_cursor(0, { 2, 0 })
+  mermaid.float()
+  eq(vim.wait(15000, function() return #open_floats() > 0 end, 100), true,
+    'the tall diagram still floats')
+  local full = vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(open_floats()[1]), 0, -1, false)
+  eq(#full > #rows, true, 'the float shows more rows than the capped inline preview')
 else
-  print('# skipped: mermaid-ascii binary not installed, float rendering unchecked')
+  print('# skipped: mermaid-ascii binary not installed, float and cap unchecked')
 end
 
 print(('ok - %d checks passed'):format(checks))

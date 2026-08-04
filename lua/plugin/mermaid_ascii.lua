@@ -34,6 +34,12 @@
 --
 -- Work is async (vim.system) and cached by block content, so typing stays
 -- responsive and a diagram is only re-rendered when its text actually changes.
+--
+-- The inline preview is capped at `max_lines` rows (10), because these diagrams
+-- get tall fast -- the six-node `graph TD` above renders 54 rows, which buries
+-- the rest of the file. Past the cap it shows the first rows and a count of the
+-- rest; M.float() on `<leader>e` is the uncapped view, in a float that behaves
+-- like the diagnostic one.
 
 local M = {}
 
@@ -48,6 +54,11 @@ local config = {
   padding_y = nil,  -- vertical gap between nodes (mermaid-ascii -y)
   debounce = 150,   -- ms to wait after a change before re-rendering
   enabled = true,   -- render by default on matching buffers
+  -- Cap on the virtual lines one block may add, hint row included, so the
+  -- inline preview never pushes the rest of the file off screen -- a six-node
+  -- `graph TD` renders 54 rows. Past the cap the preview is a teaser and
+  -- M.float() (`<leader>e`) is the full view. Set to nil for no cap.
+  max_lines = 10,
 }
 
 -- content-hash -> rendered lines (table) on success, or `false` on failure.
@@ -245,16 +256,32 @@ local function split_lines(stdout)
   return out
 end
 
----Attach the rendered diagram as virtual lines below the block.
+---Attach the rendered diagram as virtual lines below the block, capped at
+---`config.max_lines` rows in total.
+---
+---The cap counts the hint row, so the block's footprint is never more than
+---`max_lines` -- which is why a truncated diagram shows `max_lines - 1` of its
+---own rows. Cutting a row to announce a single hidden one would be a poor
+---trade, so truncation only kicks in once something is actually gained.
 ---@param buf integer
 ---@param block table
 ---@param rendered string[]
 local function draw(buf, block, rendered)
   local pad = string.rep(" ", block.indent)
+  local limit = config.max_lines
+  local shown = (limit and #rendered > limit) and limit - 1 or #rendered
+
   local virt = {}
-  for _, line in ipairs(rendered) do
-    virt[#virt + 1] = { { pad .. line, "MermaidAscii" } }
+  for i = 1, shown do
+    virt[#virt + 1] = { { pad .. rendered[i], "MermaidAscii" } }
   end
+  if shown < #rendered then
+    virt[#virt + 1] = { {
+      ("%s… %d more rows -- <leader>e for the full diagram"):format(pad, #rendered - shown),
+      "MermaidAsciiTruncated",
+    } }
+  end
+
   vim.api.nvim_buf_set_extmark(buf, ns, block.close, 0, {
     virt_lines = virt,
     virt_lines_above = false,
@@ -423,6 +450,7 @@ function M.setup(opts)
   end
 
   vim.api.nvim_set_hl(0, "MermaidAscii", { link = "Comment", default = true })
+  vim.api.nvim_set_hl(0, "MermaidAsciiTruncated", { link = "NonText", default = true })
 
   local augroup = vim.api.nvim_create_augroup("MermaidAscii", { clear = true })
 
