@@ -12,11 +12,13 @@
 --   fugitive, gitsigns         staging and hunk ops without leaving the buffer
 --   trouble                    diagnostics grouped, folded and live-refreshed;
 --                              the quickfix list is flat and only a snapshot
+--   diffview                   `:diffsplit` diffs one file against one rev;
+--                              no file panel over a commit, no file history
+--   gitlab.nvim, octo          review MRs/PRs *in the diff*: `glab`/`gh` in a
+--                              terminal cannot comment on a diff line
 --
 -- Deliberately absent, with the builtin that replaces it:
 --   neo-tree             -> netrw (`-`, `<C-s>`), `:find`, fzf-lua files
---   diffview             -> `git diff`, `git log -p`, `:Gd`
---   octo, gitlab.nvim    -> `gh pr` / `glab mr` in a terminal
 --   undotree             -> `g-` / `g+` / `:earlier 10m` / `:undolist`
 --   mini.completion      -> `vim.lsp.completion.enable` (see config/lsp.lua)
 --   mini.icons           -> nothing; fzf-lua degrades to no icons
@@ -36,6 +38,18 @@ vim.pack.add {
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
   { src = "https://github.com/folke/trouble.nvim" },
+  { src = "https://github.com/dlyongemallo/diffview-plus.nvim",                 name = "diffview" },
+
+  -- Review stack. plenary and nui are library deps, not tools in their own
+  -- right: gitlab.nvim and octo both need them.
+  { src = "https://github.com/nvim-lua/plenary.nvim",                           name = "plenary" },
+  { src = "https://github.com/MunifTanjim/nui.nvim",                            name = "nui" },
+  -- GitLab MR review (diff, inline comments, approve). Needs the Go binary
+  -- built on install -- see the PackChanged autocmd below.
+  { src = "https://github.com/harrisoncramer/gitlab.nvim",                      name = "gitlab.nvim" },
+  -- GitHub PR review, the octo.nvim counterpart to gitlab.nvim. Auth comes from
+  -- the already-authenticated `gh` CLI; pickers reuse fzf-lua.
+  { src = "https://github.com/pwntester/octo.nvim",                             name = "octo" },
 
   -- Mine (local checkouts)
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
@@ -50,7 +64,7 @@ vim.cmd "packadd! cfilter"
 -- API used directly, so they stay.
 local plugins = {
   "statusline", "aligner", "git_link", "pandoc_div",
-  "mermaid_ascii", "heramty",
+  "mermaid_ascii", "heramty", "checkr_mr", "gh_pr",
 }
 
 for _, plugin in ipairs(plugins) do
@@ -287,6 +301,138 @@ for _, view in ipairs(trouble_views) do
     require 'trouble'.toggle(opts)
   end, { silent = true, desc = desc })
 end
+
+-- Diffs -----------------------------------------------------------------------
+
+-- On the laptop screen side-by-side leaves ~55 usable columns per pane, so
+-- anything long runs off the edge. Below NARROW_COLUMNS use the single-window
+-- unified layout (`diff1_inline`): full width *and* full height, git-diff style
+-- with deletions as virtual lines. Side-by-side comes back on a monitor.
+-- `followwrap` is what stops diff mode from forcing 'nowrap' back on.
+vim.opt.diffopt:append("followwrap")
+
+local NARROW_COLUMNS = 190
+
+local function diff_layout()
+  return vim.o.columns < NARROW_COLUMNS and "diff1_inline" or "diff2_horizontal"
+end
+
+require "diffview".setup {
+  enhanced_diff_hl = true,
+  -- No icon provider on this branch (no mini.icons, no nvim-web-devicons), and
+  -- diffview only degrades to a blank column anyway -- say so explicitly.
+  use_icons = false,
+  view = {
+    -- winbar_info labels each window with its revision -- needed once panes
+    -- stack (or collapse into one) and "left/right" stops telling you which.
+    default = { layout = diff_layout(), winbar_info = true },
+    file_history = { layout = diff_layout(), winbar_info = true },
+    merge_tool = { layout = "diff3_mixed" },
+    -- `g<C-x>` cycles these in-view when the width guess is wrong for a file.
+    cycle_layouts = { default = { "diff1_inline", "diff2_vertical", "diff2_horizontal" } },
+    -- Added/deleted files have nothing to compare against; skip the empty pane.
+    one_sided_layout = "raw",
+    inline = { deletion_highlight = "hanging" },
+  },
+  file_panel = {
+    win_config = { position = "left", width = 28 },
+  },
+  hooks = {
+    -- Reclaim the gutters and wrap, so the diff itself gets the columns.
+    diff_buf_win_enter = function(_, winid)
+      vim.wo[winid].wrap = true
+      vim.wo[winid].linebreak = true
+      vim.wo[winid].breakindent = true
+      vim.wo[winid].number = false
+      vim.wo[winid].relativenumber = false
+      vim.wo[winid].signcolumn = "no"
+      vim.wo[winid].foldcolumn = "0"
+    end,
+  },
+}
+
+-- Resolve the layout from the current width at open time, not at startup, so
+-- plugging into a monitor mid-session picks side-by-side. Mutate the resolved
+-- config instead of calling setup() again -- setup() rebuilds from defaults and
+-- would drop the hooks above.
+local function diffview_open(rev)
+  return function()
+    local view = require("diffview.config").get_config().view
+    view.default.layout = diff_layout()
+    view.file_history.layout = view.default.layout
+    vim.cmd("DiffviewOpen" .. (rev and (" " .. rev) or ""))
+  end
+end
+
+vim.keymap.set("n", "<leader>F", diffview_open(), { desc = "Open diff view" })
+-- No <CR>: leaves the command line open so a path or `--range` can be appended.
+vim.keymap.set("n", "<leader>L", ":DiffviewFileHistory", { desc = "Open file history" })
+vim.keymap.set("n", "<leader>H", diffview_open("HEAD^!"), { desc = "Open diff view for last commit" })
+
+-- Review: GitLab MRs and GitHub PRs -------------------------------------------
+
+-- GitLab MR review (harrisoncramer/gitlab.nvim).
+-- Auth reuses the already-authenticated `glab` token instead of a GITLAB_TOKEN
+-- env var: derive the host from origin and ask glab for its stored token.
+require("gitlab").setup {
+  auth_provider = function()
+    local host = vim.env["CHECKR_GL_HOST"]
+    if not host then
+      vim.notify("Checkr gitlab host not defined -- set the CHECKR_GL_HOST env var", vim.log.levels.ERROR)
+    end
+    local origin = vim.system({ "git", "remote", "get-url", "origin" }, { text = true }):wait()
+    if origin.code == 0 then
+      local h = origin.stdout:match("@([^:/]+)") or origin.stdout:match("https?://([^/]+)")
+      if h then host = vim.trim(h) end
+    end
+
+    -- NOTE: the host flag is `--host`; `-h` is `--help` and prints help text.
+    local tok = vim.system({ "glab", "config", "get", "--host", host, "token" }, { text = true }):wait()
+    local token = vim.trim(tok.stdout or "")
+    if tok.code ~= 0 or token == "" then
+      return nil, nil, "no glab token for " .. host .. " (run: glab auth login)"
+    end
+    return token, "https://" .. host .. "/", nil
+  end,
+}
+
+local gitlab = require("gitlab")
+-- Entry points: <leader>M (in checkr_mr.lua) picks the repo first; these act on
+-- the repo/MR you're already in.
+vim.keymap.set("n", "<leader>glr", gitlab.review, { desc = "GitLab: review current MR" })
+vim.keymap.set("n", "<leader>glc", gitlab.choose_merge_request, { desc = "GitLab: choose MR to review" })
+vim.keymap.set("n", "<leader>gla", gitlab.approve, { desc = "GitLab: approve MR" })
+vim.keymap.set("n", "<leader>glA", gitlab.add_assignee, { desc = "GitLab: add assignee" })
+-- Inline comments: in the diff, `gln` comments on the cursor line, or use it
+-- over a visual selection for a multi-line note; `gls` starts a review thread.
+vim.keymap.set({ "n", "v" }, "<leader>gln", gitlab.create_comment, { desc = "GitLab: comment on diff line(s)" })
+vim.keymap.set({ "n", "v" }, "<leader>gls", gitlab.create_multiline_comment, { desc = "GitLab: multiline comment" })
+vim.keymap.set("n", "<leader>gld", gitlab.toggle_discussions, { desc = "GitLab: toggle discussions panel" })
+
+-- GitHub PR review (pwntester/octo.nvim). Auth comes from the `gh` CLI (personal
+-- account). Pickers reuse fzf-lua, matching fzf.register_ui_select() above.
+-- `file_panel.icons = false` is required, not cosmetic: with icons on, octo's
+-- review panel renderer does a bare `require "nvim-web-devicons"` (main gets it
+-- from mini.icons' devicons mock, which this branch does not have), so the panel
+-- would error out on the first file it draws.
+require("octo").setup {
+  picker = "fzf-lua",
+  file_panel = { icons = false },
+}
+
+-- Entry points: <leader>P (in gh_pr.lua) picks the repo first; these act on
+-- the PR you're already in, mirroring the <leader>gl* GitLab maps. octo's own
+-- buffer-local maps cover the rest (e.g. add comment, react, resolve thread).
+--
+-- `<leader>ghR`, not `ghr`: config/keymaps.lua loads after this file and owns
+-- `<leader>ghh` / `<leader>ghr` for gitsigns hunks, so `ghr` here would be
+-- silently overwritten.
+vim.keymap.set("n", "<leader>ghR", "<cmd>Octo review start<cr>", { desc = "GitHub: start PR review" })
+vim.keymap.set("n", "<leader>ghs", "<cmd>Octo review submit<cr>", { desc = "GitHub: submit PR review" })
+vim.keymap.set("n", "<leader>ghc", "<cmd>Octo review commit<cr>", { desc = "GitHub: pick review commit" })
+vim.keymap.set("n", "<leader>gha", "<cmd>Octo pr checks<cr>", { desc = "GitHub: PR checks" })
+vim.keymap.set({ "n", "v" }, "<leader>ghn", "<cmd>Octo comment add<cr>", { desc = "GitHub: comment on diff line(s)" })
+vim.keymap.set("n", "<leader>ghd", "<cmd>Octo pr changes<cr>", { desc = "GitHub: toggle changed files" })
 
 --- My plugins ----------------------------------------------------------------
 

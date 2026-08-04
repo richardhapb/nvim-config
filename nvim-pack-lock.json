@@ -1,5 +1,9 @@
 {
   "plugins": {
+    "diffview": {
+      "rev": "62dc5adf4e77489a2a6d3bf36ef6e4ac5738b634",
+      "src": "https://github.com/dlyongemallo/diffview-plus.nvim"
+    },
     "fff.nvim": {
       "rev": "1eb913e509b846e77111cde2aeeb77a05243c003",
       "src": "https://github.com/dmtrKovalenko/fff.nvim"
@@ -11,6 +15,10 @@
     "fzf-lua": {
       "rev": "28440c741e927592877514fba3db21eb188caec8",
       "src": "https://github.com/ibhagwan/fzf-lua"
+    },
+    "gitlab.nvim": {
+      "rev": "876ed78a5dee76559ae36f814a467baa52139147",
+      "src": "https://github.com/harrisoncramer/gitlab.nvim"
     },
     "gitsigns.nvim": {
       "rev": "31d6fb2d618bca1482b9f274751ead5f03461408",
@@ -24,6 +32,10 @@
       "rev": "cf2a288696b03d0934da713d66c6d71557b5c997",
       "src": "https://github.com/rose-pine/neovim"
     },
+    "nui": {
+      "rev": "de740991c12411b663994b2860f1a4fd0937c130",
+      "src": "https://github.com/MunifTanjim/nui.nvim"
+    },
     "nvim-treesitter": {
       "rev": "cf12346a3414fa1b06af75c79faebe7f76df080a",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
@@ -31,6 +43,14 @@
     "nvim-treesitter-textobjects": {
       "rev": "5ca4aaa6efdcc59be46b95a3e876300cfead05ef",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-textobjects"
+    },
+    "octo": {
+      "rev": "205f024d3ea4a3d81aac751b6bf8e2d01e0c204f",
+      "src": "https://github.com/pwntester/octo.nvim"
+    },
+    "plenary": {
+      "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
+      "src": "https://github.com/nvim-lua/plenary.nvim"
     },
     "pytest.nvim": {
       "rev": "697405d5fb4620db5154ae2212bae6c4c1f41afb",

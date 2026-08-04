@@ -86,4 +86,59 @@ for lhs, mode in pairs({
   eq(vim.tbl_contains(trouble_modes, mode), true, ('%q is a real trouble mode'):format(mode))
 end
 
+-- Review stack (diffview + gitlab.nvim + octo), ported from `main`.
+--
+-- The `<leader>gh*` namespace is shared: config/keymaps.lua loads *after*
+-- config/plugins.lua and maps `<leader>ghh`/`<leader>ghr` to gitsigns, so an
+-- octo map on either lhs is overwritten with no warning (that is why review
+-- start lives on `<leader>ghR`). Pin one map per lhs, and pin that the two
+-- gitsigns maps still point at gitsigns.
+local function rhs_of(lhs, mode)
+  for _, m in ipairs(vim.api.nvim_get_keymap(mode or 'n')) do
+    if m.lhs == lhs then return m.rhs or '<callback>' end
+  end
+end
+
+for _, lhs in ipairs({
+  ' F', ' L', ' H',                              -- diffview
+  ' M', ' P', ' mo',                             -- repo/MR/PR pickers
+  ' glr', ' glc', ' gla', ' glA', ' gld',        -- gitlab.nvim
+  ' ghR', ' ghs', ' ghc', ' gha', ' ghd',        -- octo
+}) do
+  eq(n_maps(lhs), 1, ('%s is mapped exactly once'):format(lhs))
+end
+
+eq(rhs_of(' ghh'), ':Gitsigns preview_hunk<CR>', 'gitsigns keeps <leader>ghh')
+eq(rhs_of(' ghr'), ':Gitsigns reset_hunk<CR>', 'gitsigns keeps <leader>ghr')
+
+-- octo's review file panel does a bare `require "nvim-web-devicons"` when
+-- file_panel.icons is truthy. There is no devicons and no mini.icons here, so
+-- the panel would error on its first file unless icons are off.
+eq(require('octo.config').values.file_panel.icons, false, 'octo file panel icons are off')
+eq(pcall(require, 'nvim-web-devicons'), false, 'no devicons provider on this branch')
+
+-- diffview's layout is chosen from the window width. Both branches of
+-- diff_layout() must name layouts diffview actually accepts -- a typo here only
+-- surfaces as an error when the view opens.
+local dv = require('diffview.config').get_config()
+eq(dv.use_icons, false, 'diffview icons off (no provider)')
+eq(vim.tbl_contains({ 'diff1_inline', 'diff2_horizontal' }, dv.view.default.layout),
+  true, 'default layout is one of the two width-dependent layouts')
+eq(dv.view.file_history.layout, dv.view.default.layout, 'file history follows the default layout')
+eq(vim.tbl_contains(vim.opt.diffopt:get(), 'followwrap'), true,
+  "followwrap is set, or diff mode forces 'nowrap' back on")
+
+-- The reviewers are driven from these two modules; their user commands are the
+-- entry points the `tmux-mr` script calls, so a rename breaks it silently.
+for _, cmd in ipairs({ 'CheckrMR', 'CheckrMROpen', 'CheckrMRReview', 'GhPR', 'GhPROpen', 'GhPRReview' }) do
+  eq(vim.fn.exists(':' .. cmd), 2, (':%s is defined'):format(cmd))
+end
+
+-- URL routing: <leader>mo sends a GitHub URL to octo and everything else to
+-- gitlab.nvim, off this one predicate.
+local gh = require('plugin.gh_pr')
+eq(gh.is_github('github.com'), true, 'github.com is GitHub')
+eq(gh.is_github('gitlab.checkrhq.net'), false, 'the Checkr GitLab host is not GitHub')
+eq(gh.is_github(nil), false, 'a missing host is not GitHub')
+
 print(('ok - %d checks passed'):format(checks))
