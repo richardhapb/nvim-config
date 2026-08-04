@@ -16,13 +16,15 @@
 --                              no file panel over a commit, no file history
 --   gitlab.nvim, octo          review MRs/PRs *in the diff*: `glab`/`gh` in a
 --                              terminal cannot comment on a diff line
+--   render-markdown            `conceallevel` hides the markers and treesitter
+--                              colours them, but neither draws a table border,
+--                              a heading background or a code-block frame
 --
 -- Deliberately absent, with the builtin that replaces it:
 --   neo-tree             -> netrw (`-`, `<C-s>`), `:find`, fzf-lua files
 --   undotree             -> `g-` / `g+` / `:earlier 10m` / `:undolist`
 --   mini.completion      -> `vim.lsp.completion.enable` (see config/lsp.lua)
 --   mini.icons           -> nothing; fzf-lua degrades to no icons
---   render-markdown      -> `conceallevel`, treesitter markdown highlights
 --   no-neck-pain         -> `:vsplit` + `:vertical resize`
 
 vim.pack.add {
@@ -39,6 +41,10 @@ vim.pack.add {
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
   { src = "https://github.com/folke/trouble.nvim" },
   { src = "https://github.com/dlyongemallo/diffview-plus.nvim",                 name = "diffview" },
+  -- In-buffer markdown rendering. plugin/pandoc_div.lua and
+  -- plugin/mermaid_ascii.lua are written as complements to it: both leave the
+  -- source alone and only add virtual text, so the three compose.
+  { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",       name = "render-markdown" },
 
   -- Review stack. plenary and nui are library deps, not tools in their own
   -- right: gitlab.nvim and octo both need them.

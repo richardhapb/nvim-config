@@ -141,4 +141,46 @@ eq(gh.is_github('github.com'), true, 'github.com is GitHub')
 eq(gh.is_github('gitlab.checkrhq.net'), false, 'the Checkr GitLab host is not GitHub')
 eq(gh.is_github(nil), false, 'a missing host is not GitHub')
 
+-- Markdown rendering: render-markdown.nvim + plugin/pandoc_div + mermaid_ascii.
+--
+-- render-markdown is never `setup()` here. Its own plugin/render-markdown.lua
+-- does that from `vim.g.render_markdown_config`, so the config only lists the
+-- pack spec -- and if that entry point ever changes, rendering stops with no
+-- error at all. Pin that it came up.
+eq(require('render-markdown.state').enabled, true, 'render-markdown enabled without an explicit setup()')
+
+-- The three renderers must not fight over extmarks: each owns its own
+-- namespace, and pandoc_div's conceal needs `conceallevel` >= 2, which
+-- render-markdown's window options are what normally supply.
+local md = vim.api.nvim_create_buf(false, true)
+vim.api.nvim_buf_set_lines(md, 0, -1, false, {
+  '# Heading', '', '::: note', 'A pandoc fenced div.', ':::', '',
+  '```mermaid', 'graph LR', '  A[Activity] --> B{automate?}', '```',
+})
+vim.api.nvim_win_set_buf(0, md)
+vim.bo[md].filetype = 'markdown'
+local source = vim.api.nvim_buf_get_lines(md, 0, -1, false)
+
+eq(vim.wo.conceallevel >= 2, true, 'a markdown window conceals (pandoc_div needs it)')
+
+local namespaces = vim.api.nvim_get_namespaces()
+for _, ns in ipairs({ 'render-markdown.nvim', 'pandoc_div', 'mermaid_ascii' }) do
+  eq(type(namespaces[ns]), 'number', ('%s owns a namespace of its own'):format(ns))
+end
+
+-- Both of mine decorate rather than rewrite -- that is what lets them compose
+-- with render-markdown, which owns the same lines. A renderer that edited the
+-- buffer would corrupt the source on every keystroke.
+vim.cmd('PandocDivRender')
+eq(#vim.api.nvim_buf_get_extmarks(md, namespaces['pandoc_div'], 0, -1, {}) > 0,
+  true, 'pandoc_div marks up a fenced div')
+eq(vim.deep_equal(vim.api.nvim_buf_get_lines(md, 0, -1, false), source),
+  true, 'rendering leaves the markdown source untouched')
+
+-- mermaid_ascii shells out to the `mermaid-ascii` binary asynchronously, so its
+-- marks cannot be asserted synchronously. Pin its entry points instead.
+for _, cmd in ipairs({ 'MermaidAsciiRender', 'MermaidAsciiToggle', 'PandocDivRender' }) do
+  eq(vim.fn.exists(':' .. cmd), 2, (':%s is defined'):format(cmd))
+end
+
 print(('ok - %d checks passed'):format(checks))
