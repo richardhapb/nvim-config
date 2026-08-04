@@ -366,15 +366,26 @@ end
 ---default events (CursorMoved / CursorMovedI / InsertCharPre), and a second
 ---press focuses the float instead of stacking another one (`focus_id`).
 ---
----`wrap = false` is the one deliberate difference -- the default soft-wraps at
----the window width, which folds box-drawing lines and makes the diagram
----unreadable. Overflow is scrollable once focused.
+---Two deliberate differences from the diagnostic float, both because these
+---diagrams are large:
+---
+---  wrap = false        the default soft-wraps at the window width, which folds
+---                      box-drawing lines and makes the diagram unreadable.
+---  relative = "editor" a diagram does not belong to the cursor the way a
+---                      diagnostic message does, and anchoring to the cursor
+---                      caps the height at the space on one side of it -- half a
+---                      screen, on a line in the middle. Anchored to the editor
+---                      the float starts at the top-left and can use the full
+---                      height, so a 55-row diagram is one scroll, not six.
+---
+---Overflow is scrollable once focused (a second press focuses it).
 ---@param lines string[]
 local function open_float(lines)
   return vim.lsp.util.open_floating_preview(lines, "plaintext", {
     border = (vim.diagnostic.config().float or {}).border or "single",
     focus_id = "mermaid_ascii",
     wrap = false,
+    relative = "editor",
   })
 end
 

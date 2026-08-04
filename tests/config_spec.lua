@@ -245,6 +245,11 @@ if vim.fn.executable('mermaid-ascii') == 1 then
   eq(table.concat(shown, '\n'):find('Activity') ~= nil, true, 'the float shows the rendered diagram')
   -- Soft wrap would fold the box-drawing lines and make the diagram unreadable.
   eq(vim.wo[win].wrap, false, 'the float does not wrap')
+  -- Anchored to the editor, not the cursor: cursor-relative caps the height at
+  -- the space on one side of the cursor, which is half a screen mid-file.
+  local win_cfg = vim.api.nvim_win_get_config(win)
+  eq(win_cfg.relative, 'editor', 'the float is anchored to the editor, not the cursor')
+  eq(win_cfg.anchor, 'NW', 'the float starts at the top-left')
   -- focus_id: a second press focuses the existing float instead of stacking one.
   mermaid.float()
   eq(#open_floats(), 1, 'a second float() reuses the window instead of stacking')
