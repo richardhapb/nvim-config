@@ -24,6 +24,14 @@
       "rev": "31d6fb2d618bca1482b9f274751ead5f03461408",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
+    "mini.icons": {
+      "rev": "98faae31e9be1cc054ae63485e58ceb185efcad0",
+      "src": "https://github.com/nvim-mini/mini.icons"
+    },
+    "neo-tree": {
+      "rev": "a31bd096e3cdf12dfcf1ca4c60abe82e73968c5d",
+      "src": "https://github.com/nvim-neo-tree/neo-tree.nvim"
+    },
     "neospeller.nvim": {
       "rev": "b68f35d49b44d89ba45371045c5980601ffd6a14",
       "src": "/Users/richard/plugins/neospeller.nvim"

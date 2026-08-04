@@ -111,17 +111,23 @@ end
 eq(rhs_of(' ghh'), ':Gitsigns preview_hunk<CR>', 'gitsigns keeps <leader>ghh')
 eq(rhs_of(' ghr'), ':Gitsigns reset_hunk<CR>', 'gitsigns keeps <leader>ghr')
 
--- octo's review file panel does a bare `require "nvim-web-devicons"` when
--- file_panel.icons is truthy. There is no devicons and no mini.icons here, so
--- the panel would error on its first file unless icons are off.
-eq(require('octo.config').values.file_panel.icons, false, 'octo file panel icons are off')
-eq(pcall(require, 'nvim-web-devicons'), false, 'no devicons provider on this branch')
+-- octo's review file panel does a bare `require "nvim-web-devicons"` per file
+-- when file_panel.icons is truthy, and diffview looks for the same module.
+-- nvim-web-devicons is not installed: mini.icons' mock is what answers, so the
+-- two must be pinned together -- icons on with no provider errors on the first
+-- file the panel draws.
+eq(require('octo.config').values.file_panel.icons, true, 'octo file panel icons are on')
+local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
+eq(has_devicons, true, 'nvim-web-devicons resolves (via the mini.icons mock)')
+eq(type(devicons.get_icon), 'function', 'the mock supplies get_icon, which octo calls')
+eq(select(2, devicons.get_icon('init.lua', 'lua', { default = true })) ~= nil, true,
+  'get_icon returns a highlight group, not just an icon')
 
 -- diffview's layout is chosen from the window width. Both branches of
 -- diff_layout() must name layouts diffview actually accepts -- a typo here only
 -- surfaces as an error when the view opens.
 local dv = require('diffview.config').get_config()
-eq(dv.use_icons, false, 'diffview icons off (no provider)')
+eq(dv.use_icons, true, 'diffview icons on (mini.icons provides them)')
 eq(vim.tbl_contains({ 'diff1_inline', 'diff2_horizontal' }, dv.view.default.layout),
   true, 'default layout is one of the two width-dependent layouts')
 eq(dv.view.file_history.layout, dv.view.default.layout, 'file history follows the default layout')
@@ -140,6 +146,23 @@ local gh = require('plugin.gh_pr')
 eq(gh.is_github('github.com'), true, 'github.com is GitHub')
 eq(gh.is_github('gitlab.checkrhq.net'), false, 'the Checkr GitLab host is not GitHub')
 eq(gh.is_github(nil), false, 'a missing host is not GitHub')
+
+-- Icons. Each consumer probes for a provider and caches the answer, so a
+-- mini.icons.setup() that ran too late would leave them silently icon-less with
+-- no error to show for it. render-markdown's probe additionally requires the
+-- `MiniIcons` global, which only setup() sets -- `require` alone is not enough.
+eq(require('render-markdown.lib.icons').name(), 'mini.icons',
+  'render-markdown resolved mini.icons as its provider')
+eq(type(_G.MiniIcons), 'table', 'mini.icons.setup() ran (render-markdown checks this global)')
+eq(require('fzf-lua.devicons').get_devicon('init.lua') ~= nil, true,
+  'fzf-lua has an icon for init.lua')
+
+-- neo-tree lives alongside netrw rather than replacing it, so all three lhs must
+-- survive: `<leader>t*` is trouble's prefix, which is why the toggle is `<leader>T`.
+eq(n_maps(' T'), 1, '<leader>T toggles neo-tree exactly once')
+eq(rhs_of('-'), '<Cmd>Explore<CR>', 'netrw keeps `-`')
+eq(rhs_of('<C-S>'), '<Cmd>Explore .<CR>', 'netrw keeps <C-s>')
+eq(vim.fn.exists(':Neotree'), 2, ':Neotree is defined')
 
 -- Markdown rendering: render-markdown.nvim + plugin/pandoc_div + mermaid_ascii.
 --

@@ -19,12 +19,15 @@
 --   render-markdown            `conceallevel` hides the markers and treesitter
 --                              colours them, but neither draws a table border,
 --                              a heading background or a code-block frame
+--   mini.icons                 filetype icons, and the `nvim-web-devicons` shim
+--                              that fzf-lua, diffview and octo all look for
+--   neo-tree                   a persistent tree sidebar; netrw is a full-window
+--                              buffer listing one directory at a time. Both stay
+--                              -- netrw on `-` / `<C-s>`, neo-tree on `<leader>T`
 --
 -- Deliberately absent, with the builtin that replaces it:
---   neo-tree             -> netrw (`-`, `<C-s>`), `:find`, fzf-lua files
 --   undotree             -> `g-` / `g+` / `:earlier 10m` / `:undolist`
 --   mini.completion      -> `vim.lsp.completion.enable` (see config/lsp.lua)
---   mini.icons           -> nothing; fzf-lua degrades to no icons
 --   no-neck-pain         -> `:vsplit` + `:vertical resize`
 
 vim.pack.add {
@@ -32,6 +35,10 @@ vim.pack.add {
   { src = "https://github.com/rose-pine/neovim" },
 
   -- Tools
+  -- Icon provider. The standalone mirror, not the mini.nvim monorepo `main`
+  -- pulls: this is the only mini module used here, and the split-out repo
+  -- exposes the same `mini.icons` module path.
+  { src = "https://github.com/nvim-mini/mini.icons" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/ibhagwan/fzf-lua" },
@@ -56,6 +63,9 @@ vim.pack.add {
   -- GitHub PR review, the octo.nvim counterpart to gitlab.nvim. Auth comes from
   -- the already-authenticated `gh` CLI; pickers reuse fzf-lua.
   { src = "https://github.com/pwntester/octo.nvim",                             name = "octo" },
+  -- Tree sidebar. Reuses plenary/nui above; icons come from the mini.icons
+  -- devicons mock, so it needs nothing else.
+  { src = "https://github.com/nvim-neo-tree/neo-tree.nvim",                     name = "neo-tree" },
 
   -- Mine (local checkouts)
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
@@ -65,6 +75,18 @@ vim.pack.add {
 -- Builtins that ship with Neovim but are opt-in.
 vim.cmd "packadd! termdebug"
 vim.cmd "packadd! cfilter"
+
+-- Icons ----------------------------------------------------------------------
+
+-- Must run before fzf-lua, diffview and octo are configured below: each probes
+-- for a provider at setup time and caches the answer.
+require 'mini.icons'.setup()
+
+-- fzf-lua and render-markdown find mini.icons on their own, but octo's review
+-- file panel does a bare `require "nvim-web-devicons"` and diffview looks for
+-- the same module. The mock serves that API from mini.icons, so neither needs
+-- the extra plugin.
+require 'mini.icons'.mock_nvim_web_devicons()
 
 -- My own modules. These are not "plugins hiding Neovim" -- they are Neovim's
 -- API used directly, so they stay.
@@ -325,9 +347,8 @@ end
 
 require "diffview".setup {
   enhanced_diff_hl = true,
-  -- No icon provider on this branch (no mini.icons, no nvim-web-devicons), and
-  -- diffview only degrades to a blank column anyway -- say so explicitly.
-  use_icons = false,
+  -- Served by mini.icons through the devicons mock (see the Icons section).
+  use_icons = true,
   view = {
     -- winbar_info labels each window with its revision -- needed once panes
     -- stack (or collapse into one) and "left/right" stops telling you which.
@@ -417,13 +438,12 @@ vim.keymap.set("n", "<leader>gld", gitlab.toggle_discussions, { desc = "GitLab: 
 
 -- GitHub PR review (pwntester/octo.nvim). Auth comes from the `gh` CLI (personal
 -- account). Pickers reuse fzf-lua, matching fzf.register_ui_select() above.
--- `file_panel.icons = false` is required, not cosmetic: with icons on, octo's
--- review panel renderer does a bare `require "nvim-web-devicons"` (main gets it
--- from mini.icons' devicons mock, which this branch does not have), so the panel
--- would error out on the first file it draws.
+-- `file_panel.icons` is only safe to leave on because of the devicons mock: the
+-- review panel renderer does a bare `require "nvim-web-devicons"` per file, and
+-- without a provider it errors out on the first one it draws.
 require("octo").setup {
   picker = "fzf-lua",
-  file_panel = { icons = false },
+  file_panel = { icons = true },
 }
 
 -- Entry points: <leader>P (in gh_pr.lua) picks the repo first; these act on
@@ -439,6 +459,13 @@ vim.keymap.set("n", "<leader>ghc", "<cmd>Octo review commit<cr>", { desc = "GitH
 vim.keymap.set("n", "<leader>gha", "<cmd>Octo pr checks<cr>", { desc = "GitHub: PR checks" })
 vim.keymap.set({ "n", "v" }, "<leader>ghn", "<cmd>Octo comment add<cr>", { desc = "GitHub: comment on diff line(s)" })
 vim.keymap.set("n", "<leader>ghd", "<cmd>Octo pr changes<cr>", { desc = "GitHub: toggle changed files" })
+
+-- Explorer -------------------------------------------------------------------
+
+-- Sidebar rooted at cwd. netrw keeps `-` and `<C-s>`, so this gets `<leader>T`:
+-- lowercase `<leader>t*` is the trouble.nvim prefix (six maps above).
+require "neo-tree".setup {}
+vim.keymap.set("n", "<leader>T", "<cmd>Neotree toggle<cr>", { desc = "Toggle Neo-tree" })
 
 --- My plugins ----------------------------------------------------------------
 
