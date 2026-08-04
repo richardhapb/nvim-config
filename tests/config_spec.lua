@@ -200,10 +200,57 @@ eq(#vim.api.nvim_buf_get_extmarks(md, namespaces['pandoc_div'], 0, -1, {}) > 0,
 eq(vim.deep_equal(vim.api.nvim_buf_get_lines(md, 0, -1, false), source),
   true, 'rendering leaves the markdown source untouched')
 
--- mermaid_ascii shells out to the `mermaid-ascii` binary asynchronously, so its
--- marks cannot be asserted synchronously. Pin its entry points instead.
-for _, cmd in ipairs({ 'MermaidAsciiRender', 'MermaidAsciiToggle', 'PandocDivRender' }) do
+for _, cmd in ipairs({ 'MermaidAsciiRender', 'MermaidAsciiToggle', 'MermaidAsciiFloat', 'PandocDivRender' }) do
   eq(vim.fn.exists(':' .. cmd), 2, (':%s is defined'):format(cmd))
+end
+
+-- `<leader>e` in a markdown buffer: the mermaid diagram when the cursor is in a
+-- block, the diagnostic float everywhere else. The map has to be buffer-local to
+-- shadow the global one functions/lsp.lua sets on LspAttach, and the fall-through
+-- has to stay -- markdown has real diagnostics here (harper_ls, ltex both attach).
+local mermaid = require('plugin.mermaid_ascii')
+local function buf_maps(lhs, buf)
+  local hits = 0
+  for _, m in ipairs(vim.api.nvim_buf_get_keymap(buf or 0, 'n')) do
+    if m.lhs == lhs then hits = hits + 1 end
+  end
+  return hits
+end
+eq(buf_maps(' e', md), 1, '<leader>e is mapped buffer-locally in markdown')
+
+vim.api.nvim_win_set_cursor(0, { 1, 0 }) -- '# Heading', outside any block
+eq(mermaid.float(), false, 'outside a mermaid block float() declines, so diagnostics answer')
+
+-- Rendering needs the `mermaid-ascii` binary and is async, so wait on it. Without
+-- the binary the module is documented to no-op; say so rather than failing.
+local function open_floats()
+  local wins = {}
+  for _, w in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_config(w).relative ~= '' then wins[#wins + 1] = w end
+  end
+  return wins
+end
+
+if vim.fn.executable('mermaid-ascii') == 1 then
+  vim.api.nvim_win_set_cursor(0, { 8, 0 }) -- 'graph LR', inside the block
+  eq(mermaid.float(), true, 'inside a mermaid block float() takes the key')
+
+  -- float() returns true as soon as it has something in flight, so wait for the
+  -- window rather than assuming it is already up.
+  eq(vim.wait(15000, function() return #open_floats() > 0 end, 100), true,
+    'the diagram float opens (cold cache renders, then shows)')
+
+  local win = open_floats()[1]
+  local shown = vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(win), 0, -1, false)
+  eq(table.concat(shown, '\n'):find('Activity') ~= nil, true, 'the float shows the rendered diagram')
+  -- Soft wrap would fold the box-drawing lines and make the diagram unreadable.
+  eq(vim.wo[win].wrap, false, 'the float does not wrap')
+  -- focus_id: a second press focuses the existing float instead of stacking one.
+  mermaid.float()
+  eq(#open_floats(), 1, 'a second float() reuses the window instead of stacking')
+  vim.api.nvim_win_close(win, true)
+else
+  print('# skipped: mermaid-ascii binary not installed, float rendering unchecked')
 end
 
 print(('ok - %d checks passed'):format(checks))

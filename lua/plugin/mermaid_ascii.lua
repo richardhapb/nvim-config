@@ -54,6 +54,8 @@ local config = {
 local cache = {}
 -- content-hash -> true while a render is in flight (de-dupes spawns).
 local pending = {}
+-- content-hash -> callbacks waiting on an in-flight render (see M.float).
+local waiters = {}
 -- buffer -> false to disable rendering for that buffer.
 local buf_enabled = {}
 -- buffer -> debounce timer.
@@ -263,7 +265,14 @@ end
 ---@param buf integer
 ---@param key string
 ---@param body string[]
-local function request(buf, key, body)
+---@param on_done? fun(rendered: string[]|false) called once the result is cached
+local function request(buf, key, body, on_done)
+  -- Queue before the de-dupe check: a caller that arrives while a render is
+  -- already in flight still has to be told when it lands.
+  if on_done then
+    waiters[key] = waiters[key] or {}
+    table.insert(waiters[key], on_done)
+  end
   if pending[key] then return end
   pending[key] = true
 
@@ -286,6 +295,9 @@ local function request(buf, key, body)
     end
     vim.schedule(function()
       if vim.api.nvim_buf_is_valid(buf) then M.render(buf) end
+      local queued = waiters[key]
+      waiters[key] = nil
+      for _, cb in ipairs(queued or {}) do cb(cache[key]) end
     end)
   end)
 end
@@ -308,6 +320,73 @@ function M.render(buf)
     end
     -- cached == false: unsupported diagram, leave the source as-is.
   end
+end
+
+---The mermaid block containing a line, if any.
+---@param buf integer
+---@param row integer 0-based
+---@return table? block
+local function block_at(buf, row)
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  for _, block in ipairs(find_blocks(lines)) do
+    if row >= block.open and row <= block.close then return block end
+  end
+end
+
+---Open the rendered diagram in a float, the way `vim.diagnostic.open_float`
+---does: that function ends in this same `open_floating_preview` call, so the
+---border comes from the diagnostic float config, the window closes on the same
+---default events (CursorMoved / CursorMovedI / InsertCharPre), and a second
+---press focuses the float instead of stacking another one (`focus_id`).
+---
+---`wrap = false` is the one deliberate difference -- the default soft-wraps at
+---the window width, which folds box-drawing lines and makes the diagram
+---unreadable. Overflow is scrollable once focused.
+---@param lines string[]
+local function open_float(lines)
+  return vim.lsp.util.open_floating_preview(lines, "plaintext", {
+    border = (vim.diagnostic.config().float or {}).border or "single",
+    focus_id = "mermaid_ascii",
+    wrap = false,
+  })
+end
+
+---Float the rendered diagram for the block under the cursor.
+---
+---Returns false when there is nothing to show, so a caller sharing a key with
+---the diagnostic float can fall through to it -- markdown has real diagnostics
+---here (harper_ls and ltex both attach), so that key has to keep working.
+---@return boolean shown
+function M.float()
+  local buf = vim.api.nvim_get_current_buf()
+  if not config.bin or not is_target(buf) then return false end
+
+  local row = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local block = block_at(buf, row)
+  if not block then return false end
+
+  local key = table.concat(block.body, "\n")
+  local rendered = cache[key]
+
+  -- Unsupported diagram type (class, state, ...): the binary cannot draw it, so
+  -- there is no diagram to float and the diagnostic float is the better answer.
+  if rendered == false then return false end
+
+  if rendered then
+    open_float(rendered)
+    return true
+  end
+
+  -- Cold cache. Rare -- the inline render warms it on FileType/BufEnter -- but
+  -- reachable on a block edited a moment ago. Float when it lands, unless the
+  -- cursor has left the block by then (opening a float under a moved cursor is
+  -- exactly what the close_events above exist to prevent).
+  request(buf, key, block.body, function(result)
+    if not result or vim.api.nvim_get_current_buf() ~= buf then return end
+    local now = block_at(buf, vim.api.nvim_win_get_cursor(0)[1] - 1)
+    if now and table.concat(now.body, "\n") == key then open_float(result) end
+  end)
+  return true
 end
 
 ---Debounced render, to avoid spawning a process on every keystroke.
@@ -353,6 +432,15 @@ function M.setup(opts)
     callback = function(ev)
       if buf_enabled[ev.buf] == nil then buf_enabled[ev.buf] = config.enabled end
       M.render(ev.buf)
+
+      -- Share `<leader>e` with the diagnostic float instead of taking a key of
+      -- its own: inside a mermaid block it shows the diagram, anywhere else in
+      -- the buffer it is the diagnostic float, unchanged. Buffer-local, so it
+      -- shadows the global map that functions/lsp.lua sets on LspAttach --
+      -- which is also why the fallback is spelled out here rather than assumed.
+      vim.keymap.set("n", "<leader>e", function()
+        if not M.float() then vim.diagnostic.open_float() end
+      end, { buffer = ev.buf, desc = "View mermaid diagram, else diagnostic, in a float" })
     end,
   })
 
@@ -373,6 +461,13 @@ function M.setup(opts)
     vim.notify("Mermaid ASCII " .. (buf_enabled[buf] and "on" or "off"),
       vim.log.levels.INFO, { title = "MermaidAscii" })
   end, { desc = "Toggle inline mermaid ASCII rendering for this buffer" })
+
+  vim.api.nvim_create_user_command("MermaidAsciiFloat", function()
+    if not M.float() then
+      vim.notify("No mermaid diagram under the cursor", vim.log.levels.INFO,
+        { title = "MermaidAscii" })
+    end
+  end, { desc = "Show the mermaid diagram under the cursor in a float" })
 
   vim.api.nvim_create_user_command("MermaidAsciiRender", function()
     cache = {} -- force a fresh render
