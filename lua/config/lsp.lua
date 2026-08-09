@@ -25,7 +25,6 @@ local lsp_elements = {
   "ts_ls",
   "yamlls",
   "ty",
-  "djls",
   "zls",
   "bashls",
   "jsonls",
