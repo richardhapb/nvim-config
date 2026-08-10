@@ -315,12 +315,12 @@ local tr_bottom = { type = "split", position = "bottom", size = { height = 20 } 
 local tr_right = { type = "split", position = "right", size = { width = 80 } }
 
 local trouble_views = {
-  { "tt", { mode = "diagnostics", win = tr_bottom },                    "Diagnostics (Trouble)" },
+  { "tt", { mode = "diagnostics", win = tr_bottom },                       "Diagnostics (Trouble)" },
   { "tx", { mode = "diagnostics", filter = { buf = 0 }, win = tr_bottom }, "Buffer diagnostics (Trouble)" },
-  { "ts", { mode = "symbols", win = tr_right },                         "Symbols (Trouble)" },
-  { "tl", { mode = "lsp", focus = false, win = tr_right },              "LSP definitions / references (Trouble)" },
-  { "tL", { mode = "loclist", win = tr_bottom },                        "Location list (Trouble)" },
-  { "tQ", { mode = "qflist", win = tr_bottom },                         "Quickfix list (Trouble)" },
+  { "ts", { mode = "symbols", win = tr_right },                            "Symbols (Trouble)" },
+  { "tl", { mode = "lsp", focus = false, win = tr_right },                 "LSP definitions / references (Trouble)" },
+  { "tL", { mode = "loclist", win = tr_bottom },                           "Location list (Trouble)" },
+  { "tQ", { mode = "qflist", win = tr_bottom },                            "Quickfix list (Trouble)" },
 }
 
 for _, view in ipairs(trouble_views) do
@@ -387,7 +387,8 @@ local function diffview_open(rev)
     local view = require("diffview.config").get_config().view
     view.default.layout = diff_layout()
     view.file_history.layout = view.default.layout
-    vim.cmd("DiffviewOpen" .. (rev and (" " .. rev) or ""))
+    local resolved = (rev and (" " .. rev) or "")
+    vim.cmd("DiffviewOpen" .. resolved)
   end
 end
 
@@ -395,6 +396,26 @@ vim.keymap.set("n", "<leader>F", diffview_open(), { desc = "Open diff view" })
 -- No <CR>: leaves the command line open so a path or `--range` can be appended.
 vim.keymap.set("n", "<leader>L", ":DiffviewFileHistory", { desc = "Open file history" })
 vim.keymap.set("n", "<leader>H", diffview_open("HEAD^!"), { desc = "Open diff view for last commit" })
+vim.keymap.set("n", "<leader>M", function()
+  local result = vim.system({ "git", "branch", "-l", "master", "main", "--format", "'%(refname:short)'" }):wait()
+  if result.code ~= 0 then
+    local err = vim.trim((result.stderr or "Unknown error"))
+    vim.notify("Error getitng the main branch: " .. err, vim.log.levels.ERROR)
+    return
+  end
+
+  local branch = vim.trim(result.stdout)
+  if not branch or branch == "" then
+    vim.notify("main branch not found", vim.log.levels.ERROR)
+    return
+  end
+
+  local view = require("diffview.config").get_config().view
+  view.default.layout = diff_layout()
+  view.file_history.layout = view.default.layout
+
+  vim.cmd("DiffviewOpen " .. branch .. "..HEAD")
+end, { desc = "Open diff against master/main" })
 
 -- Review: GitLab MRs and GitHub PRs -------------------------------------------
 
