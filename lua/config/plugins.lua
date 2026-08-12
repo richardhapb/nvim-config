@@ -339,11 +339,9 @@ end
 -- `followwrap` is what stops diff mode from forcing 'nowrap' back on.
 vim.opt.diffopt:append("followwrap")
 
-local NARROW_COLUMNS = 190
-
-local function diff_layout()
-  return vim.o.columns < NARROW_COLUMNS and "diff1_inline" or "diff2_horizontal"
-end
+-- Layout modes live in functions/diffview_mode.lua: browsing and MR review
+-- disagree about single-window layouts, and the setting is global to diffview.
+local diff_view = require "functions.diffview_mode"
 
 require "diffview".setup {
   enhanced_diff_hl = true,
@@ -352,11 +350,10 @@ require "diffview".setup {
   view = {
     -- winbar_info labels each window with its revision -- needed once panes
     -- stack (or collapse into one) and "left/right" stops telling you which.
-    default = { layout = diff_layout(), winbar_info = true },
-    file_history = { layout = diff_layout(), winbar_info = true },
+    default = { layout = diff_view.layout(), winbar_info = true },
+    file_history = { layout = diff_view.layout(), winbar_info = true },
     merge_tool = { layout = "diff3_mixed" },
-    -- `g<C-x>` cycles these in-view when the width guess is wrong for a file.
-    cycle_layouts = { default = { "diff1_inline", "diff2_vertical", "diff2_horizontal" } },
+    cycle_layouts = { default = diff_view.browse_cycle },
     -- Added/deleted files have nothing to compare against; skip the empty pane.
     one_sided_layout = "raw",
     inline = { deletion_highlight = "hanging" },
@@ -379,22 +376,23 @@ require "diffview".setup {
 }
 
 -- Resolve the layout from the current width at open time, not at startup, so
--- plugging into a monitor mid-session picks side-by-side. Mutate the resolved
--- config instead of calling setup() again -- setup() rebuilds from defaults and
--- would drop the hooks above.
+-- plugging into a monitor mid-session picks side-by-side -- and undo whatever an
+-- MR review left pinned (see functions/diffview_mode.lua).
 local function diffview_open(rev)
   return function()
-    local view = require("diffview.config").get_config().view
-    view.default.layout = diff_layout()
-    view.file_history.layout = view.default.layout
+    diff_view.mode("browse")
     local resolved = (rev and (" " .. rev) or "")
     vim.cmd("DiffviewOpen" .. resolved)
   end
 end
 
 vim.keymap.set("n", "<leader>F", diffview_open(), { desc = "Open diff view" })
--- No <CR>: leaves the command line open so a path or `--range` can be appended.
-vim.keymap.set("n", "<leader>L", ":DiffviewFileHistory", { desc = "Open file history" })
+-- Fed as keys, not run: no <CR> leaves the command line open so a path or
+-- `--range` can be appended.
+vim.keymap.set("n", "<leader>L", function()
+  diff_view.mode("browse")
+  vim.api.nvim_feedkeys(":DiffviewFileHistory", "n", false)
+end, { desc = "Open file history" })
 vim.keymap.set("n", "<leader>H", diffview_open("HEAD^!"), { desc = "Open diff view for last commit" })
 vim.keymap.set("n", "<leader>M", function()
   local result = vim.system({ "git", "branch", "-l", "master", "main", "--format", "'%(refname:short)'" }):wait()
@@ -410,11 +408,7 @@ vim.keymap.set("n", "<leader>M", function()
     return
   end
 
-  local view = require("diffview.config").get_config().view
-  view.default.layout = diff_layout()
-  view.file_history.layout = view.default.layout
-
-  vim.cmd("DiffviewOpen " .. branch .. "..HEAD")
+  diffview_open(branch .. "..HEAD")()
 end, { desc = "Open diff against master/main" })
 
 -- Review: GitLab MRs and GitHub PRs -------------------------------------------
@@ -443,6 +437,12 @@ require("gitlab").setup {
     return token, "https://" .. host .. "/", nil
   end,
 }
+
+-- The reviewer runs DiffviewOpen itself, so it has to pick the layout: its
+-- diagnostics and comment placement assume two windows and blow up on the
+-- single-window layouts browsing uses. Wrapping `open` covers every entry point
+-- -- `glr`, `glc`, `:CheckrMR*` and reviewer.reload() all go through it.
+diff_view.pin_reviewer(require("gitlab.reviewer"))
 
 local gitlab = require("gitlab")
 -- Entry points: <leader>M (in checkr_mr.lua) picks the repo first; these act on

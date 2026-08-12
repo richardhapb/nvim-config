@@ -293,4 +293,48 @@ else
   print('# skipped: mermaid-ascii binary not installed, float and cap unchecked')
 end
 
+-- gitlab.nvim's reviewer indexes `cur_layout.a` directly, so a one-window layout
+-- kills it: opening an added file in an MR diff gave it a `diff1_raw` layout
+-- (from `one_sided_layout = "raw"`) and every DiffviewDiffBufWinEnter failed with
+-- "attempt to index field 'a' (a nil value)". Review mode keeps two windows.
+local diff_view = require('functions.diffview_mode')
+local dv_view = require('diffview.config').get_config().view
+
+diff_view.mode('review')
+eq(dv_view.one_sided_layout, 'default', 'review keeps the placeholder pane for added/deleted files')
+eq(dv_view.default.layout:sub(1, 5), 'diff2', 'review opens a two-window layout')
+for _, layout in ipairs(dv_view.cycle_layouts.default) do
+  eq(layout:sub(1, 5), 'diff2', 'g<C-x> cannot cycle a review down to one window: ' .. layout)
+end
+
+-- Browsing is what wants the single-window treatments, and it has to set them
+-- back: diffview's layout config is global, so whoever opens last owns it.
+diff_view.mode('browse')
+eq(dv_view.one_sided_layout, 'raw', 'browsing drops the empty pane again')
+eq(vim.tbl_contains(dv_view.cycle_layouts.default, 'diff1_inline'), true, 'browsing can cycle to inline')
+
+-- reviewer.open() is the choke point: `glr`, `glc`, `:CheckrMRReview` and
+-- reviewer.reload() all reach diffview through it.
+local fake_reviewer = { open = function() return dv_view.one_sided_layout end }
+diff_view.pin_reviewer(fake_reviewer)
+eq(fake_reviewer.open(), 'default', 'reviewer.open() switches to review mode before opening diffview')
+
+local pinned = fake_reviewer.open
+diff_view.pin_reviewer(fake_reviewer)
+eq(fake_reviewer.open == pinned, true, 'pinning twice is a no-op -- re-sourcing must not stack wrappers')
+
+-- Layouts are built one file at a time, so browsing a diff in another tab while
+-- a review is open would put the review's next file back on a browsing layout.
+fake_reviewer.tabid = vim.api.nvim_get_current_tabpage()
+diff_view.mode('browse')
+vim.api.nvim_exec_autocmds('TabEnter', {})
+eq(dv_view.one_sided_layout, 'default', 'entering the review tab re-pins review mode')
+
+fake_reviewer.tabid = nil
+diff_view.mode('browse')
+vim.api.nvim_exec_autocmds('TabEnter', {})
+eq(dv_view.one_sided_layout, 'raw', 'other tabs are left in browse mode')
+
+eq(require('gitlab.reviewer').__diffview_mode_pinned, true, 'the real reviewer is pinned at startup')
+
 print(('ok - %d checks passed'):format(checks))
