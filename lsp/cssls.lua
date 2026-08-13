@@ -1,3 +1,4 @@
+-- bun install -g vscode-langservers-extracted <- install all the vscode related stuff
 return {
   cmd = { "bunx", 'vscode-css-language-server', '--stdio' },
   filetypes = { 'css', 'scss', 'less' },
