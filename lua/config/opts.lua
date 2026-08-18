@@ -66,8 +66,13 @@ vim.opt.endofline = false
 vim.opt.eol = false
 vim.opt.eof = false
 
--- netwr awful banner
+-- NETWR --
+-- awful banner
 vim.g.netrw_banner = false
+-- Left-side tree
+vim.g.netrw_winsize = 20
+-- Tree view
+vim.g.netrw_liststyle = 3
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }

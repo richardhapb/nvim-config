@@ -21,7 +21,6 @@ end, { desc = 'Source init file' })
 keymap('n', '<leader>dq', vim.diagnostic.setloclist, { noremap = true, desc = 'Send diagnostics to qf' })
 
 -- Edit
-keymap('n', '<C-s>', '<cmd>Explore .<cr>', { silent = true })
 keymap('n', ';;', '<cmd>:w<cr>', { silent = true })
 keymap('n', 'x', '"_x', { silent = true })
 keymap('x', 'p', '"_xP', { silent = true })
@@ -67,6 +66,8 @@ keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 -- Keep the behaviour, but route it through netrw like <C-s> does. Inside a
 -- netrw buffer its own buffer-local `-` (NetrwBrowseUpDir) takes over.
 keymap('n', '-', '<cmd>Explore<cr>', { silent = true, desc = 'Open parent directory' })
+keymap('n', '<C-s>', '<cmd>Explore .<cr>', { silent = true })
+keymap('n', '<leader>T', '<cmd>Lexplore! .<cr>', { silent = true, desc = 'Open cwd as tree view' })
 
 keymap('n', '<leader>\\', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<C-n>', ':tabnext<CR>', { silent = true, desc = 'Next tab' })

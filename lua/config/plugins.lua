@@ -69,12 +69,8 @@ vim.pack.add {
   -- GitHub PR review, the octo.nvim counterpart to gitlab.nvim. Auth comes from
   -- the already-authenticated `gh` CLI; pickers reuse fzf-lua.
   { src = "https://github.com/pwntester/octo.nvim",                             name = "octo" },
-  -- Tree sidebar. Reuses plenary/nui above; icons come from the mini.icons
-  -- devicons mock, so it needs nothing else.
-  { src = "https://github.com/nvim-neo-tree/neo-tree.nvim",                     name = "neo-tree" },
 
   -- Mine (local checkouts)
-  { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "pytest.nvim") },
   { src = vim.fs.joinpath(vim.fn.expand("$HOME"), "plugins", "neospeller.nvim") },
 }
 
@@ -487,49 +483,9 @@ vim.keymap.set("n", "<leader>gha", "<cmd>Octo pr checks<cr>", { desc = "GitHub: 
 vim.keymap.set({ "n", "v" }, "<leader>ghn", "<cmd>Octo comment add<cr>", { desc = "GitHub: comment on diff line(s)" })
 vim.keymap.set("n", "<leader>ghd", "<cmd>Octo pr changes<cr>", { desc = "GitHub: toggle changed files" })
 
--- Explorer -------------------------------------------------------------------
-
--- Sidebar rooted at cwd. netrw keeps `-` and `<C-s>`, so this gets `<leader>T`:
--- lowercase `<leader>t*` is the trouble.nvim prefix (six maps above).
-require "neo-tree".setup {}
-vim.keymap.set("n", "<leader>T", "<cmd>Neotree toggle<cr>", { desc = "Toggle Neo-tree" })
-
 --- My plugins ----------------------------------------------------------------
 
 require 'neospeller'.setup()
-require 'pytest'.setup((function()
-  local utils = require 'functions.utils'
-  return {
-    docker = {
-      enabled = function()
-        return vim.fn.getcwd():find("ddirt") ~= nil or vim.fn.getcwd():find("fundfridge") ~= nil or
-            vim.fn.getcwd():find("agora_hedge") ~= nil
-      end,
-      container = function()
-        if vim.fn.getcwd():find("ddirt") == nil and vim.fn.getcwd():find("agora_hedge") == nil and vim.fn.getcwd():find("fundfridge") == nil then return end
-
-        local parent_dir = utils.get_root_cwd_dir()
-        return parent_dir .. "-web-1"
-      end,
-      enable_docker_compose = true,
-      docker_compose_service = 'web',
-      local_path_prefix = function()
-        if vim.fn.getcwd():find("ddirt") or vim.fn.getcwd():find("agora_hedge") then
-          return "app"
-        elseif vim.fn.getcwd():find("fundfridge") then
-          return "fundfridge"
-        end
-
-        return ""
-      end
-    },
-    django = {
-      enabled = true
-    }
-  }
-end)())
-
-vim.keymap.set("n", "<leader>O", ":PytestOutput<CR>", { silent = true })
 
 vim.keymap.set({ "x", "n" }, "<leader>S", ":CheckSpell<CR>", { desc = "Check spelling", silent = true })
 vim.keymap.set({ "x", "n" }, "<leader>D", ":CheckSpellText<CR>", { desc = "Check spelling", silent = true })
