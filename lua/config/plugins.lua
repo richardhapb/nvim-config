@@ -41,9 +41,15 @@ vim.pack.add {
   { src = "https://github.com/nvim-mini/mini.icons" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
-  { src = "https://github.com/ibhagwan/fzf-lua" },
   { src = "https://github.com/christoomey/vim-tmux-navigator",                  name = "tmux-navigator" },
+
+  -- Picker --
   { src = 'https://github.com/dmtrKovalenko/fff.nvim' },
+  { src = "https://github.com/ibhagwan/fzf-lua" },
+  -- For image rendering
+  { src = "https://github.com/folke/snacks.nvim" },
+  -------------
+
   { src = "https://github.com/tpope/vim-fugitive",                              name = "fugitive" },
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
   { src = "https://github.com/folke/trouble.nvim" },
