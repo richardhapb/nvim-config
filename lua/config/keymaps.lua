@@ -237,9 +237,9 @@ keymap('n', '<leader>gc', function()
     for _, line in ipairs(lines) do
       local l = line:lower()
       local is_trailer = l:match("^co%-authored%-by:")
-        or l:match("^signed%-off%-by:")
-        or l:match("generated with") ~= nil
-        or line:match("^%s*🤖")
+          or l:match("^signed%-off%-by:")
+          or l:match("generated with") ~= nil
+          or line:match("^%s*🤖")
       if not is_trailer then
         table.insert(out, line)
       end
@@ -368,7 +368,7 @@ keymap('n', '<leader>cc', "<CMD>term<CR><CMD>startinsert<CR>", { silent = true, 
 -- is the better place for a shell that has to outlive the editor anyway.
 
 -- to qf, TODO: Add dynamic line number and edit capatility
-keymap('n', '<leader>hq', function()
+keymap('n', '<leader>qg', function()
   local list = vim.fn.argv()
   if #list > 0 then
     local qf_items = {}
@@ -383,6 +383,33 @@ keymap('n', '<leader>hq', function()
     vim.cmd.copen()
   end
 end, { silent = true, desc = "Show args in qf" })
+
+keymap('n', '<leader>qa', function()
+  vim.ui.input({ prompt = "Note: " }, function(note)
+    if note == nil then return end -- user cancelled (Esc)
+    vim.fn.setqflist({
+      {
+        bufnr = vim.api.nvim_get_current_buf(),
+        lnum = vim.fn.line("."),
+        text = note,
+      },
+    }, "a")
+  end)
+end, { silent = true, desc = "Add current line to qf" })
+
+keymap('n', '<leader>qd', function()
+  vim.ui.input({ prompt = "Note: " }, function(note)
+    if note == nil then return end -- user cancelled (Esc)
+    vim.fn.setqflist({
+      {
+        -- "diffview:///Users/richard/dev/something/.git/c107e8e0747/packs/packages/app/public/packages.rb"
+        filename = vim.fn.expand("%"):gsub("^diffview://.-/%.git/[^/]+/", ""),
+        lnum = vim.fn.line("."),
+        text = note,
+      },
+    }, "a")
+  end)
+end, { silent = true, desc = "Diffview: Add current line to qf" })
 
 -- assign to each number the arg
 for i = 1, 9 do

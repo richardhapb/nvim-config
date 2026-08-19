@@ -66,6 +66,13 @@ vim.opt.endofline = false
 vim.opt.eol = false
 vim.opt.eof = false
 
+
+-- Quickfix
+vim.opt.errorformat:append({
+  "%f:%l:%m",
+  "%f:%l -> %m"
+})
+
 -- NETWR --
 -- awful banner
 vim.g.netrw_banner = false
