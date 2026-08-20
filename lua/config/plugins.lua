@@ -123,6 +123,9 @@ vim.g.fff = {
   debug = { enabled = false, show_scores = true },
 }
 
+-- Keeps a grep page inside the list window -- see plugin/fff_grep_fit.lua.
+require 'plugin.fff_grep_fit'.setup()
+
 
 -- Treesitter ------------------------------------------------------------------
 

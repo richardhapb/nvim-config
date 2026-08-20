@@ -184,6 +184,7 @@ function M.review_in(repo, iid)
     end
     -- Make sure the branch exists locally, then check it out.
     vim.system({ "git", "fetch", "origin", branch }, { cwd = repo }):wait()
+    vim.system({ "git", "update-ref", "origin", branch, branch }, { cwd = repo }):wait()
     local _, switch_err = git.switch_branch(branch)
     if switch_err ~= nil then
       notify("Could not check out " .. branch, vim.log.levels.ERROR)

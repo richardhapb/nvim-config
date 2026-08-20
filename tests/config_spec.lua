@@ -157,12 +157,11 @@ eq(type(_G.MiniIcons), 'table', 'mini.icons.setup() ran (render-markdown checks 
 eq(require('fzf-lua.devicons').get_devicon('init.lua') ~= nil, true,
   'fzf-lua has an icon for init.lua')
 
--- neo-tree lives alongside netrw rather than replacing it, so all three lhs must
--- survive: `<leader>t*` is trouble's prefix, which is why the toggle is `<leader>T`.
-eq(n_maps(' T'), 1, '<leader>T toggles neo-tree exactly once')
+-- netrw owns file browsing. `<leader>t*` is trouble's prefix, which is why the
+-- tree view is `<leader>T`.
+eq(n_maps(' T'), 1, '<leader>T opens the tree view exactly once')
 eq(rhs_of('-'), '<Cmd>Explore<CR>', 'netrw keeps `-`')
 eq(rhs_of('<C-S>'), '<Cmd>Explore .<CR>', 'netrw keeps <C-s>')
-eq(vim.fn.exists(':Neotree'), 2, ':Neotree is defined')
 
 -- Markdown rendering: render-markdown.nvim + plugin/pandoc_div + mermaid_ascii.
 --

@@ -384,20 +384,9 @@ keymap('n', '<leader>qg', function()
   end
 end, { silent = true, desc = "Show args in qf" })
 
+-- This covers two cases, normal files and diffview filename. When `diffview`... is not present
+-- it just doesn't replace nothing and just pass the regular relative path.
 keymap('n', '<leader>qa', function()
-  vim.ui.input({ prompt = "Note: " }, function(note)
-    if note == nil then return end -- user cancelled (Esc)
-    vim.fn.setqflist({
-      {
-        bufnr = vim.api.nvim_get_current_buf(),
-        lnum = vim.fn.line("."),
-        text = note,
-      },
-    }, "a")
-  end)
-end, { silent = true, desc = "Add current line to qf" })
-
-keymap('n', '<leader>qd', function()
   vim.ui.input({ prompt = "Note: " }, function(note)
     if note == nil then return end -- user cancelled (Esc)
     vim.fn.setqflist({
@@ -409,7 +398,7 @@ keymap('n', '<leader>qd', function()
       },
     }, "a")
   end)
-end, { silent = true, desc = "Diffview: Add current line to qf" })
+end, { silent = true, desc = "Add current line to qf" })
 
 -- assign to each number the arg
 for i = 1, 9 do
