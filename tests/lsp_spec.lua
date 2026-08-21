@@ -79,6 +79,70 @@ eq(up({ 'Gemfile' }, ''), nil, 'unnamed buffer')
 eq(up({ 'Gemfile' }, nil), nil, 'nil path')
 eq(up({}, vim.fs.joinpath(deep, 'app.rb')), nil, 'no markers to look for')
 
+-- ── start_client ─────────────────────────────────────────────────────────────
+-- :LspStart used to hand vim.lsp.start() the config verbatim, so a `root_dir`
+-- *function* reached the transport, which stat()s it: "bad argument #1 to
+-- 'fs_stat' (string expected, got function)". start_client resolves it first.
+
+local real_config, real_start = vim.lsp.config, vim.lsp.start
+
+---Run start_client against a stub registry, returning (started, config, opts).
+local function start(name, registry)
+  local seen_config, seen_opts
+  vim.lsp.config = registry
+  vim.lsp.start = function(config, opts)
+    seen_config, seen_opts = config, opts
+    return 1
+  end
+
+  local ok, started = pcall(lsp.start_client, name, 0)
+  -- The root_dir-function path defers the start through vim.schedule().
+  vim.wait(200, function() return seen_config ~= nil end)
+
+  vim.lsp.config, vim.lsp.start = real_config, real_start
+  if not ok then
+    io.stderr:write(('FAIL start_client(%s) raised\n  %s\n'):format(name, started))
+    os.exit(1)
+  end
+  return started, seen_config, seen_opts
+end
+
+vim.cmd.edit(vim.fs.joinpath(deep, 'app.rb'))
+
+local fn_registry = {
+  server = { cmd = { 'server' }, root_dir = lsp.root_dir({ 'Gemfile' }) },
+}
+
+local started, config, opts = start('server', fn_registry)
+eq(started, true, 'start_client reports a start')
+-- resolve(): on macOS :edit reports the buffer under /private/var, tmp is /var.
+eq(vim.fn.resolve(config.root_dir), vim.fn.resolve(project),
+  'root_dir function is resolved before vim.lsp.start')
+eq(config.cmd, { 'server' }, 'the rest of the config is forwarded')
+eq(opts.bufnr, 0, 'the client is started for the given buffer')
+eq(type(fn_registry.server.root_dir), 'function',
+  'the enabled config keeps its root_dir function')
+
+local _, config = start('server', {
+  server = { cmd = { 'server' }, root_dir = '/tmp' },
+})
+eq(config.root_dir, '/tmp', 'a plain root_dir is passed through')
+
+local _, _, opts = start('server', {
+  server = { cmd = { 'server' }, root_markers = { '.git' } },
+})
+eq(opts._root_markers, { '.git' }, 'root_markers reach vim.lsp.start')
+
+local started, config = start('nope', {})
+eq(started, false, 'an unknown name is reported, not started')
+eq(config, nil, 'an unknown name starts nothing')
+
+-- A root_dir() that never calls on_dir (an excluded project) must not start.
+local _, config = start('server', {
+  server = { cmd = { 'server' }, root_dir = function() end },
+})
+eq(config, nil, 'an unresolved root_dir starts nothing')
+
 vim.fn.delete(tmp, 'rf')
 
 print(('ok - %d checks passed'):format(checks))

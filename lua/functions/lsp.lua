@@ -318,6 +318,48 @@ M.on_attach = function(client, bufnr)
   M.set_keymaps(bufnr)
 end
 
+---Start the configured client `name` in `bufnr`.
+---`vim.lsp.start` wants a *resolved* config: a `root_dir` function reaches the
+---transport as-is, which then calls `uv.fs_stat` on it and errors out. The
+---autostart path in core resolves it first, so :LspStart has to do the same.
+---@param name string
+---@param bufnr integer?
+---@return boolean started `false` when there is no config under that name
+M.start_client = function(name, bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+  local config = vim.lsp.config[name]
+  if not config then
+    vim.notify('No LSP config named ' .. name, vim.log.levels.ERROR)
+    return false
+  end
+
+  -- Copy, so resolving root_dir does not write back into the enabled config.
+  config = vim.deepcopy(config)
+
+  local function start()
+    ---@diagnostic disable-next-line: invisible
+    vim.lsp.start(config, {
+      bufnr = bufnr,
+      reuse_client = config.reuse_client,
+      _root_markers = config.root_markers,
+      silent = false,
+    })
+  end
+
+  if type(config.root_dir) == 'function' then
+    local resolve = config.root_dir
+    resolve(bufnr, function(root_dir)
+      config.root_dir = root_dir
+      vim.schedule(start)
+    end)
+    return true
+  end
+
+  start()
+  return true
+end
+
 M.get_active_clients_names = function()
   local clients = vim.lsp.get_clients()
   local names = {}

@@ -80,9 +80,9 @@ end
 
 ---@param names string[]
 local function start_clients(names)
+  local bufnr = vim.api.nvim_get_current_buf()
   for _, name in ipairs(names) do
-    local config = vim.lsp._enabled_configs[name].resolved_config
-    vim.lsp.start(config, { attach = true, silent = false })
+    lsputils.start_client(name, bufnr)
   end
 end
 
