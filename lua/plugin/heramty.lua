@@ -515,6 +515,7 @@ local function create_note(board_id, title)
   title = title and vim.trim(title) or ''
   if title == '' then
     title = vim.trim(vim.fn.input('Title: '))
+    title = title:gsub("%%date%%", os.date("%Y-%m-%d"))
   end
   if title == '' then return end
 

@@ -297,7 +297,25 @@ M.on_attach = function(client, bufnr)
     -- (`:h vim.lsp.completion`), which is what replaced mini.completion here:
     -- same popup, driven by 'completeopt' in config/opts.lua, no plugin.
     -- `<C-n>`/`<C-p>` move, `<C-y>` accepts, `<C-e>` dismisses.
-    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+    vim.lsp.completion.enable(true, client.id, bufnr, {
+      autotrigger = true,
+      -- Optional formating of items
+      convert = function(item)
+        -- Only show abbr name, remove leading misc chars (bullets etc.),
+        -- and cap field to `num_chars` chars
+        local abbr = item.label
+        local num_chars = 80
+        abbr = abbr:gsub("%b()", ""):gsub("%b{}", "")
+        abbr = abbr:match("[%w_.]+.*") or abbr
+        abbr = #abbr > num_chars and abbr:sub(1, num_chars - 1) .. "…" or abbr
+
+        -- Cap return value field to `num_chars` chars
+        local menu = item.detail or ""
+        menu = #menu > num_chars and menu:sub(1, num_chars - 1) .. "…" or menu
+
+        return { abbr = abbr, menu = menu }
+      end,
+    })
   end
 
   if client and client:supports_method('textDocument/documentColor') then
@@ -349,11 +367,13 @@ M.start_client = function(name, bufnr)
 
   if type(config.root_dir) == 'function' then
     local resolve = config.root_dir
-    resolve(bufnr, function(root_dir)
-      config.root_dir = root_dir
-      vim.schedule(start)
-    end)
-    return true
+    if resolve then
+      resolve(bufnr, function(root_dir)
+        config.root_dir = root_dir
+        vim.schedule(start)
+      end)
+      return true
+    end
   end
 
   start()
