@@ -46,8 +46,10 @@ keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment num
 keymap('n', 'mm', '<CMD>make<CR>', { noremap = true, silent = true, desc = 'Make' })
 
 
--- Remove search highlight if is active
+-- Remove search highlight and multicursors if active
 keymap('n', '<Esc>', function()
+  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace('nvim.multicursor'), 0, -1)
+
   if vim.v.hlsearch == 1 then
     vim.cmd.nohl()
     return ''
