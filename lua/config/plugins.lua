@@ -21,14 +21,6 @@
 --                              a heading background or a code-block frame
 --   mini.icons                 filetype icons, and the `nvim-web-devicons` shim
 --                              that fzf-lua, diffview and octo all look for
---   neo-tree                   a persistent tree sidebar; netrw is a full-window
---                              buffer listing one directory at a time. Both stay
---                              -- netrw on `-` / `<C-s>`, neo-tree on `<leader>T`
---
--- Deliberately absent, with the builtin that replaces it:
---   undotree             -> `g-` / `g+` / `:earlier 10m` / `:undolist`
---   mini.completion      -> `vim.lsp.completion.enable` (see config/lsp.lua)
---   no-neck-pain         -> `:vsplit` + `:vertical resize`
 
 vim.pack.add {
   -- Colorscheme
@@ -77,6 +69,16 @@ vim.pack.add {
 -- Builtins that ship with Neovim but are opt-in.
 vim.cmd "packadd! termdebug"
 vim.cmd "packadd! cfilter"
+
+-- Must run before anything requires fzf-lua (heramty is the first, below).
+-- fzf-lua's own init.lua does `serverstart("fzf-lua." .. os.time())`, a
+-- relative name resolved against stdpath("run"); on this machine that dir
+-- (long $TMPDIR + long username) plus nvim's own uniqueness suffix overflows
+-- macOS' 104-byte AF_UNIX socket path limit and bind() fails with EINVAL.
+-- Preempt it via fzf-lua's own escape hatch with a short absolute path.
+if not vim.g.fzf_lua_server then
+  vim.g.fzf_lua_server = vim.fn.serverstart('/tmp/nvim-fzf-lua.' .. vim.fn.getpid())
+end
 
 -- Icons ----------------------------------------------------------------------
 

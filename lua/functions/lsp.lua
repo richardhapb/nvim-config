@@ -307,6 +307,7 @@ M.on_attach = function(client, bufnr)
         local num_chars = 80
         abbr = abbr:gsub("%b()", ""):gsub("%b{}", "")
         abbr = abbr:match("[%w_.]+.*") or abbr
+        abbr = abbr:gsub("^.*::", "")
         abbr = #abbr > num_chars and abbr:sub(1, num_chars - 1) .. "…" or abbr
 
         -- Cap return value field to `num_chars` chars

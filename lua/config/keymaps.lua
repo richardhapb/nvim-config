@@ -44,12 +44,15 @@ keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
 keymap('n', '+', '<C-a>', { noremap = true, silent = true, desc = 'Increment number' })
 keymap('n', 'mm', '<CMD>make<CR>', { noremap = true, silent = true, desc = 'Make' })
+keymap({'n', 'x'}, '<leader>y', '"+y', { noremap = true })
+keymap({'n', 'x'}, '<leader>p', '"+p', { noremap = true })
 
+keymap('n', '<C-c>', function()
+  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace('nvim.multicursor'), 0, -1)
+end, {})
 
 -- Remove search highlight and multicursors if active
 keymap('n', '<Esc>', function()
-  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace('nvim.multicursor'), 0, -1)
-
   if vim.v.hlsearch == 1 then
     vim.cmd.nohl()
     return ''

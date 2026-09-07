@@ -43,14 +43,6 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 })
 
 --- fff ------
--- Disable mini.completion in the fff.nvim picker prompt
-vim.api.nvim_create_autocmd("FileType", {
-  group = vim.api.nvim_create_augroup("FffNoCompletion", { clear = true }),
-  pattern = "fff_input",
-  callback = function()
-    vim.b.minicompletion_disable = true
-  end,
-})
 
 vim.api.nvim_create_autocmd('PackChanged', {
   callback = function(ev)
@@ -86,7 +78,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
       kind = "progress",
       title = value.title,
       status = value.kind ~= "end" and "running" or "success",
-      percent = percent,
+      percent = type(percent) == "number" and percent or 0,
     })
 
     if not value.kind then return end
