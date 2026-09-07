@@ -67,7 +67,10 @@ vim.api.nvim_create_autocmd("LspProgress", {
   group = vim.api.nvim_create_augroup("LspProgressBar", { clear = true }),
   callback = function(ev)
     local value = ev.data.params.value or {}
-    local msg = value.message or "done"
+    local msg = value.message
+    if msg == vim.NIL or not msg then
+      msg = "done"
+    end
 
     -- rust analyszer in particular has really long LSP messages so truncate them
     if #msg > 40 then
