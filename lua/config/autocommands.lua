@@ -64,12 +64,12 @@ vim.api.nvim_create_autocmd("LspProgress", {
       msg = "done"
     end
 
-    -- rust analyszer in particular has really long LSP messages so truncate them
+    -- rust analyzer in particular has really long LSP messages so truncate them
     if #msg > 40 then
       msg = msg:sub(1, 37) .. "..."
     end
 
-    local percent = value.percentage or 0
+    local percent = value.percentage or 100
 
     -- :h LspProgress
     vim.api.nvim_echo({ { msg } }, false, {
@@ -78,7 +78,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
       kind = "progress",
       title = value.title,
       status = value.kind ~= "end" and "running" or "success",
-      percent = type(percent) == "number" and percent or 0,
+      percent = type(percent) == "number" and percent or 100,
     })
 
     if not value.kind then return end
