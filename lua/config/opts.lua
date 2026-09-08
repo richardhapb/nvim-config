@@ -43,8 +43,6 @@ vim.opt.fileencoding = "utf-8"
 vim.opt.cursorline = true
 vim.opt.colorcolumn = "100"
 
-vim.g.python3_host_prog = vim.fn.stdpath("config") .. "/.venv/bin/python3"
-
 local basic = vim.api.nvim_create_augroup("Basics", { clear = true })
 -- Enable automatic commenting for next line
 vim.api.nvim_create_autocmd("FileType", {
@@ -66,7 +64,6 @@ vim.opt.endofline = false
 vim.opt.eol = false
 vim.opt.eof = false
 
-
 -- Quickfix
 vim.opt.errorformat:append({
   "%f:%l:%m",
@@ -78,8 +75,8 @@ vim.opt.errorformat:append({
 vim.g.netrw_banner = false
 -- Left-side tree
 vim.g.netrw_winsize = 20
--- Tree view
-vim.g.netrw_liststyle = 3
+-- Normal view (list)
+vim.g.netrw_liststyle = 0
 
 -- Split view
 vim.opt.fillchars:append { horiz = "+", vert = "*" }
@@ -91,15 +88,15 @@ vim.o.wildmode = 'noselect:lastused,full'
 
 if vim.fn.has('nvim-0.13') == 1 then
   -- 'messagesopt': timeout/maxheight are ui2 knobs, not enable() keys.
-  vim.opt.messagesopt:append('maxheight:50,timeout:4000')
+  vim.opt.messagesopt:append('maxheight:20,timeout:4000')
   require('vim._core.ui2').enable({
     enable = true, -- Whether to enable or disable the UI.
     msg = {        -- Options related to the message module.
       dialog = {        -- Options related to dialog window.
-        height = 0.5,   -- Maximum height.
+        height = 0.2,   -- Maximum height.
       },
       msg = {           -- Options related to msg window.
-        height = 0.5,   -- Maximum height.
+        height = 0.2,   -- Maximum height.
       },
       pager = {         -- Options related to message window.
         height = 0.999, -- Maximum height.

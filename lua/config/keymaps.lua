@@ -71,8 +71,14 @@ keymap('n', 'sv', ':vsplit<CR><C-w>l', { silent = true })
 -- Keep the behaviour, but route it through netrw like <C-s> does. Inside a
 -- netrw buffer its own buffer-local `-` (NetrwBrowseUpDir) takes over.
 keymap('n', '-', '<cmd>Explore<cr>', { silent = true, desc = 'Open parent directory' })
-keymap('n', '<C-s>', '<cmd>Explore .<cr>', { silent = true })
-keymap('n', '<leader>T', '<cmd>Lexplore! .<cr>', { silent = true, desc = 'Open cwd as tree view' })
+keymap('n', '<C-s>', '<cmd>Explore .<cr>', { silent = true, desc = "Open cwd" })
+keymap('n', '<leader>T', function()
+  -- tree view
+  local current = vim.g.netrw_liststyle
+  vim.g.netrw_liststyle = 3
+  vim.cmd 'Lexplore! .'
+  vim.g.netrw_liststyle = current
+end, { silent = true, desc = 'Open cwd as tree view' })
 
 keymap('n', '<leader>\\', ':tabnew<CR>', { silent = true, desc = 'New tab' })
 keymap('n', '<C-n>', ':tabnext<CR>', { silent = true, desc = 'Next tab' })
