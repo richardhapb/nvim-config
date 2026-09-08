@@ -2,6 +2,8 @@
 
 vim.opt.clipboard:append { "unnamedplus" }
 
+require("config.common").setup_multicursor_clipboard()
+
 -- if utils.is_raspberry_pi() then
 --   --- Use the server to pass the clipboard through SSH
 --   vim.g.clipboard = {

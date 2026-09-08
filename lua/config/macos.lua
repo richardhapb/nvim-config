@@ -1,1 +1,3 @@
--- vim.opt.clipboard:append { "unnamedplus" }
+vim.opt.clipboard:append { "unnamedplus" }
+
+require("config.common").setup_multicursor_clipboard()
