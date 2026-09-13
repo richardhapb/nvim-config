@@ -19,8 +19,15 @@ vim.api.nvim_create_autocmd("TermOpen", {
 -- stacking another copy on every source.
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
-  callback = function()
-    pcall(vim.treesitter.start)
+  callback = function(args)
+    local excluded = { "cmd", "dialog", "msg", "pager", "fff.*" }
+    for _, ex in ipairs(excluded) do
+      if args.match:match(ex) then
+        return
+      end
+    end
+
+    pcall(vim.treesitter.start, args.buf, args.match)
   end
 })
 
