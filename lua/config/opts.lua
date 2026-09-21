@@ -91,6 +91,7 @@ if vim.fn.has('nvim-0.13') == 1 then
   vim.opt.messagesopt:append('maxheight:20,timeout:4000')
   require('vim._core.ui2').enable({
     enable = true, -- Whether to enable or disable the UI.
+    targets = 'cmd',
     msg = {        -- Options related to the message module.
       dialog = {        -- Options related to dialog window.
         height = 0.2,   -- Maximum height.
