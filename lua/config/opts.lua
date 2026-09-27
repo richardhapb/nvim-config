@@ -86,22 +86,3 @@ vim.o.wildoptions = 'pum,fuzzy'
 -- lastused is specially useful when use cmds like `:b` to move between open buffers
 vim.o.wildmode = 'noselect:lastused,full'
 
-if vim.fn.has('nvim-0.13') == 1 then
-  -- 'messagesopt': timeout/maxheight are ui2 knobs, not enable() keys.
-  vim.opt.messagesopt:append('maxheight:20,timeout:4000')
-  require('vim._core.ui2').enable({
-    enable = true, -- Whether to enable or disable the UI.
-    targets = 'cmd',
-    msg = {        -- Options related to the message module.
-      dialog = {        -- Options related to dialog window.
-        height = 0.2,   -- Maximum height.
-      },
-      msg = {           -- Options related to msg window.
-        height = 0.2,   -- Maximum height.
-      },
-      pager = {         -- Options related to message window.
-        height = 0.999, -- Maximum height.
-      },
-    },
-  })
-end

@@ -23,12 +23,13 @@ local function git_status()
 end
 
 function _G.statusline()
+  local progress = require('plugin.lsp_progress').text
   return table.concat({
     "%f",
     "%h%w%m%r",
     git_status(),
     "%=",
-    lsp_status(),
+    progress ~= "" and progress or lsp_status(),
     "%-13a %-14(%l,%c%V%)",
     "%P",
   }, " ")

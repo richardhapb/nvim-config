@@ -95,7 +95,7 @@ require 'mini.icons'.mock_nvim_web_devicons()
 -- My own modules. These are not "plugins hiding Neovim" -- they are Neovim's
 -- API used directly, so they stay.
 local plugins = {
-  "statusline", "aligner", "git_link", "pandoc_div",
+  "statusline", "aligner", "git_link", "pandoc_div", "lsp_progress",
   "mermaid_ascii", "heramty", "checkr_mr", "gh_pr",
 }
 
@@ -317,15 +317,17 @@ require 'trouble'.setup()
 -- in plugin/mermaid.lua, buffer-local to its diagram buffer, and that module is
 -- not in the loaded list above. Everything else here is a fresh lhs.
 --
--- Window shapes: lists go in a bottom split, tree-shaped views on the right.
+-- Window shapes: lists go in a bottom split, tree-shaped views on the left.
 local tr_bottom = { type = "split", position = "bottom", size = { height = 20 } }
-local tr_right = { type = "split", position = "right", size = { width = 80 } }
+-- Plain number, not `{ width = 80 }`: trouble.nvim's window.lua has an
+-- operator-precedence bug that crashes table sizes on left/right splits.
+local tr_left = { type = "split", position = "left", size = 80 }
 
 local trouble_views = {
   { "tt", { mode = "diagnostics", win = tr_bottom },                       "Diagnostics (Trouble)" },
   { "tx", { mode = "diagnostics", filter = { buf = 0 }, win = tr_bottom }, "Buffer diagnostics (Trouble)" },
-  { "ts", { mode = "symbols", win = tr_right },                            "Symbols (Trouble)" },
-  { "tl", { mode = "lsp", focus = false, win = tr_right },                 "LSP definitions / references (Trouble)" },
+  { "ts", { mode = "symbols", win = tr_left },                            "Symbols (Trouble)" },
+  { "tl", { mode = "lsp", focus = false, win = tr_left },                 "LSP definitions / references (Trouble)" },
   { "tL", { mode = "loclist", win = tr_bottom },                           "Location list (Trouble)" },
   { "tQ", { mode = "qflist", win = tr_bottom },                            "Quickfix list (Trouble)" },
 }
