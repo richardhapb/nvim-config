@@ -96,7 +96,7 @@ require 'mini.icons'.mock_nvim_web_devicons()
 -- API used directly, so they stay.
 local plugins = {
   "statusline", "aligner", "git_link", "pandoc_div", "lsp_progress",
-  "mermaid_ascii", "heramty", "checkr_mr", "gh_pr",
+  "mermaid_ascii", "heramty", "checkr_mr", "gh_pr", "markdown_lists",
 }
 
 for _, plugin in ipairs(plugins) do
