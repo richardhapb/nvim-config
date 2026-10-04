@@ -293,6 +293,22 @@ M.on_attach = function(client, bufnr)
   if client.server_capabilities and client:supports_method('textDocument/completion') then
     -- `<C-x><C-o>` on demand...
     vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+    -- Native autotrigger only fires on trigger characters; also request
+    -- while typing keyword chars, like cmp.
+    local group = vim.api.nvim_create_augroup("lsp_autocomplete_" .. bufnr, { clear = true })
+    local function request()
+      if vim.fn.pumvisible() == 1 or vim.fn.reg_executing() ~= "" or vim.bo[bufnr].buftype == "prompt" then
+        return
+      end
+      local col = vim.api.nvim_win_get_cursor(0)[2]
+      local before = vim.api.nvim_get_current_line():sub(1, col)
+      -- Only after a keyword char; trigger chars (`.`, `:`...) stay with the native autotrigger.
+      if not before:find("[%w_]$") then
+        return
+      end
+      vim.lsp.completion.get()
+    end
+    vim.api.nvim_create_autocmd("TextChangedI", { group = group, buffer = bufnr, callback = request })
     -- ...plus as-you-type completion. This is Neovim's own completion engine
     -- (`:h vim.lsp.completion`), which is what replaced mini.completion here:
     -- same popup, driven by 'completeopt' in config/opts.lua, no plugin.
