@@ -22,6 +22,9 @@
 --   mini.icons                 filetype icons, and the `nvim-web-devicons` shim
 --                              that fzf-lua, diffview and octo all look for
 
+-- The mappings below own <C-hjkl>; otherwise the plugin redefines them on load.
+vim.g.tmux_navigator_no_mappings = 1
+
 vim.pack.add {
   -- Colorscheme
   { src = "https://github.com/rose-pine/neovim" },

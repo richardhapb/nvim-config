@@ -90,10 +90,21 @@ keymap('n', '<leader>bd', ':bd!<CR>', { silent = true, desc = 'Close buffer' })
 keymap('n', '<leader>.', '<cmd>e tags<cr>', { silent = true, desc = 'Open tags' })
 
 if not _verify_tmux() or utils.is_ssh() then
-  keymap('n', '<C-h>', '<C-w>h', { silent = true })
-  keymap('n', '<C-j>', '<C-w>j', { silent = true })
-  keymap('n', '<C-k>', '<C-w>k', { silent = true })
-  keymap('n', '<C-l>', '<C-w>l', { silent = true })
+  -- Inside Rex there is no tmux plugin, so at the edge of nvim hand focus to Rex.
+  local function nav(wincmd, rex_dir)
+    return function()
+      local before = vim.api.nvim_get_current_win()
+      vim.cmd('wincmd ' .. wincmd)
+      if vim.env.REX_BLOCK and vim.api.nvim_get_current_win() == before then
+        vim.system({ 'rex', 'focus', rex_dir })
+      end
+    end
+  end
+
+  keymap('n', '<C-h>', nav('h', 'left'), { silent = true })
+  keymap('n', '<C-j>', nav('j', 'down'), { silent = true })
+  keymap('n', '<C-k>', nav('k', 'up'), { silent = true })
+  keymap('n', '<C-l>', nav('l', 'right'), { silent = true })
 end
 
 
