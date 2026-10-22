@@ -63,7 +63,7 @@ return {
   settings = {
     ["rust-analyzer"] = {
       diagnostics = {
-        disabled = { "inactive-code" },
+        disabled = { "inactive_code", "unlinked-file" },
       },
       cargo = {
         features = "all",
