@@ -22,7 +22,7 @@ return {
         version = "Lua 5.1"
       },
       diagnostics = {
-        globals = { "vim", 'require' },
+        globals = { "vim", "require", "rex" },
       },
       workspace = {
         library = {
